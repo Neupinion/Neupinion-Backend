@@ -1,1 +1,25 @@
+spring:
+  profiles:
+    active: local
+  config:
+    import: classpath:Neupinion-Security/application.yml
 
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:neupinion;MODE=MySQL
+  h2:
+    console:
+      enabled: true
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show-sql: true
+    hibernate:
+      ddl-auto: validate
