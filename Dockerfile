@@ -3,7 +3,7 @@ VOLUME /tmp
 COPY gradlew .
 COPY gradle gradle
 COPY src src
-RUN cd /var/jenkins_home/workspace/neupinion-prod
+RUN pwd
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 ARG JAR_FILE=build/libs/*.jar
