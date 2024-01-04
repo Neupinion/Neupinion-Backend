@@ -1,9 +1,10 @@
 FROM openjdk:17-jdk-slim
 VOLUME /tmp
+WORKDIR /var/jenkins_home/workspace/neupinion-prod
 COPY gradlew .
 COPY gradle gradle
 COPY src src
-RUN pwd
+
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 ARG JAR_FILE=build/libs/*.jar
