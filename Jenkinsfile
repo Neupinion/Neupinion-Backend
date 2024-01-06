@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Prepare Environment') {
             steps {
-                dir('neupinion-build') {
+                script {
                     // Make the Gradle wrapper script executable
                     sh 'chmod +x gradlew'
                 }
@@ -19,7 +19,7 @@ pipeline {
 
         stage('Build with Gradle') {
             steps {
-                dir('neupinion-build') {
+                script {
                     // Clean and build the project using Gradle wrapper
                     sh './gradlew clean bootJar'
                 }
@@ -28,7 +28,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('neupinion-build') {
+                script {
                     // Build the Docker image
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
@@ -37,7 +37,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                 dir('neupinion-build') {
+                script {
                     // Log in to Docker Hub
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDS, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                         sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
