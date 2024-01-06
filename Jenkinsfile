@@ -9,20 +9,15 @@ pipeline {
 
     stages {
 
-        stage('github clone') {
+        stage('Github') {
             steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: '*/main']],
-                          extensions: [[$class: 'SubmoduleOption',
-                                        disableSubmodules: false,
-                                        recursiveSubmodules: true,
-                                        reference: '',
-                                        trackingSubmodules: true]],
-                          userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Neupinion/Neupinion-Backend']]
-                ])
+                checkout scmGit(
+                    branches: [[name: 'main']],
+                    extensions: [submodule(parentCredentials: true, trackingSubmodules: true)],
+                    userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Neupinion/Neupinion-Backend']]
+                )
             }
         }
-
 
         stage('Prepare Environment') {
             steps {
