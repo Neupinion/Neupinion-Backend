@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Define Docker image tag and credentials ID
         DOCKER_IMAGE = 'neupinion/neupinion:1.0'
-        DOCKER_CREDS = 'docker-hub'
+        DOCKER_CREDS = 'docker_hub'
     }
 
     stages {
