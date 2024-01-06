@@ -2,7 +2,7 @@ spring:
   profiles:
     active: local
   config:
-    import: classpath:Neupinion-Security/application.yml
+    import: classpath:neupinion-security/application.yml
 
 ---
 spring:
