@@ -1,0 +1,3 @@
+[submodule "src/main/resources/neupinion-security"]
+	path = src/main/resources/neupinion-security
+	url = https://github.com/Neupinion/neupinion-security.git
