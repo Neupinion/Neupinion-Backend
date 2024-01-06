@@ -10,41 +10,33 @@ pipeline {
     stages {
         stage('Prepare Environment') {
             steps {
-                script {
-                    // Make the Gradle wrapper script executable
-                    sh 'chmod +x gradlew'
-                }
+                // Make the Gradle wrapper script executable
+                sh 'chmod +x gradlew'
             }
         }
 
         stage('Build with Gradle') {
             steps {
-                script {
-                    // Clean and build the project using Gradle wrapper
-                    sh './gradlew clean bootJar'
-                }
+                // Clean and build the project using Gradle wrapper
+                sh './gradlew clean bootJar'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Build the Docker image
-                    sh "docker build -t ${DOCKER_IMAGE} ."
-                }
+                // Build the Docker image
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    // Log in to Docker Hub with --password-stdin
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDS, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                        echo "${DOCKERHUB_PASSWORD}" | sh "docker login -u ${DOCKERHUB_USERNAME} --password-stdin"
-                    }
-                    // Push the image to Docker Hub
-                    sh "docker push ${DOCKER_IMAGE}"
+                // Log in to Docker Hub with --password-stdin
+                withCredentials([usernamePassword(credentialsId: DOCKER_CREDS, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin"
                 }
+                // Push the image to Docker Hub
+                sh "docker push ${DOCKER_IMAGE}"
             }
         }
     }
