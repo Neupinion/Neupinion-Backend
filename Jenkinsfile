@@ -8,6 +8,16 @@ pipeline {
     }
 
     stages {
+        stage('github clone') {
+            steps {
+                checkout scmGit(
+                    branches: [[name: 'main']],
+                    extensions: [submodule(parentCredentials: true, reference: 'https://github.com/Neupinion/Neupinion-Security', trackingSubmodules: true)],
+                    userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Neupinion/Neupinion-Backend']]
+                )
+            }
+        }
+
         stage('Prepare Environment') {
             steps {
                 // Make the Gradle wrapper script executable
