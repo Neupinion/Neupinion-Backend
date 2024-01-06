@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('github clone') {
             steps {
                 checkout([$class: 'GitSCM',
