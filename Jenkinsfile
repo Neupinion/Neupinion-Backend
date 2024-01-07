@@ -44,11 +44,9 @@ pipeline {
 
         stage('Cleaning up') {
           steps {
-            sh "docker rmi ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            sh "docker rmi $(docker images -q)"
           }
         }
-
-
     }
 
     post {
