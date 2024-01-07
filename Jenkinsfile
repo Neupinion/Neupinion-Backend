@@ -36,10 +36,19 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: DOCKER_CREDS, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                     sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin"
                 }
+
                 // Push the image to Docker Hub
-                sh "docker push ${DOCKER_IMAGE}"
+                sh "docker push --all-tags ${DOCKER_IMAGE}"
             }
         }
+
+        stage('Cleaning up') {
+          steps {
+            sh "docker rmi ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+          }
+        }
+
+
     }
 
     post {
