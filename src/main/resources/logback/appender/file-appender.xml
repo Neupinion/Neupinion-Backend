@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+  <!-- 애플리케이션 로그 파일 appender -->
+  <appender name="file-application" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/var/log/app/info/info.log</file>
+    <encoder>
+      <pattern>
+        [ %d{yyyy/MM/dd HH:mm:ss.SSS} ] %-5level-- [%thread] %logger[%method:%line] - %msg %n
+      </pattern>
+      <charset>utf8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/app/info/info.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>15</maxHistory>
+      <totalSizeCap>2GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- WARN 로그 파일 appender -->
+  <appender name="file-warn" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/var/log/app/warn/warn.log</file>
+    <encoder>
+      <pattern>
+        [ %d{yyyy/MM/dd HH:mm:ss.SSS} ] %-5level-- [%thread] %logger[%method:%line] - %msg %n
+      </pattern>
+      <charset>utf8</charset>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>WARN</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/app/warn/warn.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>15</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- ERROR 로그 파일 appender -->
+  <appender name="file-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/var/log/app/error/error.log</file>
+    <encoder>
+      <pattern>
+        [ %d{yyyy/MM/dd HH:mm:ss.SSS} ] %-5level-- [%thread] %logger[%method:%line] - %msg %n
+      </pattern>
+      <charset>utf8</charset>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>ERROR</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/app/error/error.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>15</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+</included>
