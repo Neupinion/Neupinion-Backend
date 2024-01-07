@@ -3,22 +3,12 @@ pipeline {
 
     environment {
         // Define Docker image tag and credentials ID
-        DOCKER_IMAGE = 'neupinion/neupinion:1.0'
+        DOCKER_IMAGE = 'neupinion/neupinion'
+        DOCKER_LATEST_IMAGE = 'neupinion/neupinion:latest'
         DOCKER_CREDS = 'docker_hub'
     }
 
     stages {
-
-        stage('Github') {
-            steps {
-                checkout scmGit(
-                    branches: [[name: 'main']],
-                    extensions: [submodule(parentCredentials: true, trackingSubmodules: true)],
-                    userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/Neupinion/Neupinion-Backend']]
-                )
-            }
-        }
-
         stage('Prepare Environment') {
             steps {
                 // Make the Gradle wrapper script executable
@@ -36,7 +26,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 // Build the Docker image
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} -t ${DOCKER_LATEST_IMAGE} ."
             }
         }
 
