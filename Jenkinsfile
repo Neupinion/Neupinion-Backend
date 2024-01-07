@@ -44,7 +44,7 @@ pipeline {
 
         stage('Cleaning up') {
           steps {
-            sh "docker image prune -a"
+            sh "echo Y | docker image prune -a"
           }
         }
     }
