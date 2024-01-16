@@ -19,7 +19,7 @@ pipeline {
         stage('Build with Gradle') {
             steps {
                 // Clean and build the project using Gradle wrapper
-                sh './gradlew clean bootJar'
+                sh './gradlew clean build'
             }
         }
 
