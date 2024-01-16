@@ -31,6 +31,9 @@ dependencies {
     //log to slack
     implementation 'com.github.maricn:logback-slack-appender:1.4.0'
 
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
