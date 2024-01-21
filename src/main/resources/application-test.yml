@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:neupinion;MODE=MySQL
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
