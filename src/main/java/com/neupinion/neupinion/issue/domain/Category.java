@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.issue.domain;
 
+import java.util.Arrays;
 import lombok.Getter;
 
 @Getter
@@ -16,5 +17,12 @@ public enum Category {
 
     Category(final String value) {
         this.value = value;
+    }
+
+    public static Category from(final String value) {
+        return Arrays.stream(Category.values())
+            .filter(category -> category.name().equalsIgnoreCase(value))
+            .findAny()
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
     }
 }
