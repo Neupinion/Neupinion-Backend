@@ -26,6 +26,8 @@ import lombok.NoArgsConstructor;
 @Entity
 public class ReprocessedIssue {
 
+    private static final int VIEWS_INITIALIZATION = 0;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,15 +35,15 @@ public class ReprocessedIssue {
     @Embedded
     private IssueTitle title;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(name = "category")
+    @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @Column(name = "issue_id", unique = true)
-    private Long issueId;
+    @Column(name = "views", nullable = false)
+    private int views;
 
     @Transient
     private Clock clock = Clock.systemDefaultZone();
@@ -53,24 +55,23 @@ public class ReprocessedIssue {
     private LocalDateTime updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
 
     private ReprocessedIssue(final Long id, final String title, final String imageUrl, final Category category,
-                             final Long issueId, final Clock clock) {
+                             final int views, final Clock clock) {
         this.id = id;
         this.title = new IssueTitle(title);
         this.imageUrl = imageUrl;
         this.category = category;
-        this.issueId = issueId;
+        this.views = views;
         this.createdAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
         this.updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
     }
 
     public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category,
-                                           final Long issueId, final Clock clock) {
-        return new ReprocessedIssue(null, title, imageUrl, category, issueId, clock);
+                                           final Clock clock) {
+        return new ReprocessedIssue(null, title, imageUrl, category, VIEWS_INITIALIZATION, clock);
     }
 
-    public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category,
-                                           final Long issueId) {
-        return new ReprocessedIssue(null, title, imageUrl, category, issueId, Clock.systemDefaultZone());
+    public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category) {
+        return new ReprocessedIssue(null, title, imageUrl, category, VIEWS_INITIALIZATION, Clock.systemDefaultZone());
     }
 
     @PrePersist

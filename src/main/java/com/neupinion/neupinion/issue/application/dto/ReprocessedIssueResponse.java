@@ -25,8 +25,8 @@ public class ReprocessedIssueResponse {
     @Schema(description = "재가공 이슈 카테고리", example = "ECONOMY")
     private final String category;
 
-    @Schema(description = "재가공 이슈가 속한 이슈", example = "1")
-    private final Long issueId;
+    @Schema(description = "재가공 이슈의 조회수", example = "10")
+    private final int views;
 
     @Schema(description = "재가공 이슈 작성 날짜", example = "2024-01-08T11:44:30.327959")
     private final LocalDateTime createdAt;
@@ -38,7 +38,7 @@ public class ReprocessedIssueResponse {
                 issue.getTitle().getValue(),
                 issue.getImageUrl(),
                 issue.getCategory().getValue(),
-                issue.getIssueId(),
+                issue.getViews(),
                 issue.getCreatedAt()
             ))
             .toList();

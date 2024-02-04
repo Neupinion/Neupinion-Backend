@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
-import com.neupinion.neupinion.issue.domain.Issue;
-import com.neupinion.neupinion.issue.domain.repository.IssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
@@ -18,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
-
-    @Autowired
-    private IssueRepository issueRepository;
 
     @Autowired
     private ReprocessedIssueRepository reprocessedIssueRepository;
@@ -51,8 +46,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     @Test
     void saveReprocessedIssue() {
         // given
-        final Issue savedIssue = issueRepository.save(new Issue("이슈 제목"));
-        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "ECONOMY", savedIssue.getId());
+        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "ECONOMY");
 
         // when
         final var response = RestAssured.given().log().all()
@@ -68,23 +62,5 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // then
         assertThat(reprocessedIssueRepository.existsById(valueOf(response.substring(response.lastIndexOf("/") + 1))))
             .isTrue();
-    }
-
-    @DisplayName("POST /reprocessed-issue 로 요청을 보낼 때 존재하지 않는 이슈를 참조하는 경우 상태 코드 400과 예외를 반환한다.")
-    @Test
-    void saveReprocessedIssue_notExistIssueException() {
-        // given
-        final Long notExistedId = 0L;
-        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "ECONOMY", notExistedId);
-
-        // when
-        // then
-        RestAssured.given().log().all()
-            .contentType(ContentType.JSON)
-            .body(request)
-            .when().log().all()
-            .post("/reprocessed-issue")
-            .then().log().all()
-            .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 }

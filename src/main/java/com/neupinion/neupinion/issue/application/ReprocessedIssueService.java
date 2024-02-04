@@ -4,14 +4,11 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateReque
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
-import com.neupinion.neupinion.issue.domain.repository.IssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
-import com.neupinion.neupinion.issue.exception.IssueException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,22 +23,13 @@ public class ReprocessedIssueService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final int REPROCESSED_ISSUES_SIZE = 4;
 
-    private final IssueRepository issueRepository;
     private final ReprocessedIssueRepository reprocessedIssueRepository;
 
     public Long save(final ReprocessedIssueCreateRequest request) {
-        validateIssueId(request.getIssueId());
         final ReprocessedIssue reprocessedIssue = ReprocessedIssue.forSave(request.getTitle(),
                                                                            request.getImageUrl(),
-                                                                           Category.from(request.getCategory()),
-                                                                           request.getIssueId());
+                                                                           Category.from(request.getCategory()));
         return reprocessedIssueRepository.save(reprocessedIssue).getId();
-    }
-
-    private void validateIssueId(final Long issueId) {
-        if (!issueRepository.existsById(issueId)) {
-            throw new IssueException.IssueNotExistException(Map.of("issueId", issueId.toString()));
-        }
     }
 
     public List<ReprocessedIssueResponse> findReprocessedIssues(final String dateFormat) {
@@ -50,6 +38,7 @@ public class ReprocessedIssueService {
         final PageRequest pageRequest = PageRequest.of(0, REPROCESSED_ISSUES_SIZE, Sort.by("createdAt").descending());
         final List<ReprocessedIssue> reprocessedIssues = reprocessedIssueRepository.findByCreatedAt(targetDateTime,
                                                                                                     pageRequest);
+
         return ReprocessedIssueResponse.of(reprocessedIssues);
     }
 }

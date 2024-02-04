@@ -2,7 +2,6 @@ package com.neupinion.neupinion.issue.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,12 +23,7 @@ public class ReprocessedIssueCreateRequest {
     @NotBlank
     private final String category;
 
-    @Schema(description = "재가공 이슈가 속한 이슈", example = "1")
-    @Positive
-    private final Long issueId;
-
-    public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String category,
-                                                   final Long issueId) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, category, issueId);
+    public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String category) {
+        return new ReprocessedIssueCreateRequest(title, imageUrl, category);
     }
 }

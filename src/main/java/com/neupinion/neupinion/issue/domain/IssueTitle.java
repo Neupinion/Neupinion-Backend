@@ -30,7 +30,7 @@ public class IssueTitle {
         if (StringChecker.isNullOrBlank(value)) {
             throw new IssueException.NullOrEmptyTitleException();
         }
-        if(value.length() > TITLE_MAXIMUM_LENGTH) {
+        if (value.length() > TITLE_MAXIMUM_LENGTH) {
             throw new IssueException.TooLongIssueTitleException(
                 Map.of("title", value)
             );

@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.issue.domain;
 
+import com.neupinion.neupinion.issue.exception.CategoryException;
 import java.util.Arrays;
 import lombok.Getter;
 
@@ -23,6 +24,6 @@ public enum Category {
         return Arrays.stream(Category.values())
             .filter(category -> category.name().equalsIgnoreCase(value))
             .findAny()
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+            .orElseThrow(CategoryException.CategoryNotFoundException::new);
     }
 }
