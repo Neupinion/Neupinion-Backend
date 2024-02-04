@@ -14,14 +14,17 @@ public class IssueException extends CustomException {
         super(errorCode, inputValuesByProperty);
     }
 
-    public static class EmptyReprocessedIssue extends IssueException {
+    public static class NullOrEmptyTitleException extends IssueException {
 
-        protected EmptyReprocessedIssue(final ErrorCode errorCode) {
-            super(ErrorCode.EMPTY_REPROCESSED_ISSUE);
+        public NullOrEmptyTitleException() {
+            super(ErrorCode.NULL_OR_EMPTY_ISSUE_TITLE);
         }
+    }
 
-        public EmptyReprocessedIssue(final ErrorCode errorCode, final Map<String, String> inputValuesByProperty) {
-            super(ErrorCode.EMPTY_REPROCESSED_ISSUE, inputValuesByProperty);
+    public static class TooLongIssueTitleException extends IssueException {
+
+        public TooLongIssueTitleException(final Map<String, String> inputValuesByProperty) {
+            super(ErrorCode.TOO_LONG_ISSUE_TITLE, inputValuesByProperty);
         }
     }
 }
