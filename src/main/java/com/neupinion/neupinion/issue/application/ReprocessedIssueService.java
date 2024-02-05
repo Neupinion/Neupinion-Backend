@@ -25,7 +25,8 @@ public class ReprocessedIssueService {
 
     private final ReprocessedIssueRepository reprocessedIssueRepository;
 
-    public Long save(final ReprocessedIssueCreateRequest request) {
+    @Transactional
+    public Long createReprocessedIssue(final ReprocessedIssueCreateRequest request) {
         final ReprocessedIssue reprocessedIssue = ReprocessedIssue.forSave(request.getTitle(),
                                                                            request.getImageUrl(),
                                                                            Category.from(request.getCategory()));

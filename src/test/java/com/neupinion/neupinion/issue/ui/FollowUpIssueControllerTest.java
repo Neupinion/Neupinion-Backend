@@ -22,7 +22,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
     @Test
     void createFollowUpIssue() {
         // given
-        final Long reprocessedIssueId = reprocessedIssueService.save(
+        final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
             ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", Category.WORLD.name()));
         final FollowUpIssueCreateRequest request = FollowUpIssueCreateRequest.of("후속 이슈 제목", Category.WORLD.name(),
                                                                                  "https://neupinion.com/image.jpg",

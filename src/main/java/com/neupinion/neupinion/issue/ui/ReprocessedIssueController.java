@@ -26,7 +26,7 @@ public class ReprocessedIssueController {
     public ResponseEntity<Void> save(
         @Valid @RequestBody final ReprocessedIssueCreateRequest request
     ) {
-        final Long savedReprocessedIssueId = reprocessedIssueService.save(request);
+        final Long savedReprocessedIssueId = reprocessedIssueService.createReprocessedIssue(request);
 
         return ResponseEntity.created(URI.create("/reprocessed-issue/" + savedReprocessedIssueId)).build();
     }
