@@ -61,8 +61,7 @@ public class ReprocessedIssue {
         this.imageUrl = imageUrl;
         this.category = category;
         this.views = views;
-        this.createdAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
-        this.updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
+        this.clock = clock;
     }
 
     public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category,
@@ -76,12 +75,12 @@ public class ReprocessedIssue {
 
     @PrePersist
     private void prePersist() {
-        createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
+        createdAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
     }
 
     @PreUpdate
     private void preUpdate() {
-        updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
+        updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
     }
 
     @Override

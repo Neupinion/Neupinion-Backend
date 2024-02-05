@@ -1,6 +1,6 @@
 package com.neupinion.neupinion.issue.application.dto;
 
-import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
+import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,18 +28,22 @@ public class ReprocessedIssueResponse {
     @Schema(description = "재가공 이슈의 조회수", example = "10")
     private final int views;
 
+    @Schema(description = "공개된 포스트잇 개수", example = "10")
+    private final int opinionCount;
+
     @Schema(description = "재가공 이슈 작성 날짜", example = "2024-01-08T11:44:30.327959")
     private final LocalDateTime createdAt;
 
-    public static List<ReprocessedIssueResponse> of(final List<ReprocessedIssue> reprocessedIssues) {
+    public static List<ReprocessedIssueResponse> of(final List<ReprocessedIssueWithCommentCount> reprocessedIssues) {
         return reprocessedIssues.stream()
             .map(issue -> new ReprocessedIssueResponse(
-                issue.getId(),
-                issue.getTitle().getValue(),
-                issue.getImageUrl(),
-                issue.getCategory().getValue(),
-                issue.getViews(),
-                issue.getCreatedAt()
+                issue.getReprocessedIssue().getId(),
+                issue.getReprocessedIssue().getTitle().getValue(),
+                issue.getReprocessedIssue().getImageUrl(),
+                issue.getReprocessedIssue().getCategory().getValue(),
+                issue.getReprocessedIssue().getViews(),
+                issue.getCommentCount().intValue(),
+                issue.getReprocessedIssue().getCreatedAt()
             ))
             .toList();
     }

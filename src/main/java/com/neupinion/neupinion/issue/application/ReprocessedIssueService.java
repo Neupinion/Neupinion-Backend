@@ -5,8 +5,8 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +34,10 @@ public class ReprocessedIssueService {
 
     public List<ReprocessedIssueResponse> findReprocessedIssues(final String dateFormat) {
         final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
-        final LocalDateTime targetDateTime = targetDate.atStartOfDay();
         final PageRequest pageRequest = PageRequest.of(0, REPROCESSED_ISSUES_SIZE, Sort.by("createdAt").descending());
-        final List<ReprocessedIssue> reprocessedIssues = reprocessedIssueRepository.findByCreatedAt(targetDateTime,
-                                                                                                    pageRequest);
+        final List<ReprocessedIssueWithCommentCount> issuesWithCommentCount = reprocessedIssueRepository.findByCreatedAt(
+            targetDate, pageRequest);
 
-        return ReprocessedIssueResponse.of(reprocessedIssues);
+        return ReprocessedIssueResponse.of(issuesWithCommentCount);
     }
 }

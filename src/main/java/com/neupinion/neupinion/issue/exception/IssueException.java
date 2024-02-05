@@ -27,11 +27,4 @@ public class IssueException extends CustomException {
             super(ErrorCode.TOO_LONG_ISSUE_TITLE, inputValuesByProperty);
         }
     }
-
-    public static class IssueNotExistException extends IssueException {
-
-        public IssueNotExistException(final Map<String, String> inputValuesByProperty) {
-            super(ErrorCode.ISSUE_NOT_EXIST_EXCEPTION, inputValuesByProperty);
-        }
-    }
 }

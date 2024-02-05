@@ -35,8 +35,9 @@ class ReprocessedIssueServiceTest {
     void 특정_날짜의_재가공_이슈를_조회한다() {
         // given
         final Clock clock = Clock.fixed(Instant.parse("2024-02-04T10:00:00Z"), ZoneId.of("Asia/Seoul"));
+        final Clock clock2 = Clock.fixed(Instant.parse("2024-02-05T10:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목1", "image", Category.ECONOMY, clock2));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목2", "image", Category.ECONOMY, clock));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
@@ -53,6 +54,7 @@ class ReprocessedIssueServiceTest {
         // 5 4 3 2
         assertThat(response.stream()
                        .map(ReprocessedIssueResponse::getId)
-                       .toList()).containsExactly(issue5.getId(), issue4.getId(), issue3.getId(), issue2.getId());
+                       .toList())
+            .containsExactlyInAnyOrder(issue5.getId(), issue4.getId(), issue3.getId(), issue2.getId());
     }
 }
