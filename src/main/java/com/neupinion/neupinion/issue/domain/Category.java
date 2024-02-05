@@ -1,6 +1,6 @@
 package com.neupinion.neupinion.issue.domain;
 
-import com.neupinion.neupinion.issue.exception.CategoryException;
+import com.neupinion.neupinion.issue.exception.CategoryException.CategoryNotFoundException;
 import java.util.Arrays;
 import lombok.Getter;
 
@@ -24,6 +24,6 @@ public enum Category {
         return Arrays.stream(Category.values())
             .filter(category -> category.name().equalsIgnoreCase(value))
             .findAny()
-            .orElseThrow(CategoryException.CategoryNotFoundException::new);
+            .orElseThrow(CategoryNotFoundException::new);
     }
 }

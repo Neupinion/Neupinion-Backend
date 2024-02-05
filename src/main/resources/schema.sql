@@ -17,7 +17,10 @@ create table if not exists follow_up_issue
     id                   bigint auto_increment,
     title                varchar(100) not null,
     image_url            text         not null,
-    category             varchar(255) check (category in ('재판 결과', '인터뷰', '공식 입장')),
+    category             varchar(255) check (category in
+                                             ('ENTERTAINMENTS', 'POLITICS', 'ECONOMY', 'SOCIETY',
+                                              'WORLD', 'SPORTS')),
+    tag                  varchar(255) check (tag in ('TRIAL_RESULTS', 'INTERVIEW', 'OFFICIAL_POSITION')),
     reprocessed_issue_id bigint       not null,
     created_at           timestamp(6) not null,
     updated_at           timestamp(6) not null,
