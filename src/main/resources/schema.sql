@@ -37,3 +37,21 @@ create table if not exists issue_comment
     updated_at           timestamp(6)  not null,
     primary key (id)
 );
+
+create table if not exists opinion
+(
+    id         bigint auto_increment,
+    issue_id   bigint       not null,
+    member_id  bigint       not null,
+    created_at timestamp(6) not null,
+    updated_at timestamp(6) not null,
+    primary key (id)
+);
+
+create table if not exists member
+(
+    id         bigint auto_increment,
+    created_at timestamp(6) not null,
+    updated_at timestamp(6) not null,
+    primary key (id)
+);

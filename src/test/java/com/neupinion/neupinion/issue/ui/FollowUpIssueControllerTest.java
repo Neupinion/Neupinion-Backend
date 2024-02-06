@@ -62,4 +62,6 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             .then().log().all()
             .statusCode(HttpStatus.BAD_REQUEST.value());
     }
+
+    // TODO : 후속 이슈 조회 테스트 추가
 }
