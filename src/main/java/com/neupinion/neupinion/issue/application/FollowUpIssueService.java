@@ -65,5 +65,20 @@ public class FollowUpIssueService {
 
         return result;
     }
+
+    public List<FollowUpIssueByCategoryResponse> findMyVotedIssueByCategoryAndDate(final String dateFormat,
+                                                                                   final String category,
+                                                                                   final Long memberId) {
+        final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
+        final List<FollowUpIssueWithReprocessedIssueTitle> dtos = followUpIssueRepository.findByCategoryAndDate(
+            Category.from(category), targetDate);
+        final Map<Long, Opinion> opinionsByMember = opinionRepository.findByMemberId(memberId).stream()
+            .collect(Collectors.toMap(Opinion::getIssueId, opinion -> opinion));
+
+        return dtos.stream()
+            .filter(dto -> opinionsByMember.containsKey(dto.getFollowUpIssue().getReprocessedIssueId()))
+            .map(FollowUpIssueByCategoryResponse::createVotedResponse)
+            .collect(Collectors.toList());
+    }
 }
 

@@ -20,7 +20,7 @@ public class FollowUpIssueByCategoryResponse {
     private final String title;
 
     @Schema(description = "이슈 투표 여부", example = "true")
-    private final boolean isVoted;
+    private final boolean voted;
 
     @Schema(description = "재가공 이슈 제목", example = "재가공 이슈 제목")
     private final String reprocessedIssueTitle;

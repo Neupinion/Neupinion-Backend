@@ -6,15 +6,22 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.domain.Category;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.jdbc.Sql;
 
+@Sql("classpath:initialize_schema.sql")
 class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
@@ -24,7 +31,19 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     @Test
     void findReprocessedIssues() {
         // given
-        final String date = "20240204";
+        final String date = "20240206";
+        final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
+        final Clock otherClock = Clock.fixed(Instant.parse("2024-03-06T00:00:00Z"), ZoneId.systemDefault());
+
+        final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", Category.ECONOMY, clock));
+        final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", Category.ECONOMY, clock));
+        final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", Category.ECONOMY, clock));
+        final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", Category.SOCIETY, clock));
+        reprocessedIssueRepository.save(ReprocessedIssue.forSave("재가공 이슈 제목5", "image", Category.ECONOMY, otherClock));
 
         // when
         final var response = RestAssured.given().log().all()
@@ -38,7 +57,10 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
         // then
         assertAll(
-            () -> assertThat(response).hasSize(4)
+            () -> assertThat(response).hasSize(4),
+            () -> assertThat(response).extracting("id").containsExactlyInAnyOrder(
+                issue1.getId(), issue2.getId(), issue3.getId(), issue4.getId()
+            )
         );
     }
 

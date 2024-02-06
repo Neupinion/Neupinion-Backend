@@ -20,4 +20,11 @@ public class FollowUpIssueException extends CustomException {
             super(ErrorCode.FOLLOW_UP_ISSUE_TAG_NOT_FOUND);
         }
     }
+
+    public static class InvalidViewModeException extends FollowUpIssueException {
+
+        public InvalidViewModeException() {
+            super(ErrorCode.INVALID_VIEW_MODE);
+        }
+    }
 }
