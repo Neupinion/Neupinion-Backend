@@ -3,6 +3,11 @@ spring:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:neupinion;MODE=MySQL
 
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
   jpa:
     properties:
       hibernate:
@@ -10,7 +15,14 @@ spring:
         show-sql: true
     hibernate:
       ddl-auto: validate
+    show-sql: true
 
 logging:
   level:
     org.hibernate.orm.jdbc.bind: trace
+
+cors:
+  mapping: "/**"
+  origins: "*"
+  headers: "*"
+  methods: "*"
