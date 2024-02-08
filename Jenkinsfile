@@ -26,7 +26,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 // Build the Docker image
-                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} -t ${DOCKER_LATEST_IMAGE} --build-arg profile=prod ."
+                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} -t ${DOCKER_LATEST_IMAGE} ."
             }
         }
 

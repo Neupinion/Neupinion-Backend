@@ -3,5 +3,5 @@ ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} neupinion.jar
 
 EXPOSE 8080 8090
-ARG profile
+ENV profile=prod
 ENTRYPOINT ["java", "-Dspring.profiles.active=${profile}", "-jar", "/neupinion.jar"]
