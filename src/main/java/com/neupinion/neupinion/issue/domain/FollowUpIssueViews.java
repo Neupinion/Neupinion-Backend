@@ -38,8 +38,8 @@ public class FollowUpIssueViews {
         this.memberId = memberId;
     }
 
-    public static FollowUpIssueViews of(final Long issueId, final Long memberId) {
-        return new FollowUpIssueViews(null, issueId, memberId);
+    public static FollowUpIssueViews of(final Long followUpIssueId, final Long memberId) {
+        return new FollowUpIssueViews(null, followUpIssueId, memberId);
     }
 
     @PrePersist

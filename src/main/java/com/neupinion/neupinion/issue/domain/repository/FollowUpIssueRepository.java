@@ -15,5 +15,12 @@ public interface FollowUpIssueRepository extends JpaRepository<FollowUpIssue, Lo
         + "LEFT JOIN ReprocessedIssue ri ON fui.reprocessedIssueId = ri.id "
         + "WHERE CAST(fui.createdAt AS DATE) = :createdAt AND fui.category = :category"
     )
-    List<FollowUpIssueWithReprocessedIssueTitle> findByCategoryAndDate(final Category category, final LocalDate createdAt);
+    List<FollowUpIssueWithReprocessedIssueTitle> findByCategoryAndDate(final Category category,
+                                                                       final LocalDate createdAt);
+
+    @Query("SELECT f "
+        + "FROM FollowUpIssue f "
+        + "WHERE NOT EXISTS (SELECT 1 FROM FollowUpIssueViews fv WHERE fv.followUpIssueId = f.id AND fv.memberId = :memberId) "
+        + "ORDER BY f.createdAt DESC")
+    List<FollowUpIssue> findUnviewedSortByCreatedAt(final Long memberId);
 }

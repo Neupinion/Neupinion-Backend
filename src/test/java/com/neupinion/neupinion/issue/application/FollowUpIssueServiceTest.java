@@ -9,19 +9,23 @@ import static org.mockito.Mockito.verify;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
+import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
 import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
 import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +43,9 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
 
     @Autowired
     private OpinionRepository opinionRepository;
+
+    @Autowired
+    private FollowUpIssueViewsRepository followUpIssueViewsRepository;
 
     @MockBean
     private ApplicationEventPublisher publisher;
@@ -150,5 +157,51 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
 
         // then
         verify(publisher, only()).publishEvent(new FollowUpIssueViewedEvent(followUpIssue.getId(), memberId));
+    }
+
+    @Test
+    void 유저가_조회하지_않은_후속_이슈를_최신순으로_조회한다() {
+        // given
+        final Long memberId = 1L;
+        final Category category = Category.ECONOMY;
+
+        final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", category));
+
+        final FollowUpIssue savedFollowUpIssue1 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(),
+                                  Clock.fixed(Instant.parse("2024-02-06T10:00:00Z"),
+                                              Clock.systemDefaultZone().getZone())));
+        final FollowUpIssue savedFollowUpIssue2 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목2", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(),
+                                  Clock.fixed(Instant.parse("2024-02-07T10:00:00Z"),
+                                              Clock.systemDefaultZone().getZone())));
+        final FollowUpIssue savedFollowUpIssue3 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목3", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(),
+                                  Clock.fixed(Instant.parse("2024-02-08T10:00:00Z"),
+                                              Clock.systemDefaultZone().getZone())));
+        final FollowUpIssue savedFollowUpIssue4 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(),
+                                  Clock.fixed(Instant.parse("2024-02-09T10:00:00Z"),
+                                              Clock.systemDefaultZone().getZone())));
+
+        followUpIssueViewsRepository.save(FollowUpIssueViews.of(savedFollowUpIssue1.getId(), memberId));
+
+        // when
+        final List<UnviewedFollowUpIssueResponse> responses = followUpIssueService.findUnviewedSortByLatest(
+            memberId);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(3),
+            () -> assertThat(responses).usingRecursiveComparison()
+                .comparingOnlyFields("id")
+                .isEqualTo(
+                    List.of(savedFollowUpIssue4.getId(), savedFollowUpIssue3.getId(), savedFollowUpIssue2.getId()))
+        );
     }
 }

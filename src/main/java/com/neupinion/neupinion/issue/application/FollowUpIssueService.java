@@ -3,6 +3,7 @@ package com.neupinion.neupinion.issue.application;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.Opinion;
@@ -91,6 +92,14 @@ public class FollowUpIssueService {
             .orElseThrow(FollowUpIssueNotFoundException::new);
         publisher.publishEvent(new FollowUpIssueViewedEvent(id, memberId));
         return FollowUpIssueResponse.from(followUpIssue);
+    }
+
+    public List<UnviewedFollowUpIssueResponse> findUnviewedSortByLatest(final Long memberId) {
+        final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findUnviewedSortByCreatedAt(memberId);
+
+        return followUpIssues.stream()
+            .map(UnviewedFollowUpIssueResponse::from)
+            .toList();
     }
 }
 
