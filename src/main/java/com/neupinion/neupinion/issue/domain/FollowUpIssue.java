@@ -46,6 +46,9 @@ public class FollowUpIssue {
     @Column(name = "reprocessed_issue_id", nullable = false, updatable = false)
     private Long reprocessedIssueId;
 
+    @Column(name = "views", nullable = false)
+    private int views = 0;
+
     @Transient
     private Clock clock = Clock.systemDefaultZone();
 
@@ -56,24 +59,27 @@ public class FollowUpIssue {
     private LocalDateTime updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
 
     private FollowUpIssue(final Long id, final String title, final String imageUrl, final Category category,
-                          final FollowUpIssueTag tag, final Long reprocessedIssueId, final Clock clock) {
+                          final FollowUpIssueTag tag, final Long reprocessedIssueId, final int views,
+                          final Clock clock) {
         this.id = id;
         this.title = new IssueTitle(title);
         this.imageUrl = imageUrl;
         this.category = category;
         this.tag = tag;
         this.reprocessedIssueId = reprocessedIssueId;
+        this.views = views;
         this.clock = clock;
     }
 
     public static FollowUpIssue forSave(final String title, final String imageUrl, final Category category,
                                         final FollowUpIssueTag tag, final Long reprocessedIssueId) {
-        return new FollowUpIssue(null, title, imageUrl, category, tag, reprocessedIssueId, Clock.systemDefaultZone());
+        return new FollowUpIssue(null, title, imageUrl, category, tag, reprocessedIssueId, 0,
+                                 Clock.systemDefaultZone());
     }
 
     public static FollowUpIssue forSave(final String title, final String imageUrl, final Category category,
                                         final FollowUpIssueTag tag, final Long reprocessedIssueId, final Clock clock) {
-        return new FollowUpIssue(null, title, imageUrl, category, tag, reprocessedIssueId, clock);
+        return new FollowUpIssue(null, title, imageUrl, category, tag, reprocessedIssueId, 0, clock);
     }
 
     @PrePersist
@@ -84,5 +90,9 @@ public class FollowUpIssue {
     @PreUpdate
     private void preUpdate() {
         updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public void view() {
+        this.views++;
     }
 }

@@ -22,7 +22,7 @@ public class ReprocessedIssueResponse {
     @Schema(description = "재가공 이슈 썸네일 이미지", example = "https://image.com?image=1234")
     private final String imageUrl;
 
-    @Schema(description = "재가공 이슈 카테고리", example = "ECONOMY")
+    @Schema(description = "재가공 이슈 카테고리", example = "경제")
     private final String category;
 
     @Schema(description = "재가공 이슈의 조회수", example = "10")

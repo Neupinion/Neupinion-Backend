@@ -3,6 +3,8 @@ package com.neupinion.neupinion.issue.ui;
 import com.neupinion.neupinion.issue.application.FollowUpIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.viewmode.FollowUpIssueViewStrategy;
 import com.neupinion.neupinion.issue.application.viewmode.ViewMode;
 import jakarta.validation.Valid;
@@ -28,15 +30,15 @@ public class FollowUpIssueController {
     private final FollowUpIssueService followUpIssueService;
 
     @PostMapping
-    public ResponseEntity<Void> createFollowUpIssue(@Valid @RequestBody final FollowUpIssueCreateRequest request) {
+    public ResponseEntity<Void> create(@Valid @RequestBody final FollowUpIssueCreateRequest request) {
         final Long followUpIssueId = followUpIssueService.createFollowUpIssue(request);
 
         return ResponseEntity.created(URI.create("/follow-up-issue/" + followUpIssueId)).build();
     }
 
-    @GetMapping("/{category}")
-    public ResponseEntity<List<FollowUpIssueByCategoryResponse>> getMyFollowUpIssueByCategoryAndDate(
-        @PathVariable final String category,
+    @GetMapping
+    public ResponseEntity<List<FollowUpIssueByCategoryResponse>> getByCategoryAndDate(
+        @RequestParam(name = "category") final String category,
         @RequestParam(name = "date") final String dateFormat,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
     ) {
@@ -46,5 +48,20 @@ public class FollowUpIssueController {
 
         return ResponseEntity.ok(
             strategy.findIssueByCategoryAndDate(dateFormat, category, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FollowUpIssueResponse> getById(
+        @PathVariable final Long id,
+        final Long memberId
+    ) {
+        return ResponseEntity.ok(followUpIssueService.findById(id, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+    }
+
+    @GetMapping("/unviewed")
+    public ResponseEntity<List<UnviewedFollowUpIssueResponse>> getUnviewedSortByLatest(
+        final Long memberId
+    ) {
+        return ResponseEntity.ok(followUpIssueService.findUnviewedSortByLatest(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
     }
 }

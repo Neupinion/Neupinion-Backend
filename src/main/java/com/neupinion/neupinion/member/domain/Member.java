@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.issue.domain;
+package com.neupinion.neupinion.member.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

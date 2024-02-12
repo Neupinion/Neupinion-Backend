@@ -19,5 +19,6 @@ public class RestAssuredSpringBootTest {
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
+        dataCleaner.clear();
     }
 }

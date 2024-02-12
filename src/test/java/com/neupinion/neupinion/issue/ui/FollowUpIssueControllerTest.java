@@ -6,12 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
+import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
 import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
 import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
@@ -19,13 +23,12 @@ import io.restassured.http.ContentType;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.jdbc.Sql;
 
-@Sql("classpath:initialize_schema.sql")
 class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
@@ -36,6 +39,9 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private OpinionRepository opinionRepository;
+
+    @Autowired
+    private FollowUpIssueViewsRepository followUpIssueViewsRepository;
 
     @DisplayName("POST /follow-up-issue 요청을 보내는 경우, 상태 코드 201과 후속 이슈를 생성한다.")
     @Test
@@ -107,7 +113,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // when
         final var responses = RestAssured.given().log().all()
             .when().log().all()
-            .get("/follow-up-issue/{category}?date={dateFormat}", category.name(), dateFormat)
+            .get("/follow-up-issue?category={category}&date={dateFormat}", category.name(), dateFormat)
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract().body()
@@ -154,7 +160,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // when
         final var responses = RestAssured.given().log().all()
             .when().log().all()
-            .get("/follow-up-issue/{category}?date={dateFormat}&viewMode={voted}", category.name(), dateFormat, "voted")
+            .get("/follow-up-issue?category={category}&date={dateFormat}&viewMode={voted}", category.name(), dateFormat,
+                 "voted")
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract().body()
@@ -167,6 +174,90 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
                                  .map(FollowUpIssueByCategoryResponse::getId)
                                  .toList()).containsExactlyInAnyOrder(followUpIssue1.getId(), followUpIssue2.getId(),
                                                                       followUpIssue3.getId())
+        );
+    }
+
+    @DisplayName("GET /follow-up-issue/{id} 요청을 보내는 경우, 후속 이슈를 조회하고, 유저의 조회 기록을 저장한다.")
+    @Test
+    void getById() {
+        // given
+        final Category category = Category.WORLD;
+        final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", category.name()));
+        final FollowUpIssue followUpIssue = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId));
+        final Long memberId = 1L;
+
+        // when
+        final var response = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/follow-up-issue/{id}", followUpIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract().body()
+            .as(FollowUpIssueResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(followUpIssueViewsRepository.existsByFollowUpIssueIdAndMemberId(followUpIssue.getId(),
+                                                                                             memberId)).isTrue(),
+            () -> assertThat(followUpIssue).usingRecursiveComparison()
+                .comparingOnlyFields("id")
+                .isEqualTo(response)
+        );
+    }
+
+    @DisplayName("GET /follow-up-issue/unviewed 요청을 보내는 경우, 유저가 조회하지 않은 후속 이슈 4개를 조회한다.")
+    @Test
+    void getUnviewedSortByLatest() {
+        // given
+        final Category category = Category.WORLD;
+        final Long memberId = 1L;
+
+        final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", category.name()));
+        final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", category.name()));
+
+        final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
+                                  Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault())));
+        final FollowUpIssue followUpIssue2 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목2", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
+                                  Clock.fixed(Instant.parse("2024-02-07T00:00:00Z"), ZoneId.systemDefault())));
+        final FollowUpIssue followUpIssue3 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목3", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
+                                  Clock.fixed(Instant.parse("2024-02-08T00:00:00Z"), ZoneId.systemDefault())));
+        final FollowUpIssue followUpIssue4 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
+                                  Clock.fixed(Instant.parse("2024-02-09T00:00:00Z"), ZoneId.systemDefault())));
+        final FollowUpIssue followUpIssue5 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
+                                  Clock.fixed(Instant.parse("2024-02-10T00:00:00Z"), ZoneId.systemDefault())));
+
+        followUpIssueViewsRepository.save(FollowUpIssueViews.of(followUpIssue1.getId(), memberId));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/follow-up-issue/unviewed")
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract().body()
+            .jsonPath().getList(".", UnviewedFollowUpIssueResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(4),
+            () -> assertThat(responses).usingRecursiveComparison()
+                .comparingOnlyFields("id")
+                .isEqualTo(List.of(followUpIssue5.getId(), followUpIssue4.getId(), followUpIssue3.getId(), followUpIssue2.getId()))
         );
     }
 }
