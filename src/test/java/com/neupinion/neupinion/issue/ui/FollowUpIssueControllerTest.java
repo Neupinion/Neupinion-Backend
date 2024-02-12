@@ -23,9 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.jdbc.Sql;
 
-@Sql("classpath:initialize_schema.sql")
 class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
@@ -107,7 +105,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // when
         final var responses = RestAssured.given().log().all()
             .when().log().all()
-            .get("/follow-up-issue/{category}?date={dateFormat}", category.name(), dateFormat)
+            .get("/follow-up-issue?category={category}&date={dateFormat}", category.name(), dateFormat)
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract().body()
@@ -154,7 +152,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // when
         final var responses = RestAssured.given().log().all()
             .when().log().all()
-            .get("/follow-up-issue/{category}?date={dateFormat}&viewMode={voted}", category.name(), dateFormat, "voted")
+            .get("/follow-up-issue?category={category}&date={dateFormat}&viewMode={voted}", category.name(), dateFormat,
+                 "voted")
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract().body()

@@ -34,9 +34,9 @@ public class FollowUpIssueController {
         return ResponseEntity.created(URI.create("/follow-up-issue/" + followUpIssueId)).build();
     }
 
-    @GetMapping("/{category}")
+    @GetMapping
     public ResponseEntity<List<FollowUpIssueByCategoryResponse>> getMyFollowUpIssueByCategoryAndDate(
-        @PathVariable final String category,
+        @RequestParam(name = "category") final String category,
         @RequestParam(name = "date") final String dateFormat,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
     ) {
