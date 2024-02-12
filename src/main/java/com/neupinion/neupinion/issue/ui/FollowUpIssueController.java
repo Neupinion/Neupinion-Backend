@@ -3,6 +3,7 @@ package com.neupinion.neupinion.issue.ui;
 import com.neupinion.neupinion.issue.application.FollowUpIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.viewmode.FollowUpIssueViewStrategy;
 import com.neupinion.neupinion.issue.application.viewmode.ViewMode;
 import jakarta.validation.Valid;
@@ -46,5 +47,13 @@ public class FollowUpIssueController {
 
         return ResponseEntity.ok(
             strategy.findIssueByCategoryAndDate(dateFormat, category, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FollowUpIssueResponse> findById(
+        @PathVariable final Long id,
+        final Long memberId
+    ) {
+        return ResponseEntity.ok(followUpIssueService.findById(id, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
     }
 }

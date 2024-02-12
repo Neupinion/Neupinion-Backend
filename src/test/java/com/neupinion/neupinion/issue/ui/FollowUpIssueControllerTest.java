@@ -6,12 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
 import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
@@ -34,6 +36,9 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private OpinionRepository opinionRepository;
+
+    @Autowired
+    private FollowUpIssueViewsRepository followUpIssueViewsRepository;
 
     @DisplayName("POST /follow-up-issue 요청을 보내는 경우, 상태 코드 201과 후속 이슈를 생성한다.")
     @Test
@@ -166,6 +171,37 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
                                  .map(FollowUpIssueByCategoryResponse::getId)
                                  .toList()).containsExactlyInAnyOrder(followUpIssue1.getId(), followUpIssue2.getId(),
                                                                       followUpIssue3.getId())
+        );
+    }
+
+    @DisplayName("GET /follow-up-issue/{id} 요청을 보내는 경우, 후속 이슈를 조회하고, 유저의 조회 기록을 저장한다.")
+    @Test
+    void findById() {
+        // given
+        final Category category = Category.WORLD;
+        final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", category.name()));
+        final FollowUpIssue followUpIssue = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId));
+        final Long memberId = 1L;
+
+        // when
+        final var response = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/follow-up-issue/{id}", followUpIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract().body()
+            .as(FollowUpIssueResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(followUpIssueViewsRepository.existsByFollowUpIssueIdAndMemberId(followUpIssue.getId(),
+                                                                                             memberId)).isTrue(),
+            () -> assertThat(followUpIssue).usingRecursiveComparison()
+                .comparingOnlyFields("id")
+                .isEqualTo(response)
         );
     }
 }

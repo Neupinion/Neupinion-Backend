@@ -22,6 +22,7 @@ create table if not exists follow_up_issue
                                               'WORLD', 'SPORTS')),
     tag                  varchar(255) check (tag in ('TRIAL_RESULTS', 'INTERVIEW', 'OFFICIAL_POSITION')),
     reprocessed_issue_id bigint       not null,
+    views                integer      not null,
     created_at           timestamp(6) not null,
     updated_at           timestamp(6) not null,
     primary key (id)
@@ -54,4 +55,12 @@ create table if not exists member
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     primary key (id)
+);
+
+create table if not exists follow_up_issue_views
+(
+    id                 bigint auto_increment,
+    follow_up_issue_id bigint       not null,
+    member_id          bigint       not null,
+    created_at         timestamp(6) not null
 );

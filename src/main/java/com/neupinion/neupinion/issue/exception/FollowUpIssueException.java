@@ -14,6 +14,13 @@ public class FollowUpIssueException extends CustomException {
         super(errorCode, inputValuesByProperty);
     }
 
+    public static class FollowUpIssueNotFoundException extends FollowUpIssueException {
+
+        public FollowUpIssueNotFoundException() {
+            super(ErrorCode.FOLLOW_UP_ISSUE_NOT_FOUND);
+        }
+    }
+
     public static class FollowUpIssueTagNotFoundException extends FollowUpIssueException {
 
         public FollowUpIssueTagNotFoundException() {

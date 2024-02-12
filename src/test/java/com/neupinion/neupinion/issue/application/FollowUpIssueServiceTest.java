@@ -3,14 +3,18 @@ package com.neupinion.neupinion.issue.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
+import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
@@ -21,6 +25,8 @@ import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEventPublisher;
 
 @SuppressWarnings("NonAsciiCharacters")
 class FollowUpIssueServiceTest extends JpaRepositoryTest {
@@ -34,12 +40,15 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
     @Autowired
     private OpinionRepository opinionRepository;
 
+    @MockBean
+    private ApplicationEventPublisher publisher;
+
     private FollowUpIssueService followUpIssueService;
 
     @BeforeEach
     void setUp() {
         followUpIssueService = new FollowUpIssueService(reprocessedIssueRepository, followUpIssueRepository,
-                                                        opinionRepository);
+                                                        opinionRepository, publisher);
     }
 
     @Test
@@ -123,5 +132,23 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
                                                                       savedFollowUpIssue2.getId(),
                                                                       savedFollowUpIssue3.getId())
         );
+    }
+
+    @Test
+    void 후속_이슈_아이디로_후속_이슈를_조회하고_조회수를_1_증가시킨다() {
+        // given
+        final Category category = Category.ECONOMY;
+        final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", category));
+        final FollowUpIssue followUpIssue = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
+                                  FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId()));
+        final Long memberId = 1L;
+
+        // when
+        final FollowUpIssueResponse response = followUpIssueService.findById(followUpIssue.getId(), memberId);
+
+        // then
+        verify(publisher, only()).publishEvent(new FollowUpIssueViewedEvent(followUpIssue.getId(), memberId));
     }
 }
