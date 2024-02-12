@@ -27,7 +27,7 @@ public class FollowUpIssueCreateRequest {
     @NotBlank
     private final String imageUrl;
 
-    @Schema(description = "후속 이슈 태그", example = "공식 입장")
+    @Schema(description = "후속 이슈 태그", example = "TRIAL_RESULTS")
     @NotBlank
     private final String tag;
 
