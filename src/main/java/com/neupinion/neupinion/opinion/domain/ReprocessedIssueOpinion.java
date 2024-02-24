@@ -44,8 +44,8 @@ public class ReprocessedIssueOpinion {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    private ReprocessedIssueOpinion(final Long id, final Long reprocessedIssueId, final Long memberId,
-                                    final String content, final Long paragraphId) {
+    private ReprocessedIssueOpinion(final Long id, final Long paragraphId, final Long reprocessedIssueId,
+                                    final Long memberId, final String content) {
         this.id = id;
         this.reprocessedIssueId = reprocessedIssueId;
         this.memberId = memberId;
@@ -53,9 +53,9 @@ public class ReprocessedIssueOpinion {
         this.paragraphId = paragraphId;
     }
 
-    public static ReprocessedIssueOpinion forSave(final Long reprocessedIssueId, final Long memberId,
-                                                  final String content, final Long paragraphId) {
-        return new ReprocessedIssueOpinion(null, reprocessedIssueId, memberId, content, paragraphId);
+    public static ReprocessedIssueOpinion forSave(final Long paragraphId, final Long reprocessedIssueId,
+                                                  final Long memberId, final String content) {
+        return new ReprocessedIssueOpinion(null, paragraphId, reprocessedIssueId, memberId, content);
     }
 
     @PrePersist

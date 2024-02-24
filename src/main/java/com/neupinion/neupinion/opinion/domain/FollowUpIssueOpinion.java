@@ -1,6 +1,7 @@
-package com.neupinion.neupinion.issue.domain;
+package com.neupinion.neupinion.opinion.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,19 +18,25 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "opinion")
+@Table(name = "follow_up_issue_opinion")
 @Entity
-public class Opinion {
+public class FollowUpIssueOpinion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "issue_id", nullable = false, updatable = false)
-    private Long issueId;
+    @Column(name = "paragraph_id", nullable = false, updatable = false)
+    private Long paragraphId;
+
+    @Column(name = "follow_up_issue_id", nullable = false, updatable = false)
+    private Long followUpIssueId;
 
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
+
+    @Embedded
+    private OpinionContent content;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
@@ -37,14 +44,18 @@ public class Opinion {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    public Opinion(final Long id, final Long issueId, final Long memberId) {
+    private FollowUpIssueOpinion(final Long id, Long paragraphId, final Long followUpIssueId, final Long memberId,
+                                 String content) {
         this.id = id;
-        this.issueId = issueId;
+        this.paragraphId = paragraphId;
+        this.followUpIssueId = followUpIssueId;
         this.memberId = memberId;
+        this.content = new OpinionContent(content);
     }
 
-    public static Opinion forSave(final Long issueId, final Long memberId) {
-        return new Opinion(null, issueId, memberId);
+    public static FollowUpIssueOpinion forSave(final Long paragraphId, final Long followUpIssueId, final Long memberId,
+                                               final String content) {
+        return new FollowUpIssueOpinion(null, paragraphId, followUpIssueId, memberId, content);
     }
 
     @PrePersist
@@ -65,11 +76,11 @@ public class Opinion {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final Opinion opinion = (Opinion) o;
-        if (Objects.isNull(this.id) || Objects.isNull(opinion.id)) {
+        final FollowUpIssueOpinion followUpIssueOpinion = (FollowUpIssueOpinion) o;
+        if (Objects.isNull(this.id) || Objects.isNull(followUpIssueOpinion.id)) {
             return false;
         }
-        return Objects.equals(id, opinion.id);
+        return Objects.equals(id, followUpIssueOpinion.id);
     }
 
     @Override

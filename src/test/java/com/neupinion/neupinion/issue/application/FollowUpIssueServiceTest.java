@@ -14,14 +14,14 @@ import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
-import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
-import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
+import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.time.Clock;
 import java.time.Instant;
@@ -42,7 +42,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
     private FollowUpIssueRepository followUpIssueRepository;
 
     @Autowired
-    private OpinionRepository opinionRepository;
+    private FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
 
     @Autowired
     private FollowUpIssueViewsRepository followUpIssueViewsRepository;
@@ -55,7 +55,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
     @BeforeEach
     void setUp() {
         followUpIssueService = new FollowUpIssueService(reprocessedIssueRepository, followUpIssueRepository,
-                                                        opinionRepository, publisher);
+                                                        followUpIssueOpinionRepository, publisher);
     }
 
     @Test
@@ -123,8 +123,8 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
             FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", otherCategory,
                                   FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(), clock));
 
-        opinionRepository.save(Opinion.forSave(savedFollowUpIssue1.getId(), memberId));
-        opinionRepository.save(Opinion.forSave(savedFollowUpIssue2.getId(), memberId));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue1.getId(), memberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue2.getId(), memberId, "내용"));
 
         // when
         final var result = followUpIssueService.findFollowUpIssueByCategoryAndDate("20240206", category.name(),

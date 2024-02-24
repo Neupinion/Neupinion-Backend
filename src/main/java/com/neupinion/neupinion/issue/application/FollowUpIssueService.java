@@ -6,14 +6,14 @@ import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
-import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
-import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.dto.FollowUpIssueWithReprocessedIssueTitle;
 import com.neupinion.neupinion.issue.exception.FollowUpIssueException.FollowUpIssueNotFoundException;
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException;
+import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class FollowUpIssueService {
 
     private final ReprocessedIssueRepository reprocessedIssueRepository;
     private final FollowUpIssueRepository followUpIssueRepository;
-    private final OpinionRepository opinionRepository;
+    private final FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
     private final ApplicationEventPublisher publisher;
 
     @Transactional
@@ -56,8 +56,8 @@ public class FollowUpIssueService {
         final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
         final List<FollowUpIssueWithReprocessedIssueTitle> dtos = followUpIssueRepository.findByCategoryAndDate(
             Category.from(category), targetDate);
-        final Map<Long, Opinion> opinionsByMember = opinionRepository.findByMemberId(memberId).stream()
-            .collect(Collectors.toMap(Opinion::getIssueId, opinion -> opinion));
+        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId).stream()
+            .collect(Collectors.toMap(FollowUpIssueOpinion::getFollowUpIssueId, opinion -> opinion));
 
         final List<FollowUpIssueByCategoryResponse> result = new ArrayList<>();
         for (final FollowUpIssueWithReprocessedIssueTitle dto : dtos) {
@@ -78,8 +78,8 @@ public class FollowUpIssueService {
         final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
         final List<FollowUpIssueWithReprocessedIssueTitle> dtos = followUpIssueRepository.findByCategoryAndDate(
             Category.from(category), targetDate);
-        final Map<Long, Opinion> opinionsByMember = opinionRepository.findByMemberId(memberId).stream()
-            .collect(Collectors.toMap(Opinion::getIssueId, opinion -> opinion));
+        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId).stream()
+            .collect(Collectors.toMap(FollowUpIssueOpinion::getFollowUpIssueId, opinion -> opinion));
 
         return dtos.stream()
             .filter(dto -> opinionsByMember.containsKey(dto.getFollowUpIssue().getReprocessedIssueId()))
