@@ -12,12 +12,12 @@ public interface ReprocessedIssueRepository extends JpaRepository<ReprocessedIss
 
     @Query(value = "SELECT ri AS reprocessedIssue, COUNT(ic.id) AS commentCount "
         + "FROM ReprocessedIssue ri "
-        + "LEFT JOIN IssueComment ic ON ri.id = ic.reprocessedIssueId "
+        + "LEFT JOIN ReprocessedIssueOpinion ic ON ri.id = ic.reprocessedIssueId "
         + "WHERE CAST(ri.createdAt AS DATE) = :createdAt "
         + "GROUP BY ri.id",
         countQuery = "SELECT COUNT(ri) "
             + "FROM ReprocessedIssue ri "
-            + "LEFT JOIN IssueComment ic ON ri.id = ic.reprocessedIssueId "
+            + "LEFT JOIN ReprocessedIssueOpinion ic ON ri.id = ic.reprocessedIssueId "
             + "WHERE CAST(ri.createdAt AS DATE) = :createdAt"
     )
     List<ReprocessedIssueWithCommentCount> findByCreatedAt(final LocalDate createdAt, final Pageable pageable);

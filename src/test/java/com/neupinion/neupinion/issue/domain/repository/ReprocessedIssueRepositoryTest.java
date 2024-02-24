@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.issue.domain.Category;
-import com.neupinion.neupinion.issue.domain.IssueComment;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
+import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.time.Clock;
 import java.time.Instant;
@@ -24,7 +25,7 @@ class ReprocessedIssueRepositoryTest extends JpaRepositoryTest {
     private ReprocessedIssueRepository reprocessedIssueRepository;
 
     @Autowired
-    private IssueCommentRepository issueCommentRepository;
+    private ReprocessedIssueOpinionRepository reprocessedIssueOpinionRepository;
 
     @Test
     void 재가공_이슈_정보와_댓글_개수를_조회한다() {
@@ -39,12 +40,12 @@ class ReprocessedIssueRepositoryTest extends JpaRepositoryTest {
             ReprocessedIssue.forSave("제목3", "image", Category.ECONOMY, clock));
         System.out.println("time" + LocalDateTime.now(clock));
 
-        issueCommentRepository.save(IssueComment.forSave(issue1.getId(), 1L, "댓글1"));
-        issueCommentRepository.save(IssueComment.forSave(issue1.getId(), 2L, "댓글2"));
-        issueCommentRepository.save(IssueComment.forSave(issue1.getId(), 3L, "댓글3"));
-        issueCommentRepository.save(IssueComment.forSave(issue2.getId(), 1L, "댓글1"));
-        issueCommentRepository.save(IssueComment.forSave(issue2.getId(), 2L, "댓글2"));
-        issueCommentRepository.save(IssueComment.forSave(issue3.getId(), 1L, "댓글1"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue1.getId(), 1L, "댓글1", 1L));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue1.getId(), 2L, "댓글2", 2L));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue1.getId(), 3L, "댓글3", 3L));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue2.getId(), 1L, "댓글1", 1L));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue2.getId(), 2L, "댓글2", 2L));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(issue3.getId(), 1L, "댓글1", 3L));
 
         saveAndClearEntityManager();
 

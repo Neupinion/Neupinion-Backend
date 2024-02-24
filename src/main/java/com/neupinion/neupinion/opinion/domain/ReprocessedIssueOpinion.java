@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.issue.domain;
+package com.neupinion.neupinion.opinion.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -18,16 +18,19 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "issue_comment")
+@Table(name = "reprocessed_issue_opinion")
 @Entity
-public class IssueComment {
+public class ReprocessedIssueOpinion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Embedded
-    private IssueCommentContent content;
+    private OpinionContent content;
+
+    @Column(name = "paragraph_id", nullable = false, updatable = false)
+    private Long paragraphId;
 
     @Column(name = "reprocessed_issue_id", nullable = false, updatable = false)
     private Long reprocessedIssueId;
@@ -41,15 +44,18 @@ public class IssueComment {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    private IssueComment(final Long id, final Long reprocessedIssueId, final Long memberId, final String content) {
+    private ReprocessedIssueOpinion(final Long id, final Long reprocessedIssueId, final Long memberId,
+                                    final String content, final Long paragraphId) {
         this.id = id;
         this.reprocessedIssueId = reprocessedIssueId;
         this.memberId = memberId;
-        this.content = new IssueCommentContent(content);
+        this.content = new OpinionContent(content);
+        this.paragraphId = paragraphId;
     }
 
-    public static IssueComment forSave(final Long reprocessedIssueId, final Long memberId, final String content) {
-        return new IssueComment(null, reprocessedIssueId, memberId, content);
+    public static ReprocessedIssueOpinion forSave(final Long reprocessedIssueId, final Long memberId,
+                                                  final String content, final Long paragraphId) {
+        return new ReprocessedIssueOpinion(null, reprocessedIssueId, memberId, content, paragraphId);
     }
 
     @PrePersist
@@ -62,6 +68,10 @@ public class IssueComment {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
+    public String getContent() {
+        return content.getValue();
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -70,11 +80,11 @@ public class IssueComment {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final IssueComment issueComment = (IssueComment) o;
-        if (Objects.isNull(issueComment.id) || Objects.isNull(this.id)) {
+        final ReprocessedIssueOpinion reprocessedIssueOpinion = (ReprocessedIssueOpinion) o;
+        if (Objects.isNull(reprocessedIssueOpinion.id) || Objects.isNull(this.id)) {
             return false;
         }
-        return Objects.equals(id, issueComment.id);
+        return Objects.equals(id, reprocessedIssueOpinion.id);
     }
 
     @Override
