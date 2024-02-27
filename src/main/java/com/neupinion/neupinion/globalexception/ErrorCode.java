@@ -25,6 +25,8 @@ public enum ErrorCode {
     TOO_LONG_OPINION_CONTENT(2001, "의견 내용은 300자 이하여야 합니다."),
     EMPTY_OPINION_CONTENT(2002, "의견 내용은 공백이나 빈칸이 될 수 없습니다."),
     ALREADY_EXIST_OPINION(2003, "이미 동일한 문단에 의견을 등록하였습니다."),
+    NOT_FOUND_OPINION(2004, "해당 의견을 찾을 수 없습니다."),
+    NOT_MATCHED_MEMBER(2005, "자신의 의견만 수정할 수 있습니다."),
 
     // 3000: 회원
     MEMBER_NOT_FOUND(3001, "해당 회원을 찾을 수 없습니다."),

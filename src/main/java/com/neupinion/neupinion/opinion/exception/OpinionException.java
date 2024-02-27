@@ -35,4 +35,18 @@ public class OpinionException extends CustomException {
             super(ErrorCode.ALREADY_EXIST_OPINION, inputValuesByProperty);
         }
     }
+
+    public static class NotFoundOpinionException extends OpinionException {
+
+        public NotFoundOpinionException() {
+            super(ErrorCode.NOT_FOUND_OPINION);
+        }
+    }
+
+    public static class NotMatchedMemberException extends OpinionException {
+
+        public NotMatchedMemberException(final Map<String, String> inputValuesByProperty) {
+            super(ErrorCode.NOT_MATCHED_MEMBER, inputValuesByProperty);
+        }
+    }
 }

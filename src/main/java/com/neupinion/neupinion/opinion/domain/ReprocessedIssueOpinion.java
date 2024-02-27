@@ -68,6 +68,11 @@ public class ReprocessedIssueOpinion {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
+    public void updateContentAndParagraphId(final Long paragraphId, final String content) {
+        this.paragraphId = paragraphId;
+        this.content = new OpinionContent(content);
+    }
+
     public String getContent() {
         return content.getValue();
     }

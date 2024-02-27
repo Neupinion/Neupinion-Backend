@@ -6,6 +6,7 @@ import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRep
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.exception.ParagraphException;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
@@ -99,6 +100,71 @@ public class OpinionService {
                 Map.of("paragraphId", request.getParagraphId().toString(),
                        "reprocessedIssueId", request.getReprocessedIssueId().toString(),
                        "type", "reprocessedIssue"
+                ));
+        }
+    }
+
+    @Transactional
+    public void updateReprocessedIssueOpinion(final Long memberId, final Long opinionId,
+                                              final OpinionUpdateRequest request) {
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.getById(opinionId);
+
+        validateMatchedMember(memberId, opinion);
+        validateParagraphForSameIssue(request, opinion);
+
+        opinion.updateContentAndParagraphId(request.getParagraphId(), request.getContent());
+    }
+
+    private void validateMatchedMember(final Long memberId, final ReprocessedIssueOpinion opinion) {
+        if (!opinion.getMemberId().equals(memberId)) {
+            throw new OpinionException.NotMatchedMemberException(
+                Map.of("memberId", memberId.toString(),
+                       "opinionId", opinion.getId().toString()
+                ));
+        }
+    }
+
+    private void validateParagraphForSameIssue(final OpinionUpdateRequest request, final ReprocessedIssueOpinion opinion) {
+        final ReprocessedIssueParagraph reprocessedIssueParagraph = reprocessedIssueParagraphRepository.getById(
+            request.getParagraphId());
+
+        if (!reprocessedIssueParagraph.getReprocessedIssueId().equals(opinion.getReprocessedIssueId())) {
+            throw new ParagraphException.ParagraphForOtherIssueException(
+                Map.of("paragraphId", request.getParagraphId().toString(),
+                       "reprocessedIssueId", opinion.getReprocessedIssueId().toString(),
+                       "type", "reprocessedIssue"
+                ));
+        }
+    }
+
+    @Transactional
+    public void updateFollowUpIssueOpinion(final Long memberId, final Long opinionId, final OpinionUpdateRequest request) {
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.getById(opinionId);
+
+        validateMatchedMember(memberId, opinion);
+        validateParagraphForSameIssue(request, opinion);
+
+        opinion.updateContentAndParagraphId(request.getParagraphId(), request.getContent());
+    }
+
+    private void validateMatchedMember(final Long memberId, final FollowUpIssueOpinion opinion) {
+        if (!opinion.getMemberId().equals(memberId)) {
+            throw new OpinionException.NotMatchedMemberException(
+                Map.of("memberId", memberId.toString(),
+                       "opinionId", opinion.getId().toString()
+                ));
+        }
+    }
+
+    private void validateParagraphForSameIssue(final OpinionUpdateRequest request, final FollowUpIssueOpinion opinion) {
+        final FollowUpIssueParagraph followUpIssueParagraph = followUpIssueParagraphRepository.getById(
+            request.getParagraphId());
+
+        if (!followUpIssueParagraph.getFollowUpIssueId().equals(opinion.getFollowUpIssueId())) {
+            throw new ParagraphException.ParagraphForOtherIssueException(
+                Map.of("paragraphId", request.getParagraphId().toString(),
+                       "followUpIssueId", opinion.getFollowUpIssueId().toString(),
+                       "type", "followUpIssue"
                 ));
         }
     }

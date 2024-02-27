@@ -8,6 +8,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
@@ -181,6 +182,211 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             .body(request)
             .when().log().all()
             .post("/reprocessed-issue/opinion")
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /reprocessed-issue/opinion/{opinionId} 요청을 보내는 경우, 상태 코드 204를 반환한다.")
+    @Test
+    void updateReprocessedIssueOpinion() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, 1L, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/reprocessed-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @DisplayName("PATCH /reprocessed-issue/opinion/{opinionId} 요청을 보낼 때, 해당 의견이 존재하지 않는 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateReprocessedIssueOpinion_NotFoundOpinion() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+
+        // when
+        // then
+        final long notExistedOpinionId = Long.MAX_VALUE;
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/reprocessed-issue/opinion/{opinionId}", notExistedOpinionId)
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /reprocessed-issue/opinion/{opinionId} 요청을 보낼 때, 해당 의견이 다른 회원의 것인 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateReprocessedIssueOpinion_NotMatchedOpinion() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final long memberId = 1L;
+        final long otherMemberId = Long.MAX_VALUE;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, otherMemberId, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/reprocessed-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /reprocessed-issue/opinion/{opinionId} 요청을 보낼 때, 해당 문단이 다른 재가공 이슈에 속하는 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateReprocessedIssueOpinion_OpinionForOtherReprocessedIssue() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final long reprocessedIssueId2 = 2L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId2));
+        final long memberId = 1L;
+        final long otherMemberId = Long.MAX_VALUE;
+
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, otherMemberId, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/reprocessed-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /follow-up-issue/opinion/{opinionId} 요청을 보내는 경우, 상태 코드 204를 반환한다.")
+    @Test
+    void updateFollowUpIssueOpinion() {
+        // given
+        final long followUpIssueId = 1L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final long memberId = 1L;
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/follow-up-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @DisplayName("PATCH /follow-up-issue/opinion/{opinionId} 요청을 보낼 때, 해당 의견이 존재하지 않는 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateFollowUpIssueOpinion_NotFoundOpinion() {
+        // given
+        final long followUpIssueId = 1L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        final long notExistedOpinionId = Long.MAX_VALUE;
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/follow-up-issue/opinion/{opinionId}", notExistedOpinionId)
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /follow-up-issue/opinion/{opinionId} 요청을 보낼 때, 해당 의견이 다른 회원의 것인 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateFollowUpIssueOpinion_NotMatchedOpinion() {
+        // given
+        final long followUpIssueId = 1L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final long memberId = 1L;
+        final long otherMemberId = Long.MAX_VALUE;
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, otherMemberId, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/follow-up-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("PATCH /follow-up-issue/opinion/{opinionId} 요청을 보낼 때, 해당 문단이 다른 후속 이슈에 속하는 경우, 상태 코드 400를 반환한다.")
+    @Test
+    void updateFollowUpIssueOpinion_OpinionForOtherReprocessedIssue() {
+        // given
+        final long followUpIssueId = 1L;
+        final long otherFollowUpIssueId = 2L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, otherFollowUpIssueId));
+        final long memberId = 1L;
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .patch("/follow-up-issue/opinion/{opinionId}", opinion.getId())
             .then().log().all()
             .statusCode(HttpStatus.BAD_REQUEST.value());
     }
