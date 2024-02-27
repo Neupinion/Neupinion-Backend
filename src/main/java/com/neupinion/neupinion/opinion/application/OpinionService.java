@@ -6,6 +6,7 @@ import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRep
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.exception.ParagraphException;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
@@ -13,6 +14,7 @@ import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -167,5 +169,27 @@ public class OpinionService {
                        "type", "followUpIssue"
                 ));
         }
+    }
+
+    public List<MyOpinionResponse> getMyFollowUpOpinions(final Long memberId, final Long issueId) {
+        final List<FollowUpIssueOpinion> opinions = followUpIssueOpinionRepository.findByMemberIdAndFollowUpIssueId(memberId, issueId);
+
+        return opinions.stream()
+            .map(opinion -> {
+                final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(opinion.getParagraphId());
+                return MyOpinionResponse.from(opinion, paragraph.getContent());
+            })
+            .toList();
+    }
+
+    public List<MyOpinionResponse> getMyReprocessedOpinions(final Long memberId, final Long issueId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByMemberIdAndReprocessedIssueId(memberId, issueId);
+
+        return opinions.stream()
+            .map(opinion -> {
+                final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(opinion.getParagraphId());
+                return MyOpinionResponse.from(opinion, paragraph.getContent());
+            })
+            .toList();
     }
 }

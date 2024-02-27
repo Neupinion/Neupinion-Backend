@@ -8,6 +8,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
@@ -389,5 +390,65 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             .patch("/follow-up-issue/opinion/{opinionId}", opinion.getId())
             .then().log().all()
             .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("GET /follow-up-issue/{issueId}/me 요청을 보내는 경우, 상태 코드 200을 반환한다.")
+    @Test
+    void getMyFollowUpIssueOpinions() {
+        // given
+        final long followUpIssueId = 1L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final long memberId = 1L;
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+        final FollowUpIssueOpinion opinion2 = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph2.getId(), followUpIssueId, memberId, "내용"));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/follow-up-issue/{issueId}/me", followUpIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", MyOpinionResponse.class);
+
+        // then
+        assertThat(responses).hasSize(2);
+        assertThat(responses).extracting(MyOpinionResponse::getId)
+            .containsExactlyInAnyOrder(opinion.getId(), opinion2.getId());
+    }
+
+    @DisplayName("GET /reprocessed-issue/{issueId}/me 요청을 보내는 경우, 상태 코드 200을 반환한다.")
+    @Test
+    void getMyReprocessedIssueOpinions() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final long memberId = 1L;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, memberId, "내용"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, memberId, "내용"));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/me", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", MyOpinionResponse.class);
+
+        // then
+        assertThat(responses).hasSize(2);
+        assertThat(responses).extracting(MyOpinionResponse::getId)
+            .containsExactlyInAnyOrder(opinion.getId(), opinion2.getId());
     }
 }
