@@ -13,10 +13,10 @@ import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
-import com.neupinion.neupinion.issue.domain.Opinion;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
-import com.neupinion.neupinion.issue.domain.repository.OpinionRepository;
+import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -38,7 +38,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
     private FollowUpIssueRepository followUpIssueRepository;
 
     @Autowired
-    private OpinionRepository opinionRepository;
+    private FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
 
     @Autowired
     private FollowUpIssueViewsRepository followUpIssueViewsRepository;
@@ -108,7 +108,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssue.forSave("후속 이슈 제목3", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId, clock));
 
-        opinionRepository.save(Opinion.forSave(reprocessedIssueId, 1L));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, 1L, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()
@@ -155,7 +155,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, otherReprocessedIssue, clock));
 
-        opinionRepository.save(Opinion.forSave(reprocessedIssueId, 1L));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, 1L, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()
@@ -257,7 +257,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(responses).hasSize(4),
             () -> assertThat(responses).usingRecursiveComparison()
                 .comparingOnlyFields("id")
-                .isEqualTo(List.of(followUpIssue5.getId(), followUpIssue4.getId(), followUpIssue3.getId(), followUpIssue2.getId()))
+                .isEqualTo(List.of(followUpIssue5.getId(), followUpIssue4.getId(), followUpIssue3.getId(),
+                                   followUpIssue2.getId()))
         );
     }
 }

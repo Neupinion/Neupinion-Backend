@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.issue.domain;
+package com.neupinion.neupinion.opinion.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -18,22 +18,25 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "issue_comment")
+@Table(name = "follow_up_issue_opinion")
 @Entity
-public class IssueComment {
+public class FollowUpIssueOpinion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private IssueCommentContent content;
+    @Column(name = "paragraph_id", nullable = false, updatable = false)
+    private Long paragraphId;
 
-    @Column(name = "reprocessed_issue_id", nullable = false, updatable = false)
-    private Long reprocessedIssueId;
+    @Column(name = "follow_up_issue_id", nullable = false, updatable = false)
+    private Long followUpIssueId;
 
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
+
+    @Embedded
+    private OpinionContent content;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
@@ -41,15 +44,18 @@ public class IssueComment {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    private IssueComment(final Long id, final Long reprocessedIssueId, final Long memberId, final String content) {
+    private FollowUpIssueOpinion(final Long id, Long paragraphId, final Long followUpIssueId, final Long memberId,
+                                 String content) {
         this.id = id;
-        this.reprocessedIssueId = reprocessedIssueId;
+        this.paragraphId = paragraphId;
+        this.followUpIssueId = followUpIssueId;
         this.memberId = memberId;
-        this.content = new IssueCommentContent(content);
+        this.content = new OpinionContent(content);
     }
 
-    public static IssueComment forSave(final Long reprocessedIssueId, final Long memberId, final String content) {
-        return new IssueComment(null, reprocessedIssueId, memberId, content);
+    public static FollowUpIssueOpinion forSave(final Long paragraphId, final Long followUpIssueId, final Long memberId,
+                                               final String content) {
+        return new FollowUpIssueOpinion(null, paragraphId, followUpIssueId, memberId, content);
     }
 
     @PrePersist
@@ -62,6 +68,15 @@ public class IssueComment {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
+    public void updateContentAndParagraphId(final Long paragraphId, final String content) {
+        this.paragraphId = paragraphId;
+        this.content = new OpinionContent(content);
+    }
+
+    public String getContent() {
+        return content.getValue();
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -70,11 +85,11 @@ public class IssueComment {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final IssueComment issueComment = (IssueComment) o;
-        if (Objects.isNull(issueComment.id) || Objects.isNull(this.id)) {
+        final FollowUpIssueOpinion followUpIssueOpinion = (FollowUpIssueOpinion) o;
+        if (Objects.isNull(this.id) || Objects.isNull(followUpIssueOpinion.id)) {
             return false;
         }
-        return Objects.equals(id, issueComment.id);
+        return Objects.equals(id, followUpIssueOpinion.id);
     }
 
     @Override
