@@ -198,4 +198,20 @@ public class OpinionService {
             })
             .toList();
     }
+
+    @Transactional
+    public void deleteFollowUpIssueOpinion(final Long memberId, final Long opinionId) {
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.getById(opinionId);
+        validateMatchedMember(memberId, opinion);
+
+        followUpIssueOpinionRepository.delete(opinion);
+    }
+
+    @Transactional
+    public void deleteReprocessedIssueOpinion(final Long memberId, final Long opinionId) {
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.getById(opinionId);
+        validateMatchedMember(memberId, opinion);
+
+        reprocessedIssueOpinionRepository.delete(opinion);
+    }
 }

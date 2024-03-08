@@ -52,11 +52,13 @@ class OpinionServiceTest extends JpaRepositoryTest {
         @Test
         void 후속_이슈의_의견을_생성한다() {
             // given
+            final long followUpIssueId = 1L;
             final Long paragraphId = followUpIssueParagraphRepository.save(
-                FollowUpIssueParagraph.forSave("내용", false, 1L)).getId();
-            final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(1L, paragraphId,
+                FollowUpIssueParagraph.forSave("내용", false, followUpIssueId)).getId();
+            final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraphId, followUpIssueId,
                                                                                                    "내용", true);
             final Long memberId = 1L;
+            saveAndClearEntityManager();
 
             // when
             final Long opinionId = opinionService.createFollowUpIssueOpinion(memberId, request);
@@ -164,6 +166,40 @@ class OpinionServiceTest extends JpaRepositoryTest {
             // then
             assertThatThrownBy(() -> opinionService.updateFollowUpIssueOpinion(memberId, opinion.getId(), request))
                 .isInstanceOf(ParagraphForOtherIssueException.class);
+        }
+
+        @Test
+        void 후속_이슈의_내_의견을_삭제한다() {
+            // given
+            final long issueId = 1L;
+            final Long memberId = 1L;
+            final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+                FollowUpIssueParagraph.forSave("내용", false, issueId));
+            final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
+
+            // when
+            opinionService.deleteFollowUpIssueOpinion(memberId, opinion.getId());
+
+            // then
+            assertThat(followUpIssueOpinionRepository.findById(opinion.getId())).isEmpty();
+        }
+
+        @Test
+        void 후속_이슈의_내_의견을_삭제할_수_없는_멤버가_삭제하려하면_예외가_발생한다() {
+            // given
+            final long issueId = 1L;
+            final Long memberId = 1L;
+            final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+                FollowUpIssueParagraph.forSave("내용", false, issueId));
+            final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
+
+            // when
+            // then
+            final long otherMemberId = Long.MAX_VALUE;
+            assertThatThrownBy(() -> opinionService.deleteFollowUpIssueOpinion(otherMemberId, opinion.getId()))
+                .isInstanceOf(NotMatchedMemberException.class);
         }
     }
 
@@ -287,6 +323,40 @@ class OpinionServiceTest extends JpaRepositoryTest {
             // then
             assertThatThrownBy(() -> opinionService.updateReprocessedIssueOpinion(memberId, opinion.getId(), request))
                 .isInstanceOf(ParagraphForOtherIssueException.class);
+        }
+
+        @Test
+        void 재가공_이슈의_내_의견을_삭제한다() {
+            // given
+            final long issueId = 1L;
+            final Long memberId = 1L;
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+                ReprocessedIssueParagraph.forSave("내용", false, issueId));
+            final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
+
+            // when
+            opinionService.deleteReprocessedIssueOpinion(memberId, opinion.getId());
+
+            // then
+            assertThat(reprocessedIssueOpinionRepository.findById(opinion.getId())).isEmpty();
+        }
+
+        @Test
+        void 재가공_이슈의_내_의견을_삭제할_수_없는_멤버가_삭제하려하면_예외가_발생한다() {
+            // given
+            final long issueId = 1L;
+            final Long memberId = 1L;
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+                ReprocessedIssueParagraph.forSave("내용", false, issueId));
+            final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
+
+            // when
+            // then
+            final long otherMemberId = Long.MAX_VALUE;
+            assertThatThrownBy(() -> opinionService.deleteReprocessedIssueOpinion(otherMemberId, opinion.getId()))
+                .isInstanceOf(NotMatchedMemberException.class);
         }
     }
 }

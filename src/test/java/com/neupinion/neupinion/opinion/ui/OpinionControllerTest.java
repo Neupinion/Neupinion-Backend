@@ -453,4 +453,44 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         assertThat(responses).extracting(MyOpinionResponse::getId)
             .containsExactlyInAnyOrder(opinion.getId(), opinion2.getId());
     }
+
+    @DisplayName("DELETE /follow-up-issue/opinion/{opinionId} 요청을 보내는 경우, 상태 코드 204를 반환한다.")
+    @Test
+    void deleteFollowUpIssueOpinion() {
+        // given
+        final long followUpIssueId = 1L;
+        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+            FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
+        final long memberId = 1L;
+        final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, memberId, "내용"));
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .when().log().all()
+            .delete("/follow-up-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @DisplayName("DELETE /reprocessed-issue/opinion/{opinionId} 요청을 보내는 경우, 상태 코드 204를 반환한다.")
+    @Test
+    void deleteReprocessedIssueOpinion() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
+        final long memberId = 1L;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용"));
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .when().log().all()
+            .delete("/reprocessed-issue/opinion/{opinionId}", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    }
 }
