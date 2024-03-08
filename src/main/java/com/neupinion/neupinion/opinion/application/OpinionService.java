@@ -37,8 +37,8 @@ public class OpinionService {
         validateParagraphForSameIssue(request, paragraph);
 
         final FollowUpIssueOpinion savedFollowUpIssueOpinion = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(request.getParagraphId(), request.getFollowUpIssueId(), memberId,
-                                         request.getContent()));
+            FollowUpIssueOpinion.forSave(request.getParagraphId(), request.getFollowUpIssueId(),
+                                         request.getIsReliable(), memberId, request.getContent()));
         return savedFollowUpIssueOpinion.getId();
     }
 
@@ -75,8 +75,8 @@ public class OpinionService {
         validateParagraphForSameIssue(request, paragraph);
 
         final ReprocessedIssueOpinion savedReprocessedIssueOpinion = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(request.getParagraphId(), request.getReprocessedIssueId(), memberId,
-                                            request.getContent()));
+            ReprocessedIssueOpinion.forSave(request.getParagraphId(), request.getReprocessedIssueId(),
+                                            request.getIsReliable(), memberId, request.getContent()));
 
         return savedReprocessedIssueOpinion.getId();
     }
@@ -114,7 +114,7 @@ public class OpinionService {
         validateMatchedMember(memberId, opinion);
         validateParagraphForSameIssue(request, opinion);
 
-        opinion.updateContentAndParagraphId(request.getParagraphId(), request.getContent());
+        opinion.update(request.getParagraphId(), request.getContent(), request.getIsReliable());
     }
 
     private void validateMatchedMember(final Long memberId, final ReprocessedIssueOpinion opinion) {
@@ -126,7 +126,8 @@ public class OpinionService {
         }
     }
 
-    private void validateParagraphForSameIssue(final OpinionUpdateRequest request, final ReprocessedIssueOpinion opinion) {
+    private void validateParagraphForSameIssue(final OpinionUpdateRequest request,
+                                               final ReprocessedIssueOpinion opinion) {
         final ReprocessedIssueParagraph reprocessedIssueParagraph = reprocessedIssueParagraphRepository.getById(
             request.getParagraphId());
 
@@ -140,13 +141,14 @@ public class OpinionService {
     }
 
     @Transactional
-    public void updateFollowUpIssueOpinion(final Long memberId, final Long opinionId, final OpinionUpdateRequest request) {
+    public void updateFollowUpIssueOpinion(final Long memberId, final Long opinionId,
+                                           final OpinionUpdateRequest request) {
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.getById(opinionId);
 
         validateMatchedMember(memberId, opinion);
         validateParagraphForSameIssue(request, opinion);
 
-        opinion.updateContentAndParagraphId(request.getParagraphId(), request.getContent());
+        opinion.update(request.getParagraphId(), request.getContent(), request.getIsReliable());
     }
 
     private void validateMatchedMember(final Long memberId, final FollowUpIssueOpinion opinion) {
@@ -172,22 +174,26 @@ public class OpinionService {
     }
 
     public List<MyOpinionResponse> getMyFollowUpOpinions(final Long memberId, final Long issueId) {
-        final List<FollowUpIssueOpinion> opinions = followUpIssueOpinionRepository.findByMemberIdAndFollowUpIssueId(memberId, issueId);
+        final List<FollowUpIssueOpinion> opinions = followUpIssueOpinionRepository.findByMemberIdAndFollowUpIssueId(
+            memberId, issueId);
 
         return opinions.stream()
             .map(opinion -> {
-                final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(opinion.getParagraphId());
+                final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(
+                    opinion.getParagraphId());
                 return MyOpinionResponse.from(opinion, paragraph.getContent());
             })
             .toList();
     }
 
     public List<MyOpinionResponse> getMyReprocessedOpinions(final Long memberId, final Long issueId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByMemberIdAndReprocessedIssueId(memberId, issueId);
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByMemberIdAndReprocessedIssueId(
+            memberId, issueId);
 
         return opinions.stream()
             .map(opinion -> {
-                final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(opinion.getParagraphId());
+                final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
+                    opinion.getParagraphId());
                 return MyOpinionResponse.from(opinion, paragraph.getContent());
             })
             .toList();

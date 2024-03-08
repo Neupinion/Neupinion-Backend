@@ -35,6 +35,9 @@ public class ReprocessedIssueOpinion {
     @Column(name = "reprocessed_issue_id", nullable = false, updatable = false)
     private Long reprocessedIssueId;
 
+    @Column(name = "is_reliable", nullable = false)
+    private boolean isReliable;
+
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
@@ -44,18 +47,19 @@ public class ReprocessedIssueOpinion {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    private ReprocessedIssueOpinion(final Long id, final Long paragraphId, final Long reprocessedIssueId,
+    private ReprocessedIssueOpinion(final Long id, final Long paragraphId, final Long reprocessedIssueId, final boolean isReliable,
                                     final Long memberId, final String content) {
         this.id = id;
         this.reprocessedIssueId = reprocessedIssueId;
         this.memberId = memberId;
+        this.isReliable = isReliable;
         this.content = new OpinionContent(content);
         this.paragraphId = paragraphId;
     }
 
-    public static ReprocessedIssueOpinion forSave(final Long paragraphId, final Long reprocessedIssueId,
+    public static ReprocessedIssueOpinion forSave(final Long paragraphId, final Long reprocessedIssueId, final boolean isReliable,
                                                   final Long memberId, final String content) {
-        return new ReprocessedIssueOpinion(null, paragraphId, reprocessedIssueId, memberId, content);
+        return new ReprocessedIssueOpinion(null, paragraphId, reprocessedIssueId, isReliable, memberId, content);
     }
 
     @PrePersist
@@ -68,9 +72,10 @@ public class ReprocessedIssueOpinion {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
-    public void updateContentAndParagraphId(final Long paragraphId, final String content) {
+    public void update(final Long paragraphId, final String content, final boolean isReliable) {
         this.paragraphId = paragraphId;
         this.content = new OpinionContent(content);
+        this.isReliable = isReliable;
     }
 
     public String getContent() {

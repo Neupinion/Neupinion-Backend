@@ -55,7 +55,7 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final Long paragraphId = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, 1L)).getId();
             final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(1L, paragraphId,
-                                                                                                   "내용");
+                                                                                                   "내용", true);
             final Long memberId = 1L;
 
             // when
@@ -73,10 +73,10 @@ class OpinionServiceTest extends JpaRepositoryTest {
                 FollowUpIssueParagraph.forSave("내용", true, followUpIssueId)).getId();
             final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraphId,
                                                                                                    followUpIssueId,
-                                                                                                   "내용");
+                                                                                                   "내용", true);
             final long memberId = 1L;
             followUpIssueOpinionRepository.save(
-                FollowUpIssueOpinion.forSave(paragraphId, followUpIssueId, memberId, "내용"));
+                FollowUpIssueOpinion.forSave(paragraphId, followUpIssueId, true, memberId, "내용"));
 
             saveAndClearEntityManager();
 
@@ -96,7 +96,7 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final long otherFollowUpIssueId = Long.MAX_VALUE;
             final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraphId,
                                                                                                    otherFollowUpIssueId,
-                                                                                                   "내용");
+                                                                                                   "내용", true);
 
             saveAndClearEntityManager();
 
@@ -114,9 +114,9 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, issueId));
             final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId,  true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", false);
 
             // when
             opinionService.updateFollowUpIssueOpinion(memberId, opinion.getId(), request);
@@ -134,9 +134,9 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, issueId));
             final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", false);
 
             // when
             // then
@@ -156,9 +156,9 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final FollowUpIssueParagraph otherParagraph = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, otherIssueId));
             final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(otherParagraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(otherParagraph.getId(), "수정된 내용", true);
 
             // when
             // then
@@ -181,7 +181,7 @@ class OpinionServiceTest extends JpaRepositoryTest {
 
             // when
             final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(
-                paragraphId, reprocessedIssueId, content);
+                paragraphId, reprocessedIssueId, content, true);
             final Long opinionId = opinionService.createReprocessedIssueOpinion(memberId, request);
 
             // then
@@ -196,9 +196,9 @@ class OpinionServiceTest extends JpaRepositoryTest {
                 ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId)).getId();
             final long memberId = 1L;
             final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(
-                paragraphId, reprocessedIssueId, "내용");
+                paragraphId, reprocessedIssueId, "내용", true);
             reprocessedIssueOpinionRepository.save(
-                ReprocessedIssueOpinion.forSave(paragraphId, reprocessedIssueId, memberId, "내용"));
+                ReprocessedIssueOpinion.forSave(paragraphId, reprocessedIssueId, true, memberId, "내용"));
 
             saveAndClearEntityManager();
 
@@ -217,7 +217,7 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final long memberId = 1L;
             final long otherReprocessedIssueId = Long.MAX_VALUE;
             final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(
-                paragraphId, otherReprocessedIssueId, "내용");
+                paragraphId, otherReprocessedIssueId, "내용", true);
 
             saveAndClearEntityManager();
 
@@ -235,15 +235,16 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
                 ReprocessedIssueParagraph.forSave("내용", false, issueId));
             final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", true);
 
             // when
             opinionService.updateReprocessedIssueOpinion(memberId, opinion.getId(), request);
 
             // then
-            final ReprocessedIssueOpinion updatedOpinion = reprocessedIssueOpinionRepository.findById(opinion.getId()).get();
+            final ReprocessedIssueOpinion updatedOpinion = reprocessedIssueOpinionRepository.findById(opinion.getId())
+                .get();
             assertThat(updatedOpinion.getContent()).isEqualTo(request.getContent());
         }
 
@@ -255,14 +256,15 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
                 ReprocessedIssueParagraph.forSave("내용", false, issueId));
             final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", true);
 
             // when
             // then
             final long otherMemberId = Long.MAX_VALUE;
-            assertThatThrownBy(() -> opinionService.updateReprocessedIssueOpinion(otherMemberId, opinion.getId(), request))
+            assertThatThrownBy(
+                () -> opinionService.updateReprocessedIssueOpinion(otherMemberId, opinion.getId(), request))
                 .isInstanceOf(NotMatchedMemberException.class);
         }
 
@@ -277,9 +279,9 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final ReprocessedIssueParagraph otherParagraph = reprocessedIssueParagraphRepository.save(
                 ReprocessedIssueParagraph.forSave("내용", false, otherIssueId));
             final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, memberId, "내용"));
+                ReprocessedIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
-            final OpinionUpdateRequest request = OpinionUpdateRequest.of(otherParagraph.getId(), "수정된 내용");
+            final OpinionUpdateRequest request = OpinionUpdateRequest.of(otherParagraph.getId(), "수정된 내용", true);
 
             // when
             // then

@@ -108,7 +108,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssue.forSave("후속 이슈 제목3", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId, clock));
 
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, 1L, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, true, 1L, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()
@@ -155,7 +155,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, otherReprocessedIssue, clock));
 
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, 1L, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(reprocessedIssueId, 1L, true, 1L, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()

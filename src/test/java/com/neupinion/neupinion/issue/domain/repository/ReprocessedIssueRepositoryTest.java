@@ -40,12 +40,12 @@ class ReprocessedIssueRepositoryTest extends JpaRepositoryTest {
             ReprocessedIssue.forSave("제목3", "image", Category.ECONOMY, clock));
         System.out.println("time" + LocalDateTime.now(clock));
 
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(1L, issue1.getId(), 1L, "댓글1"));
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(2L, issue1.getId(), 2L, "댓글2"));
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(3L, issue1.getId(), 3L, "댓글3"));
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(1L, issue2.getId(), 1L, "댓글1"));
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(2L, issue2.getId(), 2L, "댓글2"));
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(3L, issue3.getId(), 1L, "댓글1"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(1L, issue1.getId(), true,1L, "댓글1"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(2L, issue1.getId(), true,2L, "댓글2"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(3L, issue1.getId(), true,3L, "댓글3"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(1L, issue2.getId(), true,1L, "댓글1"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(2L, issue2.getId(), true,2L, "댓글2"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(3L, issue3.getId(), true,1L, "댓글1"));
 
         saveAndClearEntityManager();
 

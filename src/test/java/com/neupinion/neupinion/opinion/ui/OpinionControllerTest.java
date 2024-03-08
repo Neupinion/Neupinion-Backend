@@ -45,7 +45,8 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraph.getId(),
-                                                                                               followUpIssueId, "내용");
+                                                                                               followUpIssueId, "내용",
+                                                                                               true);
 
         // when
         final var response = RestAssured.given().log().all()
@@ -72,10 +73,11 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraph.getId(),
-                                                                                               followUpIssueId, "내용");
+                                                                                               followUpIssueId, "내용",
+                                                                                               true);
         final long memberId = 1L;
         followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, memberId, "내용"));
 
         // when
         // then
@@ -98,7 +100,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long otherFollowUpIssueId = 2L;
         final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraph.getId(),
                                                                                                otherFollowUpIssueId,
-                                                                                               "내용");
+                                                                                               "내용", true);
 
         // when
         // then
@@ -120,7 +122,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
         final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(paragraph.getId(),
                                                                                                      reprocessedIssueId,
-                                                                                                     "내용");
+                                                                                                     "내용", true);
 
         // when
         final var response = RestAssured.given().log().all()
@@ -148,10 +150,10 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
         final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(paragraph.getId(),
                                                                                                      reprocessedIssueId,
-                                                                                                     "내용");
+                                                                                                     "내용", true);
         final long memberId = 1L;
         reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, memberId, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용"));
 
         // when
         // then
@@ -174,7 +176,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long otherReprocessedIssueId = 2L;
         final ReprocessedIssueOpinionCreateRequest request = ReprocessedIssueOpinionCreateRequest.of(paragraph.getId(),
                                                                                                      otherReprocessedIssueId,
-                                                                                                     "내용");
+                                                                                                     "내용", true);
 
         // when
         // then
@@ -197,9 +199,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, 1L, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, 1L, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -220,7 +222,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -244,9 +246,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long memberId = 1L;
         final long otherMemberId = Long.MAX_VALUE;
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, otherMemberId, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, otherMemberId, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -273,9 +275,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long otherMemberId = Long.MAX_VALUE;
 
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, otherMemberId, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, otherMemberId, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -299,9 +301,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final long memberId = 1L;
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, memberId, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -324,7 +326,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -350,9 +352,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long memberId = 1L;
         final long otherMemberId = Long.MAX_VALUE;
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, otherMemberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, otherMemberId, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -377,9 +379,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueParagraph.forSave("내용", false, otherFollowUpIssueId));
         final long memberId = 1L;
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, memberId, "내용"));
 
-        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용");
+        final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph2.getId(), "수정된 내용", true);
 
         // when
         // then
@@ -403,9 +405,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final long memberId = 1L;
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, memberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, memberId, "내용"));
         final FollowUpIssueOpinion opinion2 = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(paragraph2.getId(), followUpIssueId, memberId, "내용"));
+            FollowUpIssueOpinion.forSave(paragraph2.getId(), followUpIssueId, true, memberId, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()
@@ -433,9 +435,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
         final long memberId = 1L;
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, memberId, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용"));
         final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
-            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, memberId, "내용"));
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, true, memberId, "내용"));
 
         // when
         final var responses = RestAssured.given().log().all()

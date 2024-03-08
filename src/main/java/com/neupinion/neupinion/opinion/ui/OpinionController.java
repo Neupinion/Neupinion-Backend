@@ -25,29 +25,26 @@ public class OpinionController {
 
     @PostMapping("/follow-up-issue/opinion")
     public ResponseEntity<Void> createFollowUpIssueOpinion(
-        final Long memberId,
         @Valid @RequestBody final FollowUpIssueOpinionCreateRequest request
     ) {
         final Long opinionId = opinionService.createFollowUpIssueOpinion(1L,
                                                                          request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
 
-        return ResponseEntity.created(URI.create("opinion/" + opinionId)).build();
+        return ResponseEntity.created(URI.create("/follow-up-issue/opinion/" + opinionId)).build();
     }
 
     @PostMapping("/reprocessed-issue/opinion")
     public ResponseEntity<Void> createReprocessedIssueOpinion(
-        final Long memberId,
         @Valid @RequestBody final ReprocessedIssueOpinionCreateRequest request
     ) {
         final Long opinionId = opinionService.createReprocessedIssueOpinion(1L,
                                                                             request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
 
-        return ResponseEntity.created(URI.create("opinion/" + opinionId)).build();
+        return ResponseEntity.created(URI.create("/reprocessed-issue/opinion/" + opinionId)).build();
     }
 
     @PatchMapping("/reprocessed-issue/opinion/{opinionId}")
     public ResponseEntity<Void> updateReprocessedIssueOpinion(
-        final Long memberId,
         @PathVariable final Long opinionId,
         @Valid @RequestBody final OpinionUpdateRequest request
     ) {
@@ -58,7 +55,6 @@ public class OpinionController {
 
     @PatchMapping("/follow-up-issue/opinion/{opinionId}")
     public ResponseEntity<Void> updateFollowUpIssueOpinion(
-        final Long memberId,
         @PathVariable final Long opinionId,
         @Valid @RequestBody final OpinionUpdateRequest request
     ) {
@@ -69,7 +65,6 @@ public class OpinionController {
 
     @GetMapping("/follow-up-issue/{issueId}/me")
     public ResponseEntity<List<MyOpinionResponse>> getMyFollowUpIssueOpinions(
-        final Long memberId,
         @PathVariable final Long issueId
     ) {
         final List<MyOpinionResponse> responses = opinionService.getMyFollowUpOpinions(1L,
@@ -80,7 +75,6 @@ public class OpinionController {
 
     @GetMapping("/reprocessed-issue/{issueId}/me")
     public ResponseEntity<List<MyOpinionResponse>> getMyReprocessedIssueOpinions(
-        final Long memberId,
         @PathVariable final Long issueId
     ) {
         final List<MyOpinionResponse> responses = opinionService.getMyReprocessedOpinions(1L,
