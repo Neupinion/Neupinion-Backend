@@ -123,10 +123,8 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
             FollowUpIssue.forSave("후속 이슈 제목4", "https://neupinion.com/image.jpg", otherCategory,
                                   FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId(), clock));
 
-        followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue1.getId(), memberId, "내용"));
-        followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue2.getId(), memberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue1.getId(), true, memberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, savedFollowUpIssue2.getId(), true, memberId, "내용"));
 
         // when
         final var result = followUpIssueService.findFollowUpIssueByCategoryAndDate("20240206", category.name(),

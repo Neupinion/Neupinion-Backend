@@ -23,11 +23,18 @@ public class MyOpinionResponse {
     @Schema(description = "의견 내용", example = "의견 내용")
     private String content;
 
+    @Schema(description = "의견 신뢰도 평가", example = "true")
+    private boolean isReliable;
+
     public static MyOpinionResponse from(final FollowUpIssueOpinion opinion, final String paragraphContent) {
-        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent());
+        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.isReliable());
     }
 
     public static MyOpinionResponse from(final ReprocessedIssueOpinion opinion, final String paragraphContent) {
-        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent());
+        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.isReliable());
+    }
+
+    public boolean getIsReliable() {
+        return isReliable;
     }
 }

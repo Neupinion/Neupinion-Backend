@@ -37,6 +37,7 @@ create table if not exists reprocessed_issue_opinion
     reprocessed_issue_id bigint       not null,
     member_id            bigint       not null,
     content              varchar(300) not null,
+    is_reliable          boolean      not null,
     created_at           timestamp(6) not null,
     updated_at           timestamp(6) not null,
     primary key (id)
@@ -49,6 +50,7 @@ create table if not exists follow_up_issue_opinion
     follow_up_issue_id bigint       not null,
     member_id          bigint       not null,
     content            varchar(300) not null,
+    is_reliable        boolean      not null,
     created_at         timestamp(6) not null,
     updated_at         timestamp(6) not null,
     primary key (id)

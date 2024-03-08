@@ -22,21 +22,22 @@ class FollowUpIssueOpinionRepositoryTest extends JpaRepositoryTest {
         final long targetMemberId = 1L;
         final long otherMemberId = 2L;
         final FollowUpIssueOpinion followUpIssueOpinion1 = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(1L, 1L, targetMemberId, "내용"));
+            FollowUpIssueOpinion.forSave(1L, 1L, true, targetMemberId, "내용"));
         final FollowUpIssueOpinion followUpIssueOpinion2 = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(2L, 2L, targetMemberId, "내용"));
+            FollowUpIssueOpinion.forSave(2L, 2L, true, targetMemberId, "내용"));
         final FollowUpIssueOpinion followUpIssueOpinion3 = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(3L, 3L, targetMemberId, "내용"));
+            FollowUpIssueOpinion.forSave(3L, 3L, true, targetMemberId, "내용"));
         final FollowUpIssueOpinion followUpIssueOpinion4 = followUpIssueOpinionRepository.save(
-            FollowUpIssueOpinion.forSave(4L, 4L, targetMemberId, "내용"));
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 1L, otherMemberId, "내용"));
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 2L, otherMemberId, "내용"));
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 3L, otherMemberId, "내용"));
+            FollowUpIssueOpinion.forSave(4L, 4L, true, targetMemberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 1L, true, otherMemberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 2L, true, otherMemberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(1L, 3L, true, otherMemberId, "내용"));
 
         saveAndClearEntityManager();
 
         // when
-        final Set<FollowUpIssueOpinion> followUpIssueOpinions = followUpIssueOpinionRepository.findByMemberId(targetMemberId);
+        final Set<FollowUpIssueOpinion> followUpIssueOpinions = followUpIssueOpinionRepository.findByMemberId(
+            targetMemberId);
 
         // then
         assertAll(
@@ -56,7 +57,7 @@ class FollowUpIssueOpinionRepositoryTest extends JpaRepositoryTest {
         final long paragraphId = 1L;
         final long issueId = 1L;
 
-        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(paragraphId, issueId, memberId, "내용"));
+        followUpIssueOpinionRepository.save(FollowUpIssueOpinion.forSave(paragraphId, issueId, true, memberId, "내용"));
 
         saveAndClearEntityManager();
 

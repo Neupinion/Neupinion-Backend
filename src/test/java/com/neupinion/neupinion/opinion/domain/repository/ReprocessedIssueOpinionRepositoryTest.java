@@ -20,7 +20,7 @@ class ReprocessedIssueOpinionRepositoryTest extends JpaRepositoryTest {
         final long paragraphId = 1L;
         final long issueId = 1L;
 
-        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(paragraphId, issueId, memberId, "내용"));
+        reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(paragraphId, issueId, true, memberId, "내용"));
 
         saveAndClearEntityManager();
 
