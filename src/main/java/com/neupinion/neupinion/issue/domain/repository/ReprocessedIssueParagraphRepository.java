@@ -2,6 +2,7 @@ package com.neupinion.neupinion.issue.domain.repository;
 
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.exception.ParagraphException.ParagraphNotFoundException;
+import java.util.List;
 import java.util.Map;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +15,6 @@ public interface ReprocessedIssueParagraphRepository extends JpaRepository<Repro
                 )
             ));
     }
+
+    List<ReprocessedIssueParagraph> findByReprocessedIssueIdOrderById(final Long reprocessedIssueId);
 }
