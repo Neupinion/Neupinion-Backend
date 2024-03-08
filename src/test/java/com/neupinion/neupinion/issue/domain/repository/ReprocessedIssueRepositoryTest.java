@@ -33,11 +33,11 @@ class ReprocessedIssueRepositoryTest extends JpaRepositoryTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-04T10:00:00Z"), ZoneId.of("Asia/Seoul"));
 
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목2", "image", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목2", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목3", "image", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목3", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         System.out.println("time" + LocalDateTime.now(clock));
 
         reprocessedIssueOpinionRepository.save(ReprocessedIssueOpinion.forSave(1L, issue1.getId(), true,1L, "댓글1"));
