@@ -33,4 +33,8 @@ public class MyOpinionResponse {
     public static MyOpinionResponse from(final ReprocessedIssueOpinion opinion, final String paragraphContent) {
         return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.isReliable());
     }
+
+    public boolean getIsReliable() {
+        return isReliable;
+    }
 }
