@@ -43,7 +43,7 @@ public class ReprocessedIssueController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ReprocessedIssueResponse> findReprocessedIssueResponse(@PathVariable final Long id) {
-        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(id);
+        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(1L, id);  // TODO: 3/8/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
 
         return ResponseEntity.ok(response);
     }
