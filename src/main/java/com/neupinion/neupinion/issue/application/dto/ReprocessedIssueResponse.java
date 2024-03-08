@@ -52,7 +52,7 @@ public class ReprocessedIssueResponse {
             reprocessedIssue.getTitle(),
             reprocessedIssue.getImageUrl(),
             reprocessedIssue.getCaption(),
-            reprocessedIssue.getCategory().name(),
+            reprocessedIssue.getCategory().getValue(),
             reprocessedIssue.getCreatedAt(),
             reprocessedIssue.getOriginUrl(),
             content,
