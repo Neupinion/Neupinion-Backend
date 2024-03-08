@@ -7,14 +7,19 @@ import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.VoteStatus;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueBookmarkRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,13 +37,15 @@ public class ReprocessedIssueService {
     private final ReprocessedIssueRepository reprocessedIssueRepository;
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
     private final ReprocessedIssueTagRepository reprocessedIssueTagRepository;
+    private final ReprocessedIssueBookmarkRepository reprocessedIssueBookmarkRepository;
+    private final ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
 
     @Transactional
     public Long createReprocessedIssue(final ReprocessedIssueCreateRequest request) {
         final ReprocessedIssue reprocessedIssue = ReprocessedIssue.forSave(request.getTitle(),
                                                                            request.getImageUrl(),
                                                                            request.getCaption(),
-                                                                            request.getOriginUrl(),
+                                                                           request.getOriginUrl(),
                                                                            Category.from(request.getCategory()));
 
         return reprocessedIssueRepository.save(reprocessedIssue).getId();
@@ -53,7 +60,7 @@ public class ReprocessedIssueService {
         return ShortReprocessedIssueResponse.of(issuesWithCommentCount);
     }
 
-    public ReprocessedIssueResponse findReprocessedIssue(final Long id) {
+    public ReprocessedIssueResponse findReprocessedIssue(final Long memberId, final Long id) {
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
             .orElseThrow(ReprocessedIssueNotFoundException::new);
         final List<ReprocessedIssueParagraph> paragraphs = reprocessedIssueParagraphRepository.findByReprocessedIssueIdOrderById(
@@ -61,7 +68,15 @@ public class ReprocessedIssueService {
         final List<String> tags = reprocessedIssueTagRepository.findByReprocessedIssueId(id).stream()
             .map(ReprocessedIssueTag::getTag)
             .toList();
+        final boolean isBookmarked = reprocessedIssueBookmarkRepository.existsByReprocessedIssueIdAndMemberId(id,
+                                                                                                              memberId);
+        final Optional<ReprocessedIssueTrustVote> trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
+            id, memberId);
 
-        return ReprocessedIssueResponse.of(reprocessedIssue, paragraphs, tags);
+        return trustVote.map(reprocessedIssueTrustVote -> ReprocessedIssueResponse.of(reprocessedIssue, isBookmarked,
+                                                                                      reprocessedIssueTrustVote.getStatus(),
+                                                                                      paragraphs, tags)).orElseGet(
+            () -> ReprocessedIssueResponse.of(reprocessedIssue, isBookmarked, VoteStatus.NOT_VOTED, paragraphs, tags)
+        );
     }
 }

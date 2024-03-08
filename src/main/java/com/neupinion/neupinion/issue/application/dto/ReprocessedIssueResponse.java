@@ -2,6 +2,7 @@ package com.neupinion.neupinion.issue.application.dto;
 
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
+import com.neupinion.neupinion.issue.domain.VoteStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +29,12 @@ public class ReprocessedIssueResponse {
     @Schema(description = "카테고리", example = "SOCIAL")
     private final String category;
 
+    @Schema(description = "북마크 여부", example = "true")
+    private final boolean isBookmarked;
+
+    @Schema(description = "이슈 신뢰도 투표", example = "TRUSTED")
+    private final String trustVote;
+
     @Schema(description = "발행일", example = "2024-02-28T11:44:30.327959")
     private final LocalDateTime createdAt;
 
@@ -41,6 +48,8 @@ public class ReprocessedIssueResponse {
     private final List<String> tags;
 
     public static ReprocessedIssueResponse of(final ReprocessedIssue reprocessedIssue,
+                                              final boolean isBookmarked,
+                                              final VoteStatus trustVote,
                                               final List<ReprocessedIssueParagraph> paragraphs,
                                               final List<String> tags) {
         final List<ReprocessedIssueParagraphResponse> content = paragraphs.stream()
@@ -53,10 +62,16 @@ public class ReprocessedIssueResponse {
             reprocessedIssue.getImageUrl(),
             reprocessedIssue.getCaption(),
             reprocessedIssue.getCategory().getValue(),
+            isBookmarked,
+            trustVote.name(),
             reprocessedIssue.getCreatedAt(),
             reprocessedIssue.getOriginUrl(),
             content,
             tags
         );
+    }
+
+    public boolean getIsBookmarked() {
+        return isBookmarked;
     }
 }

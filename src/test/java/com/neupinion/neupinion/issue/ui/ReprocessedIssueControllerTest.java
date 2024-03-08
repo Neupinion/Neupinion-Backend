@@ -125,7 +125,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(response.getId()).isEqualTo(reprocessedIssue.getId()),
             () -> assertThat(response.getTitle()).isEqualTo(reprocessedIssue.getTitle()),
             () -> assertThat(response.getImageUrl()).isEqualTo(reprocessedIssue.getImageUrl()),
-            () -> assertThat(response.getCategory()).isEqualTo(reprocessedIssue.getCategory().name()),
+            () -> assertThat(response.getCategory()).isEqualTo(reprocessedIssue.getCategory().getValue()),
             () -> assertThat(response.getContent()).hasSize(2),
             () -> assertThat(response.getContent()).extracting("id")
                 .containsExactlyInAnyOrder(paragraph1.getId(), paragraph2.getId()),

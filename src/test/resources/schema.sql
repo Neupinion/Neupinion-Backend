@@ -98,3 +98,21 @@ create table if not exists reprocessed_issue_tag
     tag                  varchar(100) not null,
     primary key (id)
 );
+
+create table if not exists reprocessed_issue_bookmark
+(
+    id                   bigint auto_increment,
+    reprocessed_issue_id bigint  not null,
+    member_id            bigint  not null,
+    is_deleted           boolean not null,
+    primary key (id)
+);
+
+create table if not exists reprocessed_issue_trust_vote
+(
+    id                   bigint auto_increment,
+    reprocessed_issue_id bigint      not null,
+    member_id            bigint      not null,
+    status               varchar(50) not null,
+    primary key (id)
+);
