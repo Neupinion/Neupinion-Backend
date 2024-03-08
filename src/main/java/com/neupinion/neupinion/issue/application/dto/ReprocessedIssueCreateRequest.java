@@ -19,11 +19,19 @@ public class ReprocessedIssueCreateRequest {
     @NotBlank
     private final String imageUrl;
 
+    @Schema(description = "재가공 이슈 썸네일 이미지 캡션", example = "이미지 1")
+    private final String caption;
+
+    @Schema(description = "재가공 이슈 원문 URL", example = "https://origin.com?origin=1234")
+    @NotBlank
+    private final String originUrl;
+
     @Schema(description = "재가공 이슈 카테고리", example = "ECONOMY")
     @NotBlank
     private final String category;
 
-    public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String category) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, category);
+    public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String caption,
+                                                   final String originUrl, final String category) {
+        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category);
     }
 }

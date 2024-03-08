@@ -38,6 +38,12 @@ public class ReprocessedIssue {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
+    @Column(name = "caption")
+    private String caption;
+
+    @Column(name = "origin_url", nullable = false)
+    private String originUrl;
+
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
     private Category category;
@@ -54,23 +60,27 @@ public class ReprocessedIssue {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
 
-    private ReprocessedIssue(final Long id, final String title, final String imageUrl, final Category category,
-                             final int views, final Clock clock) {
+    private ReprocessedIssue(final Long id, final String title, final String imageUrl, final String caption,
+                             final String originUrl, final Category category, final int views, final Clock clock) {
         this.id = id;
         this.title = new IssueTitle(title);
         this.imageUrl = imageUrl;
+        this.caption = caption;
+        this.originUrl = originUrl;
         this.category = category;
         this.views = views;
         this.clock = clock;
     }
 
-    public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category,
-                                           final Clock clock) {
-        return new ReprocessedIssue(null, title, imageUrl, category, VIEWS_INITIALIZATION, clock);
+    public static ReprocessedIssue forSave(final String title, final String imageUrl, final String caption,
+                                           final String originUrl, final Category category, final Clock clock) {
+        return new ReprocessedIssue(null, title, imageUrl, caption, originUrl, category, VIEWS_INITIALIZATION, clock);
     }
 
-    public static ReprocessedIssue forSave(final String title, final String imageUrl, final Category category) {
-        return new ReprocessedIssue(null, title, imageUrl, category, VIEWS_INITIALIZATION, Clock.systemDefaultZone());
+    public static ReprocessedIssue forSave(final String title, final String imageUrl, final String caption,
+                                           final String originUrl, final Category category) {
+        return new ReprocessedIssue(null, title, imageUrl, caption, originUrl, category, VIEWS_INITIALIZATION,
+                                    Clock.systemDefaultZone());
     }
 
     @PrePersist
@@ -81,6 +91,10 @@ public class ReprocessedIssue {
     @PreUpdate
     private void preUpdate() {
         updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public String getTitle() {
+        return title.getValue();
     }
 
     @Override

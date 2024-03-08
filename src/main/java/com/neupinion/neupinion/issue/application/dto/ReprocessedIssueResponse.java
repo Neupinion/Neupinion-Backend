@@ -1,50 +1,62 @@
 package com.neupinion.neupinion.issue.application.dto;
 
-import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@Schema(description = "재가공 이슈 응답")
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
+@AllArgsConstructor
+@Schema(description = "재가공 이슈 응답")
 public class ReprocessedIssueResponse {
 
-    @Schema(description = "재가공 이슈 id", example = "1")
+    @Schema(description = "재가공 이슈 ID", example = "1")
     private final Long id;
 
-    @Schema(description = "재가공 이슈 제목", example = "재가공 이슈 제목")
+    @Schema(description = "재가공 이슈 제목", example = "이슈 제목")
     private final String title;
 
-    @Schema(description = "재가공 이슈 썸네일 이미지", example = "https://image.com?image=1234")
+    @Schema(description = "이미지 URL", example = "https://neupinion.com/image/1")
     private final String imageUrl;
 
-    @Schema(description = "재가공 이슈 카테고리", example = "경제")
+    @Schema(description = "이미지 캡션", example = "이미지 1")
+    private final String caption;
+
+    @Schema(description = "카테고리", example = "SOCIAL")
     private final String category;
 
-    @Schema(description = "재가공 이슈의 조회수", example = "10")
-    private final int views;
-
-    @Schema(description = "공개된 포스트잇 개수", example = "10")
-    private final int opinionCount;
-
-    @Schema(description = "재가공 이슈 작성 날짜", example = "2024-01-08T11:44:30.327959")
+    @Schema(description = "발행일", example = "2024-02-28T11:44:30.327959")
     private final LocalDateTime createdAt;
 
-    public static List<ReprocessedIssueResponse> of(final List<ReprocessedIssueWithCommentCount> reprocessedIssues) {
-        return reprocessedIssues.stream()
-            .map(issue -> new ReprocessedIssueResponse(
-                issue.getReprocessedIssue().getId(),
-                issue.getReprocessedIssue().getTitle().getValue(),
-                issue.getReprocessedIssue().getImageUrl(),
-                issue.getReprocessedIssue().getCategory().getValue(),
-                issue.getReprocessedIssue().getViews(),
-                issue.getCommentCount().intValue(),
-                issue.getReprocessedIssue().getCreatedAt()
-            ))
+    @Schema(description = "원문 링크", example = "https://neupinion.com/origin/1")
+    private final String originUrl;
+
+    @Schema(description = "단락 리스트")
+    private final List<ReprocessedIssueParagraphResponse> content;
+
+    @Schema(description = "태그 리스트")
+    private final List<String> tags;
+
+    public static ReprocessedIssueResponse of(final ReprocessedIssue reprocessedIssue,
+                                              final List<ReprocessedIssueParagraph> paragraphs,
+                                              final List<String> tags) {
+        final List<ReprocessedIssueParagraphResponse> content = paragraphs.stream()
+            .map(ReprocessedIssueParagraphResponse::of)
             .toList();
+
+        return new ReprocessedIssueResponse(
+            reprocessedIssue.getId(),
+            reprocessedIssue.getTitle(),
+            reprocessedIssue.getImageUrl(),
+            reprocessedIssue.getCaption(),
+            reprocessedIssue.getCategory().name(),
+            reprocessedIssue.getCreatedAt(),
+            reprocessedIssue.getOriginUrl(),
+            content,
+            tags
+        );
     }
 }
