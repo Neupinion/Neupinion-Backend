@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -81,5 +82,23 @@ public class OpinionController {
                                                                                          issueId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
 
         return ResponseEntity.ok(responses);
+    }
+
+    @DeleteMapping("/follow-up-issue/opinion/{opinionId}")
+    public ResponseEntity<Void> deleteFollowUpIssueOpinion(
+        @PathVariable final Long opinionId
+    ) {
+        opinionService.deleteFollowUpIssueOpinion(1L, opinionId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/reprocessed-issue/opinion/{opinionId}")
+    public ResponseEntity<Void> deleteReprocessedIssueOpinion(
+        @PathVariable final Long opinionId
+    ) {
+        opinionService.deleteReprocessedIssueOpinion(1L, opinionId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+
+        return ResponseEntity.noContent().build();
     }
 }

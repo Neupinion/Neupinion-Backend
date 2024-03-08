@@ -1,7 +1,7 @@
 package com.neupinion.neupinion.opinion.domain.repository;
 
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
-import com.neupinion.neupinion.opinion.exception.OpinionException;
+import com.neupinion.neupinion.opinion.exception.OpinionException.NotFoundOpinionException;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +11,7 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
 
     default ReprocessedIssueOpinion getById(final Long id) {
         return findById(id)
-            .orElseThrow(OpinionException.NotFoundOpinionException::new);
+            .orElseThrow(NotFoundOpinionException::new);
     }
 
     List<ReprocessedIssueOpinion> findByMemberIdAndReprocessedIssueId(final Long memberId,
