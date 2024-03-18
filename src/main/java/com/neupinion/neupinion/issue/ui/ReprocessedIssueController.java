@@ -1,6 +1,7 @@
 package com.neupinion.neupinion.issue.ui;
 
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
+import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
@@ -45,7 +46,8 @@ public class ReprocessedIssueController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ReprocessedIssueResponse> findReprocessedIssueResponse(@PathVariable final Long id) {
-        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(1L, id);  // TODO: 3/8/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
+        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(1L,
+                                                                                               id);  // TODO: 3/8/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
 
         return ResponseEntity.ok(response);
     }
@@ -58,5 +60,16 @@ public class ReprocessedIssueController {
         reprocessedIssueService.vote(1L, id, vote);  // TODO: 3/18/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/by-category")
+    public ResponseEntity<List<RecentReprocessedIssueByCategoryResponse>> findReprocessedIssueResponsesByCategory(
+        @RequestParam(value = "current") final Long id,
+        @RequestParam(value = "category") final String category
+    ) {
+        final List<RecentReprocessedIssueByCategoryResponse> responses = reprocessedIssueService.findReprocessedIssuesByCategory(
+            id, category);
+
+        return ResponseEntity.ok(responses);
     }
 }

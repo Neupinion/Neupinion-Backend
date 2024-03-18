@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.issue.application;
 
+import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
@@ -88,12 +89,20 @@ public class ReprocessedIssueService {
         final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
                 id, memberId)
             .orElseGet(() -> {
-                final ReprocessedIssueTrustVote newTrustVote = ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(),
-                                                                                                 memberId,
-                                                                                                 request.getStatus());
+                final ReprocessedIssueTrustVote newTrustVote = ReprocessedIssueTrustVote.forSave(
+                    reprocessedIssue.getId(),
+                    memberId,
+                    request.getStatus());
                 return reprocessedIssueTrustVoteRepository.save(newTrustVote);
             });
 
         trustVote.updateStatus(request.getStatus());
+    }
+
+    public List<RecentReprocessedIssueByCategoryResponse> findReprocessedIssuesByCategory(final Long id, final String category) {
+        return reprocessedIssueRepository.findCurrentReprocessedIssuesByCategory(
+            Category.from(category), id).stream()
+            .map(RecentReprocessedIssueByCategoryResponse::of)
+            .toList();
     }
 }

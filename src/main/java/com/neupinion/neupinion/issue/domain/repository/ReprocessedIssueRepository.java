@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.issue.domain.repository;
 
+import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
 import java.time.LocalDate;
@@ -21,4 +22,13 @@ public interface ReprocessedIssueRepository extends JpaRepository<ReprocessedIss
             + "WHERE CAST(ri.createdAt AS DATE) = :createdAt"
     )
     List<ReprocessedIssueWithCommentCount> findByCreatedAt(final LocalDate createdAt, final Pageable pageable);
+
+    @Query(value = "SELECT ri "
+        + "FROM ReprocessedIssue ri "
+        + "WHERE ri.category = :category "
+        + "AND ri.id != :currentReprocessedIssueId "
+        + "ORDER BY ri.createdAt DESC "
+        + "LIMIT 3"
+    )
+    List<ReprocessedIssue> findCurrentReprocessedIssuesByCategory(final Category category, final Long currentReprocessedIssueId);
 }

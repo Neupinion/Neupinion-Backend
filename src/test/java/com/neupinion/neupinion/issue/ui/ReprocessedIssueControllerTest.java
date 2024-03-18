@@ -153,4 +153,39 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
             .then().log().all()
             .statusCode(HttpStatus.OK.value());
     }
+
+    @DisplayName("GET /reprocessed-issue?current={id}&category={category} 로 요청을 보내는 경우, 상태 코드 200과 해당 카테고리의 재가공 이슈 리스트를 반환한다.")
+    @Test
+    void findReprocessedIssueResponsesByCategory() {
+        // given
+        final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T00:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", "이미지", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T06:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", "이미지", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T08:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T10:00:00Z"), ZoneId.systemDefault())));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/by-category?current={id}&category={category}", issue1.getId(), Category.ECONOMY.name())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath()
+            .getList(".", RecentReprocessedIssueByCategoryResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(3),
+            () -> assertThat(responses).extracting("id")
+                .containsExactlyInAnyOrder(issue4.getId(), issue3.getId(), issue2.getId())
+        );
+    }
 }
