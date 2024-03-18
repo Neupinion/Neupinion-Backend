@@ -8,17 +8,17 @@ import static org.mockito.Mockito.verify;
 
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
-import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
-import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
-import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
@@ -45,7 +45,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
     private FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
 
     @Autowired
-    private FollowUpIssueViewsRepository followUpIssueViewsRepository;
+    private ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
 
     @MockBean
     private ApplicationEventPublisher publisher;
@@ -189,10 +189,10 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
                                   Clock.fixed(Instant.parse("2024-02-09T10:00:00Z"),
                                               Clock.systemDefaultZone().getZone())));
 
-        followUpIssueViewsRepository.save(FollowUpIssueViews.of(savedFollowUpIssue1.getId(), memberId));
+        reprocessedIssueTrustVoteRepository.save(ReprocessedIssueTrustVote.forSave(savedReprocessedIssue.getId(), memberId, "HIGHLY_TRUSTED"));
 
         // when
-        final List<UnviewedFollowUpIssueResponse> responses = followUpIssueService.findUnviewedSortByLatest(
+        final List<FollowUpIssueOfVotedReprocessedIssueResponse> responses = followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(
             memberId);
 
         // then
