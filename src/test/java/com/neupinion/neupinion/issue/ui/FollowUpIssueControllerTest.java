@@ -12,9 +12,11 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateReque
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
-import com.neupinion.neupinion.issue.domain.FollowUpIssueViews;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
@@ -33,6 +35,9 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private ReprocessedIssueService reprocessedIssueService;
+
+    @Autowired
+    private ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
 
     @Autowired
     private FollowUpIssueRepository followUpIssueRepository;
@@ -241,7 +246,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId,
                                   Clock.fixed(Instant.parse("2024-02-10T00:00:00Z"), ZoneId.systemDefault())));
 
-        followUpIssueViewsRepository.save(FollowUpIssueViews.of(followUpIssue1.getId(), memberId));
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(reprocessedIssueId, memberId, VoteStatus.HIGHLY_TRUSTED.name()));
 
         // when
         final var responses = RestAssured.given().log().all()
@@ -254,11 +260,10 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
 
         // then
         assertAll(
-            () -> assertThat(responses).hasSize(4),
+            () -> assertThat(responses).hasSize(3),
             () -> assertThat(responses).usingRecursiveComparison()
                 .comparingOnlyFields("id")
-                .isEqualTo(List.of(followUpIssue5.getId(), followUpIssue4.getId(), followUpIssue3.getId(),
-                                   followUpIssue2.getId()))
+                .isEqualTo(List.of(followUpIssue5.getId(), followUpIssue4.getId(), followUpIssue3.getId()))
         );
     }
 }

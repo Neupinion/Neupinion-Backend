@@ -4,6 +4,7 @@ import static java.lang.Long.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
@@ -140,7 +141,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
-        final TrustVoteRequest request = new TrustVoteRequest("TRUSTED");
+        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
 
         // when
         // then
