@@ -42,4 +42,8 @@ public class ReprocessedIssueTrustVote {
     public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final String status) {
         return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, status);
     }
+
+    public void updateStatus(final String status) {
+        this.status = VoteStatus.from(status);
+    }
 }

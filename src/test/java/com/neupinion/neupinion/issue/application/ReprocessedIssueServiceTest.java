@@ -5,16 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueBookmarkRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
+import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -22,13 +25,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 
 @SuppressWarnings("NonAsciiCharacters")
-@Sql(value = "classpath:schema.sql")
-@SpringBootTest
-class ReprocessedIssueServiceTest {
+class ReprocessedIssueServiceTest extends JpaRepositoryTest {
 
     @Autowired
     private ReprocessedIssueRepository reprocessedIssueRepository;
@@ -146,5 +145,44 @@ class ReprocessedIssueServiceTest {
 
         // then
         assertThat(response.getTrustVote()).isEqualTo("NOT_VOTED");
+    }
+
+    @Test
+    void 재가공_이슈에_처음_신뢰도_투표를_한다() {
+        // given
+        final ReprocessedIssue issue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final long memberId = 1L;
+        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
+        saveAndClearEntityManager();
+
+        // when
+        reprocessedIssueService.vote(memberId, issue.getId(), request);
+
+        // then
+        final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
+            issue.getId(), memberId).get();
+
+        assertThat(trustVote.getStatus()).isEqualTo(VoteStatus.from(request.getStatus()));
+    }
+
+    @Test
+    void 재가공_이슈에_신뢰도_투표를_업데이트한다() {
+        // given
+        final ReprocessedIssue issue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final long memberId = 1L;
+        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId, VoteStatus.NOT_VOTED.name()));
+
+        // when
+        reprocessedIssueService.vote(memberId, issue.getId(), request);
+
+        // then
+        final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
+            issue.getId(), memberId).get();
+
+        assertThat(trustVote.getStatus()).isEqualTo(VoteStatus.from(request.getStatus()));
     }
 }
