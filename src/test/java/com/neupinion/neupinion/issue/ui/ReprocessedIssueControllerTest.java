@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
@@ -131,5 +132,24 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
                 .containsExactlyInAnyOrder(paragraph1.getId(), paragraph2.getId()),
             () -> assertThat(response.getTags()).containsExactlyInAnyOrder(tag1.getTag(), tag2.getTag())
         );
+    }
+
+    @DisplayName("PUT /reprocessed-issue/{id}/trust-vote 로 요청을 보내는 경우, 상태 코드 200을 리턴하고 해당 id의 재가공 이슈에 투표한다.")
+    @Test
+    void voteTrust() {
+        // given
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
+        final TrustVoteRequest request = new TrustVoteRequest("TRUSTED");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .put("/reprocessed-issue/{id}/trust-vote", reprocessedIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value());
     }
 }

@@ -3,6 +3,7 @@ package com.neupinion.neupinion.issue.application;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
@@ -78,5 +79,21 @@ public class ReprocessedIssueService {
                                                                                       paragraphs, tags)).orElseGet(
             () -> ReprocessedIssueResponse.of(reprocessedIssue, isBookmarked, VoteStatus.NOT_VOTED, paragraphs, tags)
         );
+    }
+
+    @Transactional
+    public void vote(final Long memberId, final Long id, final TrustVoteRequest request) {
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
+            .orElseThrow(ReprocessedIssueNotFoundException::new);
+        final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
+                id, memberId)
+            .orElseGet(() -> {
+                final ReprocessedIssueTrustVote newTrustVote = ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(),
+                                                                                                 memberId,
+                                                                                                 request.getStatus());
+                return reprocessedIssueTrustVoteRepository.save(newTrustVote);
+            });
+
+        trustVote.updateStatus(request.getStatus());
     }
 }
