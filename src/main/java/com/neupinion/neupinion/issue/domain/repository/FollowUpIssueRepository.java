@@ -20,7 +20,10 @@ public interface FollowUpIssueRepository extends JpaRepository<FollowUpIssue, Lo
 
     @Query("SELECT f "
         + "FROM FollowUpIssue f "
-        + "WHERE NOT EXISTS (SELECT 1 FROM FollowUpIssueViews fv WHERE fv.followUpIssueId = f.id AND fv.memberId = :memberId) "
-        + "ORDER BY f.createdAt DESC")
-    List<FollowUpIssue> findUnviewedSortByCreatedAt(final Long memberId);
+        + "LEFT JOIN ReprocessedIssueTrustVote t ON f.reprocessedIssueId = t.reprocessedIssueId "
+        + "WHERE t.memberId = :memberId AND t.reprocessedIssueId = f.reprocessedIssueId "
+        + "ORDER BY f.createdAt DESC "
+        + "LIMIT 3"
+        )
+    List<FollowUpIssue> findFollowUpIssuesOfVotedReprocessedIssueSortByCreatedAt(final Long memberId);
 }

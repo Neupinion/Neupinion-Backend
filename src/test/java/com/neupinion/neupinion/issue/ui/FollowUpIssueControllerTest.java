@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
-import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
@@ -250,7 +250,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract().body()
-            .jsonPath().getList(".", UnviewedFollowUpIssueResponse.class);
+            .jsonPath().getList(".", FollowUpIssueOfVotedReprocessedIssueResponse.class);
 
         // then
         assertAll(

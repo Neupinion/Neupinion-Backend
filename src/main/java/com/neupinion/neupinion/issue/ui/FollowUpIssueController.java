@@ -3,8 +3,8 @@ package com.neupinion.neupinion.issue.ui;
 import com.neupinion.neupinion.issue.application.FollowUpIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
-import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.application.viewmode.FollowUpIssueViewStrategy;
 import com.neupinion.neupinion.issue.application.viewmode.ViewMode;
 import jakarta.validation.Valid;
@@ -59,9 +59,9 @@ public class FollowUpIssueController {
     }
 
     @GetMapping("/unviewed")
-    public ResponseEntity<List<UnviewedFollowUpIssueResponse>> getUnviewedSortByLatest(
+    public ResponseEntity<List<FollowUpIssueOfVotedReprocessedIssueResponse>> getUnviewedSortByLatest(
         final Long memberId
     ) {
-        return ResponseEntity.ok(followUpIssueService.findUnviewedSortByLatest(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+        return ResponseEntity.ok(followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
     }
 }

@@ -2,8 +2,8 @@ package com.neupinion.neupinion.issue.application;
 
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
-import com.neupinion.neupinion.issue.application.dto.UnviewedFollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
@@ -56,7 +56,8 @@ public class FollowUpIssueService {
         final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
         final List<FollowUpIssueWithReprocessedIssueTitle> dtos = followUpIssueRepository.findByCategoryAndDate(
             Category.from(category), targetDate);
-        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId).stream()
+        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId)
+            .stream()
             .collect(Collectors.toMap(FollowUpIssueOpinion::getFollowUpIssueId, opinion -> opinion));
 
         final List<FollowUpIssueByCategoryResponse> result = new ArrayList<>();
@@ -78,7 +79,8 @@ public class FollowUpIssueService {
         final LocalDate targetDate = LocalDate.parse(dateFormat, FORMATTER);
         final List<FollowUpIssueWithReprocessedIssueTitle> dtos = followUpIssueRepository.findByCategoryAndDate(
             Category.from(category), targetDate);
-        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId).stream()
+        final Map<Long, FollowUpIssueOpinion> opinionsByMember = followUpIssueOpinionRepository.findByMemberId(memberId)
+            .stream()
             .collect(Collectors.toMap(FollowUpIssueOpinion::getFollowUpIssueId, opinion -> opinion));
 
         return dtos.stream()
@@ -94,12 +96,19 @@ public class FollowUpIssueService {
         return FollowUpIssueResponse.from(followUpIssue);
     }
 
-    public List<UnviewedFollowUpIssueResponse> findUnviewedSortByLatest(final Long memberId) {
-        final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findUnviewedSortByCreatedAt(memberId);
+    public List<FollowUpIssueOfVotedReprocessedIssueResponse> findFollowUpIssuesOfVotedReprocessedIssue(
+        final Long memberId) {
+        final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findFollowUpIssuesOfVotedReprocessedIssueSortByCreatedAt(
+            memberId);
 
         return followUpIssues.stream()
-            .map(UnviewedFollowUpIssueResponse::from)
-            .toList();
+            .map(followUpIssue -> {
+                final String reprocessedIssueTitle = reprocessedIssueRepository.findById(
+                        followUpIssue.getReprocessedIssueId())
+                    .orElseThrow(ReprocessedIssueException.ReprocessedIssueNotFoundException::new)
+                    .getTitle();
+                return FollowUpIssueOfVotedReprocessedIssueResponse.of(followUpIssue, reprocessedIssueTitle);
+            }).toList();
     }
 }
 
