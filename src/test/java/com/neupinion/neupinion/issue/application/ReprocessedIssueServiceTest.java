@@ -3,6 +3,7 @@ package com.neupinion.neupinion.issue.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
@@ -184,5 +185,36 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
             issue.getId(), memberId).get();
 
         assertThat(trustVote.getStatus()).isEqualTo(VoteStatus.from(request.getStatus()));
+    }
+
+    @Test
+    void 동일한_카테고리의_최신_재가공_이슈_3개를_조회한다() {
+        // given
+        final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T00:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목2", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T05:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목3", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T08:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목4", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T12:00:00Z"), ZoneId.systemDefault())));
+        final ReprocessedIssue issue5 = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목5", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+                                     Clock.fixed(Instant.parse("2024-03-18T15:00:00Z"), ZoneId.systemDefault())));
+
+        // when
+        final List<RecentReprocessedIssueByCategoryResponse> responses = reprocessedIssueService.findReprocessedIssuesByCategory(
+            issue1.getId(), Category.ECONOMY.name());
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(3),
+            () -> assertThat(responses).extracting("id")
+                .containsExactlyInAnyOrder(issue5.getId(), issue4.getId(), issue3.getId())
+        );
     }
 }
