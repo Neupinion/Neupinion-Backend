@@ -2,7 +2,6 @@ package com.neupinion.neupinion.auth.config;
 
 import com.neupinion.neupinion.auth.ui.argumentresolver.AuthArgumentResolver;
 import com.neupinion.neupinion.auth.ui.interceptor.PathMatcherInterceptor;
-import com.neupinion.neupinion.auth.ui.interceptor.PathMethod;
 import com.neupinion.neupinion.auth.ui.interceptor.TokenInterceptor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +26,7 @@ public class AuthConfig implements WebMvcConfigurer {
     }
 
     private HandlerInterceptor tokenInterceptor() {
-        return new PathMatcherInterceptor(tokenInterceptor)
-            .includePathPattern("/reprocessed-issue/opinion", PathMethod.PUT)
-            .includePathPattern("/reprocessed-issue/opinion", PathMethod.DELETE)
-            .includePathPattern("/follow-up-issue/opinion", PathMethod.PUT)
-            .includePathPattern("/follow-up-issue/opinion", PathMethod.DELETE);
+        return new PathMatcherInterceptor(tokenInterceptor);
     }
 
     @Override
