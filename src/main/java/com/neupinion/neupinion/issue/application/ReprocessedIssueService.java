@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.issue.application;
 
+import com.neupinion.neupinion.bookmark.domain.repository.ReprocessedIssueBookmarkRepository;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
@@ -11,7 +12,6 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
-import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueBookmarkRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
@@ -70,8 +70,8 @@ public class ReprocessedIssueService {
         final List<String> tags = reprocessedIssueTagRepository.findByReprocessedIssueId(id).stream()
             .map(ReprocessedIssueTag::getTag)
             .toList();
-        final boolean isBookmarked = reprocessedIssueBookmarkRepository.existsByReprocessedIssueIdAndMemberId(id,
-                                                                                                              memberId);
+        final boolean isBookmarked = reprocessedIssueBookmarkRepository.existsByReprocessedIssueIdAndMemberIdAndIsBookmarkedIsTrue(
+            id, memberId);
         final Optional<ReprocessedIssueTrustVote> trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
             id, memberId);
 
@@ -99,9 +99,10 @@ public class ReprocessedIssueService {
         trustVote.updateStatus(request.getStatus());
     }
 
-    public List<RecentReprocessedIssueByCategoryResponse> findReprocessedIssuesByCategory(final Long id, final String category) {
+    public List<RecentReprocessedIssueByCategoryResponse> findReprocessedIssuesByCategory(final Long id,
+                                                                                          final String category) {
         return reprocessedIssueRepository.findCurrentReprocessedIssuesByCategory(
-            Category.from(category), id).stream()
+                Category.from(category), id).stream()
             .map(RecentReprocessedIssueByCategoryResponse::of)
             .toList();
     }

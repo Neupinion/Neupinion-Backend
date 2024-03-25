@@ -104,7 +104,7 @@ create table if not exists reprocessed_issue_bookmark
     id                   bigint auto_increment,
     reprocessed_issue_id bigint  not null,
     member_id            bigint  not null,
-    is_deleted           boolean not null,
+    is_bookmarked        boolean not null,
     primary key (id)
 );
 
