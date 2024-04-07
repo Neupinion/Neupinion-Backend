@@ -33,6 +33,18 @@ public enum ErrorCode {
 
     // 4000: 신뢰도 평가
     VOTE_STATUS_NOT_FOUND(4000, "해당 평가 상태를 찾을 수 없습니다."),
+
+    // 5000: 인증, 인가
+    OAUTH_TYPE_NOT_FOUND(5000, "해당 OAuth 타입을 찾을 수 없습니다."),
+    INVALID_AUTHORIZATION_CODE(5001, "잘못된 인증 코드입니다."),
+    KAKAO_SERVER_EXCEPTION(5002, "카카오 서버에서 오류가 발생하였습니다."),
+
+    // 6000: 토큰
+    EXPIRED_TOKEN(6000, "토큰이 만료되었습니다."),
+    NOT_ISSUED_TOKEN(6001, "토큰이 발급되지 않았습니다."),
+    NOT_FOUND_REFRESH_TOKEN(6002, "리프레시 토큰을 찾을 수 없습니다."),
+    TOKEN_PAIR_NOT_MATCHING_EXCEPTION(6003, "토큰 쌍이 일치하지 않습니다."),
+    NOT_FOUND_ACCESS_TOKEN(6004, "액세스 토큰을 찾을 수 없습니다."),
     ;
 
     private final int code;
