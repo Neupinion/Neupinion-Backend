@@ -29,3 +29,8 @@ cors:
   origins: "*"
   headers: "*"
   methods: "*"
+
+jwt:
+  secret-code: alksejgihslkdjf2r2i40djsbfkajdslfkjkljalskd
+  access-token-valid-time: 12000 # 12초
+  refresh-token-valid-time: 6000000 # 10분
