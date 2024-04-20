@@ -6,11 +6,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,13 +45,18 @@ public class ReprocessedIssueOpinion {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
+    @OneToMany
+    @JoinColumn(name = "reprocessed_issue_opinion_id")
+    List<ReprocessedIssueOpinionLike> likes = new ArrayList<>();
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
-    private ReprocessedIssueOpinion(final Long id, final Long paragraphId, final Long reprocessedIssueId, final boolean isReliable,
+    private ReprocessedIssueOpinion(final Long id, final Long paragraphId, final Long reprocessedIssueId,
+                                    final boolean isReliable,
                                     final Long memberId, final String content) {
         this.id = id;
         this.reprocessedIssueId = reprocessedIssueId;
@@ -57,7 +66,8 @@ public class ReprocessedIssueOpinion {
         this.paragraphId = paragraphId;
     }
 
-    public static ReprocessedIssueOpinion forSave(final Long paragraphId, final Long reprocessedIssueId, final boolean isReliable,
+    public static ReprocessedIssueOpinion forSave(final Long paragraphId, final Long reprocessedIssueId,
+                                                  final boolean isReliable,
                                                   final Long memberId, final String content) {
         return new ReprocessedIssueOpinion(null, paragraphId, reprocessedIssueId, isReliable, memberId, content);
     }

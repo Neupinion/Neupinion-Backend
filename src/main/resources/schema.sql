@@ -118,3 +118,12 @@ create table if not exists reprocessed_issue_trust_vote
     status               varchar(50) not null,
     primary key (id)
 );
+
+create table if not exists reprocessed_issue_opinion_like
+(
+    id                           bigint auto_increment,
+    reprocessed_issue_opinion_id bigint  not null,
+    member_id                    bigint  not null,
+    is_deleted                   boolean not null,
+    primary key (id)
+);

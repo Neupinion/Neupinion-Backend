@@ -2,18 +2,25 @@ package com.neupinion.neupinion.opinion.ui;
 
 import static java.lang.Long.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 import com.neupinion.neupinion.issue.domain.FollowUpIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
+import com.neupinion.neupinion.member.domain.Member;
+import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
@@ -21,6 +28,7 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 
 class OpinionControllerTest extends RestAssuredSpringBootTest {
@@ -36,6 +44,12 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private ReprocessedIssueOpinionRepository reprocessedIssueOpinionRepository;
+
+    @MockBean
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
 
     @DisplayName("POST /follow-up-issue/opinion 요청을 보내는 경우, 상태 코드 201을 반환한다.")
     @Test
@@ -492,5 +506,47 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             .delete("/reprocessed-issue/opinion/{opinionId}", opinion.getId())
             .then().log().all()
             .statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @DisplayName("GET /reprocessed-issue/{issueId}/opinion 요청을 보내는 경우, 상태 코드 200과 재가공 이슈의 전체 의견을 반환한다.")
+    @Test
+    void getReprocessedIssueOpinions() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        when(memberRepository.getMemberById(1L))
+            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1"));
+        when(memberRepository.getMemberById(2L))
+            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2"));
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, 2L, "내용1"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, true, 1L, "내용2"));
+        reprocessedIssueOpinionLikeRepository.save(
+            ReprocessedIssueOpinionLike.forSave(opinion.getId(), 1L));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/opinion", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", ReprocessedIssueOpinionResponse.class);
+
+        // 현재 멤버는 1L 로 고정된 상태
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(2),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getId)
+                .containsExactly(opinion2.getId(), opinion.getId()),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getLikeCount)
+                .containsExactly(0, 1),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getIsLiked)
+                .containsExactly(false, true)
+        );
     }
 }

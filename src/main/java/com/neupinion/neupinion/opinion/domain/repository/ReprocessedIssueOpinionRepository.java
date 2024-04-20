@@ -4,6 +4,7 @@ import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.exception.OpinionException.NotFoundOpinionException;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ReprocessedIssueOpinionRepository extends JpaRepository<ReprocessedIssueOpinion, Long> {
 
@@ -16,4 +17,11 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
 
     List<ReprocessedIssueOpinion> findByMemberIdAndReprocessedIssueId(final Long memberId,
                                                                       final Long reprocessedIssueId);
+
+    @Query(value = "SELECT r "
+        + "FROM ReprocessedIssueOpinion r "
+        + "LEFT JOIN FETCH ReprocessedIssueOpinionLike l ON r.id = l.reprocessedIssueOpinionId "
+        + "WHERE r.reprocessedIssueId = :issueId "
+        + "ORDER BY r.createdAt DESC")
+    List<ReprocessedIssueOpinion> findByReprocessedIssueIdWithLikes(final Long issueId);
 }
