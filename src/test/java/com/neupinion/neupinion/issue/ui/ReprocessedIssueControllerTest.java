@@ -223,7 +223,10 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         assertAll(
             () -> assertThat(response.getMostVotedCount()).isEqualTo(2),
             () -> assertThat(response.getTotalVoteCount()).isEqualTo(3),
-            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue())
+            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
+            () -> assertThat(response.getVoteRankings()).hasSize(4),
+            () -> assertThat(response.getVoteRankings().get(0).getStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
+            () -> assertThat(response.getVoteRankings().get(1).getStatus()).isEqualTo(VoteStatus.HIGHLY_TRUSTED.getValue())
         );
     }
 }
