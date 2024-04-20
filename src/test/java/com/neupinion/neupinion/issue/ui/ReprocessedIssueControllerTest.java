@@ -7,15 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -37,6 +41,9 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private ReprocessedIssueTagRepository reprocessedIssueTagRepository;
+
+    @Autowired
+    private ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
 
     @DisplayName("GET /reprocessed-issue?date={date} 로 요청을 보내는 경우, 상태 코드 200과 해당 날짜의 재가공 이슈 리스트를 반환한다.")
     @Test
@@ -174,7 +181,8 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // when
         final var responses = RestAssured.given().log().all()
             .when().log().all()
-            .get("/reprocessed-issue/by-category?current={id}&category={category}", issue1.getId(), Category.ECONOMY.name())
+            .get("/reprocessed-issue/by-category?current={id}&category={category}", issue1.getId(),
+                 Category.ECONOMY.name())
             .then().log().all()
             .statusCode(HttpStatus.OK.value())
             .extract()
@@ -186,6 +194,36 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(responses).hasSize(3),
             () -> assertThat(responses).extracting("id")
                 .containsExactlyInAnyOrder(issue4.getId(), issue3.getId(), issue2.getId())
+        );
+    }
+
+    @DisplayName("GET /reprocessed-issue/{id}/trust-vote 로 요청을 보내는 경우, 상태 코드 200과 해당 id의 재가공 이슈 투표 결과를 반환한다.")
+    @Test
+    void getVoteResult() {
+        // given
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, VoteStatus.HIGHLY_TRUSTED.name()));
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 2L, VoteStatus.SOMEWHAT_DISTRUSTED.name()));
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 3L, VoteStatus.SOMEWHAT_DISTRUSTED.name()));
+
+        // when
+        final var response = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{id}/trust-vote", reprocessedIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .as(ReprocessedIssueVoteResultResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(response.getMostVotedCount()).isEqualTo(2),
+            () -> assertThat(response.getTotalVoteCount()).isEqualTo(3),
+            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue())
         );
     }
 }

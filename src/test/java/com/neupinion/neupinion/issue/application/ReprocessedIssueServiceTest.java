@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.neupinion.neupinion.bookmark.domain.repository.ReprocessedIssueBookmarkRepository;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
@@ -215,6 +216,33 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
             () -> assertThat(responses).hasSize(3),
             () -> assertThat(responses).extracting("id")
                 .containsExactlyInAnyOrder(issue5.getId(), issue4.getId(), issue3.getId())
+        );
+    }
+
+    @Test
+    void 재가공_이슈의_신뢰도_투표_결과를_조회한다() {
+        // given
+        final ReprocessedIssue issue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final long memberId = 1L;
+        reprocessedIssueTrustVoteRepository.save(
+            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId, VoteStatus.SOMEWHAT_TRUSTED.name()));
+
+        saveAndClearEntityManager();
+
+        // when
+        final ReprocessedIssueVoteResultResponse response = reprocessedIssueService.getVoteResult(issue.getId());
+
+        // then
+        assertAll(
+            () -> assertThat(response.getMostVotedCount()).isEqualTo(1),
+            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_TRUSTED.getValue()),
+            () -> assertThat(response.getTotalVoteCount()).isEqualTo(1),
+            () -> assertThat(response.getVoteRankings().stream()
+                                 .filter(vote -> vote.getStatus().equals(VoteStatus.SOMEWHAT_TRUSTED.getValue()))
+                                 .findFirst()
+                                 .get().getVotePercentage())
+                .isEqualTo(100)
         );
     }
 }

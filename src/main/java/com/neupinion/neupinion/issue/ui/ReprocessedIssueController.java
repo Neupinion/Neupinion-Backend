@@ -4,6 +4,7 @@ import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import jakarta.validation.Valid;
@@ -71,5 +72,12 @@ public class ReprocessedIssueController {
             id, category);
 
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/{id}/trust-vote")
+    public ResponseEntity<ReprocessedIssueVoteResultResponse> getVoteResult(@PathVariable final Long id) {
+        final ReprocessedIssueVoteResultResponse response = reprocessedIssueService.getVoteResult(id);
+
+        return ResponseEntity.ok(response);
     }
 }
