@@ -4,6 +4,7 @@ import com.neupinion.neupinion.bookmark.domain.repository.ReprocessedIssueBookma
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
+import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
@@ -20,8 +21,12 @@ import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithC
 import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -105,5 +110,23 @@ public class ReprocessedIssueService {
                 Category.from(category), id).stream()
             .map(RecentReprocessedIssueByCategoryResponse::of)
             .toList();
+    }
+
+    public ReprocessedIssueVoteResultResponse getVoteResult(final Long id) {
+        final List<ReprocessedIssueTrustVote> votes = reprocessedIssueTrustVoteRepository.findByReprocessedIssueId(id);
+        final Map<VoteStatus, Integer> votesCount = votes.stream()
+            .collect(Collectors.toMap(ReprocessedIssueTrustVote::getStatus, v -> 1, Integer::sum));
+        final int totalVotesCount = votesCount.values().stream()
+            .mapToInt(Integer::intValue)
+            .sum();
+        final Map<VoteStatus, Integer> percentages = votesCount.entrySet().stream()
+            .sorted(Entry.comparingByValue())
+            .map(entry -> Map.entry(entry.getKey(), (int) (entry.getValue() / (double) totalVotesCount * 100)))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        Arrays.stream(VoteStatus.values())
+            .filter(voteStatus -> !percentages.containsKey(voteStatus) && voteStatus != VoteStatus.NOT_VOTED)
+            .forEach(voteStatus -> percentages.put(voteStatus, 0));
+
+        return ReprocessedIssueVoteResultResponse.of(votesCount, percentages);
     }
 }
