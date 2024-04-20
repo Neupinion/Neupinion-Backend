@@ -58,9 +58,11 @@ create table if not exists follow_up_issue_opinion
 
 create table if not exists member
 (
-    id         bigint auto_increment,
-    created_at timestamp(6) not null,
-    updated_at timestamp(6) not null,
+    id                bigint auto_increment,
+    nickname          varchar(30) not null,
+    profile_image_url text         not null,
+    created_at        timestamp(6) not null,
+    updated_at        timestamp(6) not null,
     primary key (id)
 );
 

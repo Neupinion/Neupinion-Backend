@@ -21,4 +21,11 @@ public class MemberException extends CustomException {
             super(ErrorCode.MEMBER_NOT_FOUND, inputValuesByProperty);
         }
     }
+
+    public static class NicknameLengthExceededException extends MemberException {
+
+        public NicknameLengthExceededException(final Map<String, String> inputValuesByProperty) {
+            super(ErrorCode.NICKNAME_LENGTH_EXCEEDED, inputValuesByProperty);
+        }
+    }
 }
