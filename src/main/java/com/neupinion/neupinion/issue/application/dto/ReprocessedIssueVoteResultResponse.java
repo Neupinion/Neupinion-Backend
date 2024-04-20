@@ -31,6 +31,7 @@ public class ReprocessedIssueVoteResultResponse {
             .sum();
         final List<VoteRankingResponse> voteRankings = percentages.entrySet().stream()
             .map(entry -> new VoteRankingResponse(entry.getKey().getValue(), entry.getValue()))
+            .sorted((o1, o2) -> Integer.compare(o2.getVotePercentage(), o1.getVotePercentage()))
             .toList();
         final VoteStatus mostVotedStatus = votesCount.entrySet().stream()
             .max(Map.Entry.comparingByValue())
