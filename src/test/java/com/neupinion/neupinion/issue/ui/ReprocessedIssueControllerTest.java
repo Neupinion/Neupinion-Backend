@@ -4,6 +4,7 @@ import static java.lang.Long.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
@@ -11,11 +12,14 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultR
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
+import com.neupinion.neupinion.issue.domain.FollowUpIssue;
+import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
@@ -44,6 +48,9 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
+
+    @Autowired
+    private FollowUpIssueRepository followUpIssueRepository;
 
     @DisplayName("GET /reprocessed-issue?date={date} 로 요청을 보내는 경우, 상태 코드 200과 해당 날짜의 재가공 이슈 리스트를 반환한다.")
     @Test
@@ -225,8 +232,47 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(response.getTotalVoteCount()).isEqualTo(3),
             () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
             () -> assertThat(response.getVoteRankings()).hasSize(4),
-            () -> assertThat(response.getVoteRankings().get(0).getStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
-            () -> assertThat(response.getVoteRankings().get(1).getStatus()).isEqualTo(VoteStatus.HIGHLY_TRUSTED.getValue())
+            () -> assertThat(response.getVoteRankings().get(0).getStatus()).isEqualTo(
+                VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
+            () -> assertThat(response.getVoteRankings().get(1).getStatus()).isEqualTo(
+                VoteStatus.HIGHLY_TRUSTED.getValue())
+        );
+    }
+
+    @DisplayName("GET /reprocessed-issue/{id}/follow-up-issue 로 요청을 보내는 경우, 상태 코드 200과 해당 id의 재가공 이슈의 후속 이슈 3개를 반환한다.")
+    @Test
+    void getFollowUpIssues() {
+        // given
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
+        final FollowUpIssue followUpIssue = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목1", "image", Category.ECONOMY, FollowUpIssueTag.INTERVIEW,
+                                  reprocessedIssue.getId()));
+        final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목2", "image", Category.ECONOMY, FollowUpIssueTag.INTERVIEW,
+                                  reprocessedIssue.getId()));
+        final FollowUpIssue followUpIssue2 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목3", "image", Category.ECONOMY, FollowUpIssueTag.INTERVIEW,
+                                  reprocessedIssue.getId()));
+        final FollowUpIssue followUpIssue3 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈 제목4", "image", Category.ECONOMY, FollowUpIssueTag.INTERVIEW,
+                                  reprocessedIssue.getId()));
+
+        // when
+        final var response = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{id}/follow-up-issue", reprocessedIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .as(FollowUpIssuesByReprocessedIssueResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(response.getFollowUpIssues()).hasSize(3),
+            () -> assertThat(response.getFollowUpIssues()).extracting("id")
+                .containsExactlyInAnyOrder(followUpIssue1.getId(), followUpIssue2.getId(), followUpIssue3.getId()),
+            () -> assertThat(response.getIsIntegratedVotePossible()).isTrue()
         );
     }
 }

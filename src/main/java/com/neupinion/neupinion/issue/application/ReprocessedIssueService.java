@@ -1,6 +1,7 @@
 package com.neupinion.neupinion.issue.application;
 
 import com.neupinion.neupinion.bookmark.domain.repository.ReprocessedIssueBookmarkRepository;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
@@ -8,11 +9,13 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultR
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
+import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
@@ -40,12 +43,15 @@ public class ReprocessedIssueService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final int REPROCESSED_ISSUES_SIZE = 4;
+    private static final int FOLLOW_UP_ISSUE_PAGE_SIZE = 3;
+    private static final int INTEGRATED_VOTE_MINIMUM = 3;
 
     private final ReprocessedIssueRepository reprocessedIssueRepository;
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
     private final ReprocessedIssueTagRepository reprocessedIssueTagRepository;
     private final ReprocessedIssueBookmarkRepository reprocessedIssueBookmarkRepository;
     private final ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
+    private final FollowUpIssueRepository followUpIssueRepository;
 
     @Transactional
     public Long createReprocessedIssue(final ReprocessedIssueCreateRequest request) {
@@ -128,5 +134,15 @@ public class ReprocessedIssueService {
             .forEach(voteStatus -> percentages.put(voteStatus, 0));
 
         return ReprocessedIssueVoteResultResponse.of(votesCount, percentages);
+    }
+
+    public FollowUpIssuesByReprocessedIssueResponse getFollowUpIssues(final Long id) {
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
+            .orElseThrow(ReprocessedIssueNotFoundException::new);
+        final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findByReprocessedIssueIdOrderByCreatedAtDesc(
+            id, PageRequest.of(0, FOLLOW_UP_ISSUE_PAGE_SIZE));
+
+        return FollowUpIssuesByReprocessedIssueResponse.of(reprocessedIssue, followUpIssues,
+                                                           followUpIssues.size() >= INTEGRATED_VOTE_MINIMUM);
     }
 }
