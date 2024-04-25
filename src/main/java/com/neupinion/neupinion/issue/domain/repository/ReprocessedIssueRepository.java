@@ -31,4 +31,11 @@ public interface ReprocessedIssueRepository extends JpaRepository<ReprocessedIss
         + "LIMIT 3"
     )
     List<ReprocessedIssue> findCurrentReprocessedIssuesByCategory(final Category category, final Long currentReprocessedIssueId);
+
+    @Query(value = "SELECT ri "
+        + "FROM ReprocessedIssue ri "
+        + "WHERE ri.id <> :id "
+        + "ORDER BY FUNCTION('RAND') "
+    )
+    List<ReprocessedIssue> findRandomReprocessedIssuesExceptId(final Long id, final Pageable pageable);
 }
