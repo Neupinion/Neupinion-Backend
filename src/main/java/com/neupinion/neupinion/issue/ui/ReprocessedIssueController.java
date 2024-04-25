@@ -1,6 +1,7 @@
 package com.neupinion.neupinion.issue.ui;
 
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
+import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
@@ -77,6 +78,13 @@ public class ReprocessedIssueController {
     @GetMapping("/{id}/trust-vote")
     public ResponseEntity<ReprocessedIssueVoteResultResponse> getVoteResult(@PathVariable final Long id) {
         final ReprocessedIssueVoteResultResponse response = reprocessedIssueService.getVoteResult(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/follow-up-issue")
+    public ResponseEntity<FollowUpIssuesByReprocessedIssueResponse> getFollowUpIssues(@PathVariable final Long id) {
+        FollowUpIssuesByReprocessedIssueResponse response = reprocessedIssueService.getFollowUpIssues(id);
 
         return ResponseEntity.ok(response);
     }

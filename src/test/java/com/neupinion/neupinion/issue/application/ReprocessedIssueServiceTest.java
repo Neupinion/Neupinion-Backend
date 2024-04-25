@@ -15,6 +15,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
+import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
@@ -46,6 +47,9 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     @Autowired
     private ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
 
+    @Autowired
+    private FollowUpIssueRepository followUpIssueRepository;
+
     private ReprocessedIssueService reprocessedIssueService;
 
     @BeforeEach
@@ -54,7 +58,8 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
                                                               reprocessedIssueParagraphRepository,
                                                               reprocessedIssueTagRepository,
                                                               reprocessedIssueBookmarkRepository,
-                                                              reprocessedIssueTrustVoteRepository);
+                                                              reprocessedIssueTrustVoteRepository,
+                                                              followUpIssueRepository);
     }
 
     @Test
