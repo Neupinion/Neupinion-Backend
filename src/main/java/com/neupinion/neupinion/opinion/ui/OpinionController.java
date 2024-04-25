@@ -111,4 +111,13 @@ public class OpinionController {
 
         return ResponseEntity.ok(responses);
     }
+
+    @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
+    public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
+        @PathVariable final Long issueId
+    ) {
+        List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId, 1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+
+        return ResponseEntity.ok(responses);
+    }
 }

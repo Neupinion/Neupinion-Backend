@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class OpinionService {
+
+    private static final int TOP_OPINION_PAGE_SIZE = 5;
 
     private final FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
     private final FollowUpIssueParagraphRepository followUpIssueParagraphRepository;
@@ -222,7 +225,8 @@ public class OpinionService {
     }
 
     public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(issueId);
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
+            issueId);
 
         List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
         for (ReprocessedIssueOpinion opinion : opinions) {
@@ -232,6 +236,29 @@ public class OpinionService {
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
                 opinion.getParagraphId());
             final Member member = memberRepository.getMemberById(opinion.getMemberId());
+            final int likeCount = likes.size();
+            final boolean isLiked = likes.stream()
+                .anyMatch(like -> like.getMemberId().equals(memberId));
+
+            responses.add(ReprocessedIssueOpinionResponse.of(opinion, likeCount, member, paragraph, isLiked));
+        }
+
+        return responses;
+    }
+
+    public List<ReprocessedIssueOpinionResponse> getTopReprocessedIssueOpinions(final Long issueId,
+                                                                                final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findTop5ByActiveLikes(
+            PageRequest.of(0, TOP_OPINION_PAGE_SIZE), issueId);
+        final Member member = memberRepository.getMemberById(memberId);
+
+        List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
+        for (ReprocessedIssueOpinion opinion : opinions) {
+            final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
+                .filter(like -> !like.getIsDeleted())
+                .toList();
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
+                opinion.getParagraphId());
             final int likeCount = likes.size();
             final boolean isLiked = likes.stream()
                 .anyMatch(like -> like.getMemberId().equals(memberId));

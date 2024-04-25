@@ -257,7 +257,6 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final long reprocessedIssueId = 1L;
         final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
-        final long memberId = 1L;
         final long otherMemberId = Long.MAX_VALUE;
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
             ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, otherMemberId, "내용"));
@@ -285,7 +284,6 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId));
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", false, reprocessedIssueId2));
-        final long memberId = 1L;
         final long otherMemberId = Long.MAX_VALUE;
 
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
@@ -335,7 +333,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
     void updateFollowUpIssueOpinion_NotFoundOpinion() {
         // given
         final long followUpIssueId = 1L;
-        final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
+        followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
@@ -363,7 +361,6 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
         final FollowUpIssueParagraph paragraph2 = followUpIssueParagraphRepository.save(
             FollowUpIssueParagraph.forSave("내용", false, followUpIssueId));
-        final long memberId = 1L;
         final long otherMemberId = Long.MAX_VALUE;
         final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
             FollowUpIssueOpinion.forSave(paragraph.getId(), followUpIssueId, true, otherMemberId, "내용"));
@@ -547,6 +544,66 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
                 .containsExactly(0, 1),
             () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getIsLiked)
                 .containsExactly(false, true)
+        );
+    }
+
+    @DisplayName("GET /reprocessed-issue/{issueId}/opinion/top 요청을 보내는 경우, 상태 코드 200과 좋아요가 가장 많은 5개의 의견을 반환한다.")
+    @Test
+    void getTopReprocessedIssueOpinions() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph3 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+
+        final long memberId = 1L;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용1"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, true, memberId, "내용2"));
+        final ReprocessedIssueOpinion opinion3 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용3"));
+        final ReprocessedIssueOpinion opinion4 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용4"));
+        final ReprocessedIssueOpinion opinion5 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용5"));
+        final ReprocessedIssueOpinion opinion6 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용6"));
+
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion2.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion2.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion2.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion3.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion3.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion4.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion4.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion5.getId()));
+        reprocessedIssueOpinionLikeRepository.save(ReprocessedIssueOpinionLike.forSave(memberId, opinion6.getId()));
+
+        when(memberRepository.getMemberById(memberId))
+            .thenReturn(Member.forSave("뉴피1", "https://neupinion/image/1"));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/opinion/top", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", ReprocessedIssueOpinionResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(5),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getId)
+                .containsExactly(opinion2.getId(), opinion.getId(), opinion4.getId(), opinion3.getId(),
+                                 opinion6.getId())
         );
     }
 }
