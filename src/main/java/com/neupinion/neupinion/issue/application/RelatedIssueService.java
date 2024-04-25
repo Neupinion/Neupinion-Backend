@@ -22,8 +22,9 @@ public class RelatedIssueService {
 
     private final ReprocessedIssueRepository reprocessedIssueRepository;
     private final FollowUpIssueRepository followUpIssueRepository;
+    private final Random random;
 
-    public List<RelatedIssueResponse> getRelatedIssues(final Long id, final Random random) {
+    public List<RelatedIssueResponse> getRelatedIssues(final Long id) {
         final int reprocessedIssueCount = random.nextInt(RELATED_ISSUE_LIMIT - 1) + 1;
         final int followUpIssueCount = RELATED_ISSUE_LIMIT - reprocessedIssueCount;
         final List<ReprocessedIssue> reprocessedIssues = reprocessedIssueRepository.findRandomReprocessedIssuesExceptId(

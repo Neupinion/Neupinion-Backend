@@ -5,7 +5,6 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.neupinion.neupinion.issue.application.dto.RelatedIssueResponse;
@@ -20,6 +19,7 @@ import java.util.Random;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 
 class RelatedIssueControllerTest extends RestAssuredSpringBootTest {
@@ -30,11 +30,13 @@ class RelatedIssueControllerTest extends RestAssuredSpringBootTest {
     @Autowired
     private FollowUpIssueRepository followUpIssueRepository;
 
+    @MockBean
+    private Random random;
+
     @DisplayName("GET /reprocessed-issue/{id}/related-issue 요청을 받아 200 OK와 관련된 이슈들을 반환한다.")
     @Test
     void getRelatedIssues() {
         // given
-        final Random random = mock(Random.class);
         when(random.nextInt(anyInt()))
             .thenReturn(0);
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(

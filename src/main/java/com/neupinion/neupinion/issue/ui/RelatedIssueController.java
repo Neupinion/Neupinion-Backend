@@ -3,7 +3,6 @@ package com.neupinion.neupinion.issue.ui;
 import com.neupinion.neupinion.issue.application.RelatedIssueService;
 import com.neupinion.neupinion.issue.application.dto.RelatedIssueResponse;
 import java.util.List;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +17,7 @@ public class RelatedIssueController {
 
     @GetMapping("/reprocessed-issue/{id}/related-issue")
     public ResponseEntity<List<RelatedIssueResponse>> getRelatedIssues(@PathVariable final Long id) {
-        final List<RelatedIssueResponse> responses = relatedIssueService.getRelatedIssues(id, new Random());
+        final List<RelatedIssueResponse> responses = relatedIssueService.getRelatedIssues(id);
 
         return ResponseEntity.ok(responses);
     }
