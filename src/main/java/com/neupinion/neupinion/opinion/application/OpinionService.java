@@ -5,18 +5,24 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.exception.ParagraphException;
+import com.neupinion.neupinion.member.domain.Member;
+import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +31,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OpinionService {
 
+    private static final int TOP_OPINION_PAGE_SIZE = 5;
+
     private final FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
     private final FollowUpIssueParagraphRepository followUpIssueParagraphRepository;
     private final ReprocessedIssueOpinionRepository reprocessedIssueOpinionRepository;
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public Long createFollowUpIssueOpinion(final Long memberId, final FollowUpIssueOpinionCreateRequest request) {
@@ -213,5 +222,50 @@ public class OpinionService {
         validateMatchedMember(memberId, opinion);
 
         reprocessedIssueOpinionRepository.delete(opinion);
+    }
+
+    public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
+            issueId);
+
+        List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
+        for (ReprocessedIssueOpinion opinion : opinions) {
+            final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
+                .filter(like -> !like.getIsDeleted())
+                .toList();
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
+                opinion.getParagraphId());
+            final Member member = memberRepository.getMemberById(opinion.getMemberId());
+            final int likeCount = likes.size();
+            final boolean isLiked = likes.stream()
+                .anyMatch(like -> like.getMemberId().equals(memberId));
+
+            responses.add(ReprocessedIssueOpinionResponse.of(opinion, likeCount, member, paragraph, isLiked));
+        }
+
+        return responses;
+    }
+
+    public List<ReprocessedIssueOpinionResponse> getTopReprocessedIssueOpinions(final Long issueId,
+                                                                                final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findTop5ByActiveLikes(
+            PageRequest.of(0, TOP_OPINION_PAGE_SIZE), issueId);
+        final Member member = memberRepository.getMemberById(memberId);
+
+        List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
+        for (ReprocessedIssueOpinion opinion : opinions) {
+            final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
+                .filter(like -> !like.getIsDeleted())
+                .toList();
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
+                opinion.getParagraphId());
+            final int likeCount = likes.size();
+            final boolean isLiked = likes.stream()
+                .anyMatch(like -> like.getMemberId().equals(memberId));
+
+            responses.add(ReprocessedIssueOpinionResponse.of(opinion, likeCount, member, paragraph, isLiked));
+        }
+
+        return responses;
     }
 }

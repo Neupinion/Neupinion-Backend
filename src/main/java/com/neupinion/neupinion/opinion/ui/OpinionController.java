@@ -5,6 +5,7 @@ import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreat
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
+import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -100,5 +101,23 @@ public class OpinionController {
         opinionService.deleteReprocessedIssueOpinion(1L, opinionId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/reprocessed-issue/{issueId}/opinion")
+    public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getReprocessedIssueOpinions(
+        @PathVariable final Long issueId
+    ) {
+        List<ReprocessedIssueOpinionResponse> responses = opinionService.getReprocessedIssueOpinions(issueId, 1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
+    public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
+        @PathVariable final Long issueId
+    ) {
+        List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId, 1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+
+        return ResponseEntity.ok(responses);
     }
 }

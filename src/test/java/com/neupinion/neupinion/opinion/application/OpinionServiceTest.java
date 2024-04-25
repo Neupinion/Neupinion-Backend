@@ -8,6 +8,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.exception.ParagraphException.ParagraphForOtherIssueException;
+import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
@@ -38,12 +39,16 @@ class OpinionServiceTest extends JpaRepositoryTest {
     @Autowired
     private ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     private OpinionService opinionService;
 
     @BeforeEach
     void setUp() {
         opinionService = new OpinionService(followUpIssueOpinionRepository, followUpIssueParagraphRepository,
-                                            reprocessedIssueOpinionRepository, reprocessedIssueParagraphRepository);
+                                            reprocessedIssueOpinionRepository, reprocessedIssueParagraphRepository,
+                                            memberRepository);
     }
 
     @Nested

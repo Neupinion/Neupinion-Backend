@@ -30,6 +30,7 @@ public enum ErrorCode {
 
     // 3000: 회원
     MEMBER_NOT_FOUND(3000, "해당 회원을 찾을 수 없습니다."),
+    NICKNAME_LENGTH_EXCEEDED(3001, "닉네임은 30자 이하여야 합니다."),
 
     // 4000: 신뢰도 평가
     VOTE_STATUS_NOT_FOUND(4000, "해당 평가 상태를 찾을 수 없습니다."),

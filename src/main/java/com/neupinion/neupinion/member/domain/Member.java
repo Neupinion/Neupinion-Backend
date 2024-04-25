@@ -1,6 +1,7 @@
 package com.neupinion.neupinion.member.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,12 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Embedded
+    private Nickname nickname;
+
+    @Column(name = "profile_image_url", nullable = false)
+    private String profileImageUrl;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
@@ -39,6 +46,20 @@ public class Member {
     @PreUpdate
     private void preUpdate() {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public Member(final Long id, final String nickname, final String profileImageUrl) {
+        this.id = id;
+        this.nickname = new Nickname(nickname);
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public static Member forSave(final String nickname, final String profileImageUrl) {
+        return new Member(null, nickname, profileImageUrl);
+    }
+
+    public String getNickname() {
+        return nickname.getValue();
     }
 
     @Override
