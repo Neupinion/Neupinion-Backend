@@ -20,6 +20,7 @@ public enum ErrorCode {
     FOLLOW_UP_ISSUE_NOT_FOUND(1008, "해당 후속 이슈를 찾을 수 없습니다."),
     PARAGRAPH_NOT_FOUND(1009, "해당 문단을 찾을 수 없습니다."),
     PARAGRAPH_FOR_OTHER_ISSUE(1010, "해당 문단은 다른 이슈에 속해 있습니다."),
+    ISSUE_TYPE_NOT_FOUND(1011, "해당 이슈 타입을 찾을 수 없습니다."),
 
     // 2000: 의견
     TOO_LONG_OPINION_CONTENT(2000, "의견 내용은 300자 이하여야 합니다."),

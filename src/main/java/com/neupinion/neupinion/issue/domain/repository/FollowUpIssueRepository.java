@@ -4,6 +4,7 @@ import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.repository.dto.FollowUpIssueWithReprocessedIssueTitle;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,4 +31,13 @@ public interface FollowUpIssueRepository extends JpaRepository<FollowUpIssue, Lo
 
     List<FollowUpIssue> findByReprocessedIssueIdOrderByCreatedAtDesc(final Long reprocessedIssueId,
                                                                      final Pageable pageable);
+
+    @Query(value = "SELECT f "
+        + "FROM FollowUpIssue f "
+        + "WHERE f.reprocessedIssueId <> :reprocessedIssueId "
+        + "AND CAST(f.createdAt AS DATE) >= :standard "
+        + "GROUP BY FUNCTION('RAND') ")
+    List<FollowUpIssue> findRandomFollowUpIssuesExceptReprocessedIssueId(final Long reprocessedIssueId,
+                                                                         final Date standard,
+                                                                         final Pageable pageable);
 }

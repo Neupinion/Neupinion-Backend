@@ -27,4 +27,11 @@ public class IssueException extends CustomException {
             super(ErrorCode.TOO_LONG_ISSUE_TITLE, inputValuesByProperty);
         }
     }
+
+    public static class IssueTypeNotFoundException extends IssueException {
+
+        public IssueTypeNotFoundException(final Map<String, String> inputValuesByProperty) {
+            super(ErrorCode.ISSUE_TYPE_NOT_FOUND, inputValuesByProperty);
+        }
+    }
 }
