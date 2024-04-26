@@ -15,6 +15,10 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +56,10 @@ class RelatedIssueControllerTest extends RestAssuredSpringBootTest {
         final FollowUpIssue followUpIssue3 = followUpIssueRepository.save(
             FollowUpIssue.forSave("title", "image", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue2.getId()));
+        followUpIssueRepository.save(
+            FollowUpIssue.forSave("title", "image", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
+                                  reprocessedIssue2.getId(),
+                                  Clock.fixed(Instant.now().minus(91, ChronoUnit.DAYS), ZoneId.systemDefault())));
 
         // when
         var responses = given().log().all()

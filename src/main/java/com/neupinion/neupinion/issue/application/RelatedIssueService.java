@@ -5,7 +5,10 @@ import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +30,12 @@ public class RelatedIssueService {
     public List<RelatedIssueResponse> getRelatedIssues(final Long id) {
         final int reprocessedIssueCount = random.nextInt(RELATED_ISSUE_LIMIT - 1) + 1;
         final int followUpIssueCount = RELATED_ISSUE_LIMIT - reprocessedIssueCount;
+        final LocalDateTime standardTime = LocalDateTime.now().minusDays(90);
         final List<ReprocessedIssue> reprocessedIssues = reprocessedIssueRepository.findRandomReprocessedIssuesExceptId(
-            id, PageRequest.of(0, reprocessedIssueCount));
+            id, Date.from(standardTime.atZone(ZoneId.systemDefault()).toInstant()), PageRequest.of(0, reprocessedIssueCount));
         final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findRandomFollowUpIssuesExceptReprocessedIssueId(
-            id, PageRequest.of(0, followUpIssueCount));
+            id, Date.from(standardTime.atZone(ZoneId.systemDefault()).toInstant()),
+            PageRequest.of(0, followUpIssueCount));
 
         List<RelatedIssueResponse> responses = new ArrayList<>();
         responses.addAll(reprocessedIssues.stream()

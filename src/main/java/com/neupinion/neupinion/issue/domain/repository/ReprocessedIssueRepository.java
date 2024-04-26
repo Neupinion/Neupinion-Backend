@@ -4,6 +4,7 @@ import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,7 +36,8 @@ public interface ReprocessedIssueRepository extends JpaRepository<ReprocessedIss
     @Query(value = "SELECT ri "
         + "FROM ReprocessedIssue ri "
         + "WHERE ri.id <> :id "
+        + "AND CAST(ri.createdAt AS DATE) >= :standard "
         + "ORDER BY FUNCTION('RAND') "
     )
-    List<ReprocessedIssue> findRandomReprocessedIssuesExceptId(final Long id, final Pageable pageable);
+    List<ReprocessedIssue> findRandomReprocessedIssuesExceptId(final Long id, final Date standard, final Pageable pageable);
 }
