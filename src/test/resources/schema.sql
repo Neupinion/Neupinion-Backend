@@ -9,6 +9,7 @@ create table if not exists reprocessed_issue
                                    ('ENTERTAINMENTS', 'POLITICS', 'ECONOMY', 'SOCIETY', 'WORLD',
                                     'SPORTS')),
     views      integer      not null,
+    topic      varchar(255) not null,
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     primary key (id)
