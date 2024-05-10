@@ -5,8 +5,8 @@ import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResp
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
-import com.neupinion.neupinion.issue.application.viewmode.FollowUpIssueViewStrategy;
-import com.neupinion.neupinion.issue.application.viewmode.ViewMode;
+import com.neupinion.neupinion.viewmode.follow_up_issue.FollowUpIssueViewStrategy;
+import com.neupinion.neupinion.viewmode.follow_up_issue.ViewMode;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class FollowUpIssueController {
 
-    private final Map<String, FollowUpIssueViewStrategy> strategies;
+    private final Map<ViewMode, FollowUpIssueViewStrategy> strategies;
     private final FollowUpIssueService followUpIssueService;
 
     @PostMapping
@@ -43,8 +43,7 @@ public class FollowUpIssueController {
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
     ) {
         final ViewMode filter = ViewMode.from(viewMode);
-        final FollowUpIssueViewStrategy strategy = strategies.getOrDefault(filter.name(),
-                                                                           strategies.get(ViewMode.ALL.name()));
+        final FollowUpIssueViewStrategy strategy = strategies.getOrDefault(filter, strategies.get(ViewMode.ALL));
 
         return ResponseEntity.ok(
             strategy.findIssueByCategoryAndDate(dateFormat, category, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
@@ -62,6 +61,7 @@ public class FollowUpIssueController {
     public ResponseEntity<List<FollowUpIssueOfVotedReprocessedIssueResponse>> getUnviewedSortByLatest(
         final Long memberId
     ) {
-        return ResponseEntity.ok(followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+        return ResponseEntity.ok(
+            followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
     }
 }

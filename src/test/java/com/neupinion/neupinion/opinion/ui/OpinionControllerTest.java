@@ -547,6 +547,48 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         );
     }
 
+    @DisplayName("GET /reprocessed-issue/{issueId}/opinion?viewMode=doubt 요청을 보내는 경우, 상태 코드 200과 재가공 이슈의 의심 의견을 반환한다.")
+    @Test
+    void getReprocessedIssueOpinionsByDoubt() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        when(memberRepository.getMemberById(1L))
+            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1"));
+        when(memberRepository.getMemberById(2L))
+            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2"));
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, 2L, "내용1"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, false, 1L, "내용2"));
+        reprocessedIssueOpinionLikeRepository.save(
+            ReprocessedIssueOpinionLike.forSave(1L, opinion.getId()));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/opinion?viewMode=doubt", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", ReprocessedIssueOpinionResponse.class);
+
+        // 현재 멤버는 1L 로 고정된 상태
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(1),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getId)
+                .containsExactly(opinion2.getId()),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getLikeCount)
+                .containsExactly(0),
+            () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getIsLiked)
+                .containsExactly(false)
+        );
+    }
+
     @DisplayName("GET /reprocessed-issue/{issueId}/opinion/top 요청을 보내는 경우, 상태 코드 200과 좋아요가 가장 많은 5개의 의견을 반환한다.")
     @Test
     void getTopReprocessedIssueOpinions() {

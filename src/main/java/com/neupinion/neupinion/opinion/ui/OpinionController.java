@@ -6,9 +6,12 @@ import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
+import com.neupinion.neupinion.viewmode.opinion.OpinionViewMode;
+import com.neupinion.neupinion.viewmode.opinion.OpinionViewStrategy;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,12 +20,14 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
 public class OpinionController {
 
+    private final Map<OpinionViewMode, OpinionViewStrategy> opinionViewStrategies;
     private final OpinionService opinionService;
 
     @PostMapping("/follow-up-issue/opinion")
@@ -80,7 +85,7 @@ public class OpinionController {
         @PathVariable final Long issueId
     ) {
         final List<MyOpinionResponse> responses = opinionService.getMyReprocessedOpinions(1L,
-                                                                                         issueId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+                                                                                          issueId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
 
         return ResponseEntity.ok(responses);
     }
@@ -105,18 +110,23 @@ public class OpinionController {
 
     @GetMapping("/reprocessed-issue/{issueId}/opinion")
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getReprocessedIssueOpinions(
-        @PathVariable final Long issueId
+        @PathVariable final Long issueId,
+        @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
     ) {
-        List<ReprocessedIssueOpinionResponse> responses = opinionService.getReprocessedIssueOpinions(issueId, 1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+        final OpinionViewMode filter = OpinionViewMode.from(viewMode);
+        final OpinionViewStrategy strategy = opinionViewStrategies.getOrDefault(filter, opinionViewStrategies.get(
+            OpinionViewMode.ALL));
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(
+            strategy.getOpinionsByReliable(filter, issueId, 1L)); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
     }
 
     @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
         @PathVariable final Long issueId
     ) {
-        List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId, 1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+        List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId,
+                                                                                                        1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
 
         return ResponseEntity.ok(responses);
     }
