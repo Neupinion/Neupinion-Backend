@@ -9,6 +9,7 @@ import com.neupinion.neupinion.member.domain.Member;
 import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
@@ -19,8 +20,10 @@ import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRep
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -224,7 +227,7 @@ public class OpinionService {
         reprocessedIssueOpinionRepository.delete(opinion);
     }
 
-    public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final long memberId) {
+    public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final Long memberId) {
         final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
             issueId);
 
@@ -232,7 +235,7 @@ public class OpinionService {
     }
 
     private List<ReprocessedIssueOpinionResponse> toDtos(final long memberId,
-                                                                                      final List<ReprocessedIssueOpinion> opinions) {
+                                                         final List<ReprocessedIssueOpinion> opinions) {
         List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
         for (ReprocessedIssueOpinion opinion : opinions) {
             final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
@@ -274,9 +277,48 @@ public class OpinionService {
         return responses;
     }
 
-    public List<ReprocessedIssueOpinionResponse> getOpinionsByReliable(final boolean isReliable, final Long issueId, final Long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(issueId, isReliable);
+    public List<ReprocessedIssueOpinionResponse> getOpinionsByReliable(final boolean isReliable, final Long issueId,
+                                                                       final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(
+            issueId, isReliable);
 
         return toDtos(memberId, opinions);
+    }
+
+    public List<OpinionParagraphResponse> getReprocessedIssueOpinionsOrderByParagraph(final Long issueId,
+                                                                                      final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
+            issueId);
+
+        return toParagraphDtos(memberId, opinions).stream()
+            .sorted(Comparator.comparing(OpinionParagraphResponse::getId))
+            .toList();
+    }
+
+    private List<OpinionParagraphResponse> toParagraphDtos(final Long memberId,
+                                                           final List<ReprocessedIssueOpinion> opinions) {
+        final Map<Long, List<ReprocessedIssueOpinion>> opinionsByParagraphId = opinions.stream()
+            .collect(Collectors.groupingBy(ReprocessedIssueOpinion::getParagraphId));
+
+        List<OpinionParagraphResponse> responses = new ArrayList<>();
+        for (Map.Entry<Long, List<ReprocessedIssueOpinion>> entry : opinionsByParagraphId.entrySet()) {
+            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(entry.getKey());
+            final List<ReprocessedIssueOpinionResponse> opinionResponses = toDtos(memberId, entry.getValue());
+
+            responses.add(new OpinionParagraphResponse(paragraph.getId(), paragraph.getContent(), opinionResponses));
+        }
+
+        return responses;
+    }
+
+    public List<OpinionParagraphResponse> getReprocessedIssueOpinionsOrderByParagraph(final boolean isReliable,
+                                                                                      final Long issueId,
+                                                                                      final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(
+            issueId, isReliable);
+
+        return toParagraphDtos(memberId, opinions).stream()
+            .sorted(Comparator.comparing(OpinionParagraphResponse::getId))
+            .toList();
     }
 }
