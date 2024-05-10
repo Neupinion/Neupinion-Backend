@@ -35,6 +35,9 @@ public class ReprocessedIssue {
     @Embedded
     private IssueTitle title;
 
+    @Column(name = "topic", nullable = false)
+    private String topic;
+
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
@@ -61,7 +64,8 @@ public class ReprocessedIssue {
     private LocalDateTime updatedAt = LocalDateTime.now(clock).truncatedTo(ChronoUnit.MICROS);
 
     private ReprocessedIssue(final Long id, final String title, final String imageUrl, final String caption,
-                             final String originUrl, final Category category, final int views, final Clock clock) {
+                             final String originUrl, final Category category, final int views, final Clock clock,
+                             final String topic) {
         this.id = id;
         this.title = new IssueTitle(title);
         this.imageUrl = imageUrl;
@@ -69,18 +73,21 @@ public class ReprocessedIssue {
         this.originUrl = originUrl;
         this.category = category;
         this.views = views;
+        this.topic = topic;
         this.clock = clock;
     }
 
     public static ReprocessedIssue forSave(final String title, final String imageUrl, final String caption,
-                                           final String originUrl, final Category category, final Clock clock) {
-        return new ReprocessedIssue(null, title, imageUrl, caption, originUrl, category, VIEWS_INITIALIZATION, clock);
+                                           final String originUrl, final Category category, final String topic,
+                                           final Clock clock) {
+        return new ReprocessedIssue(null, title, imageUrl, caption, originUrl, category, VIEWS_INITIALIZATION, clock,
+                                    topic);
     }
 
     public static ReprocessedIssue forSave(final String title, final String imageUrl, final String caption,
-                                           final String originUrl, final Category category) {
+                                           final String originUrl, final Category category, final String topic) {
         return new ReprocessedIssue(null, title, imageUrl, caption, originUrl, category, VIEWS_INITIALIZATION,
-                                    Clock.systemDefaultZone());
+                                    Clock.systemDefaultZone(), topic);
     }
 
     @PrePersist

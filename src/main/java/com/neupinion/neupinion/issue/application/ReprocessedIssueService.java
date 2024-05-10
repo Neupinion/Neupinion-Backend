@@ -59,7 +59,7 @@ public class ReprocessedIssueService {
                                                                            request.getImageUrl(),
                                                                            request.getCaption(),
                                                                            request.getOriginUrl(),
-                                                                           Category.from(request.getCategory()));
+                                                                           Category.from(request.getCategory()), request.getTopic());
 
         return reprocessedIssueRepository.save(reprocessedIssue).getId();
     }

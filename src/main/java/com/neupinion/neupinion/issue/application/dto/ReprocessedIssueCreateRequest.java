@@ -30,8 +30,12 @@ public class ReprocessedIssueCreateRequest {
     @NotBlank
     private final String category;
 
+    @Schema(description = "재가공 이슈 논제", example = "재가공 이슈는 무엇을 논해야 하는가?")
+    @NotBlank
+    private final String topic;
+
     public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String caption,
-                                                   final String originUrl, final String category) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category);
+                                                   final String originUrl, final String category, final String topic) {
+        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, topic);
     }
 }

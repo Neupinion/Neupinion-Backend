@@ -44,9 +44,9 @@ class RelatedIssueControllerTest extends RestAssuredSpringBootTest {
         when(random.nextInt(anyInt()))
             .thenReturn(0);
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("title", "image", "caption", "url", Category.SOCIETY));
+            ReprocessedIssue.forSave("title", "image", "caption", "url", Category.SOCIETY, "논제"));
         final ReprocessedIssue reprocessedIssue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("title", "image", "caption", "url", Category.SOCIETY));
+            ReprocessedIssue.forSave("title", "image", "caption", "url", Category.SOCIETY, "논제"));
         final FollowUpIssue followUpIssue = followUpIssueRepository.save(
             FollowUpIssue.forSave("title", "image", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue.getId()));
