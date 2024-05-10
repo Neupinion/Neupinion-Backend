@@ -36,7 +36,7 @@ public interface FollowUpIssueRepository extends JpaRepository<FollowUpIssue, Lo
         + "FROM FollowUpIssue f "
         + "WHERE f.reprocessedIssueId <> :reprocessedIssueId "
         + "AND CAST(f.createdAt AS DATE) >= :standard "
-        + "GROUP BY FUNCTION('RAND') ")
+        + "ORDER BY FUNCTION('RAND') ")
     List<FollowUpIssue> findRandomFollowUpIssuesExceptReprocessedIssueId(final Long reprocessedIssueId,
                                                                          final Date standard,
                                                                          final Pageable pageable);
