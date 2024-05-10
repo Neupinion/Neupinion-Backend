@@ -13,6 +13,7 @@ import com.neupinion.neupinion.member.domain.Member;
 import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
@@ -646,6 +647,89 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(responses).extracting(ReprocessedIssueOpinionResponse::getId)
                 .containsExactly(opinion2.getId(), opinion.getId(), opinion4.getId(), opinion3.getId(),
                                  opinion6.getId())
+        );
+    }
+
+    @DisplayName("GET /reprocessed-issue/{issueId}/opinion/paragraph 요청을 보내는 경우, 상태 코드 200과 전체 문단에 대한 의견을 반환한다.")
+    @Test
+    void getReprocessedIssueOpinionsOrderByParagraph() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph3 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+
+        final long memberId = 1L;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용1"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, true, memberId, "내용2"));
+        final ReprocessedIssueOpinion opinion3 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용3"));
+
+        when(memberRepository.getMemberById(memberId))
+            .thenReturn(Member.forSave("뉴피1", "https://neupinion/image/1"));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/opinion/paragraph", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", OpinionParagraphResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(3),
+            () -> assertThat(responses).extracting(OpinionParagraphResponse::getId)
+                .containsExactly(paragraph.getId(), paragraph2.getId(), paragraph3.getId()),
+            () -> assertThat(responses.get(0).getOpinions().get(0).getId()).isEqualTo(opinion.getId()),
+            () -> assertThat(responses.get(1).getOpinions().get(0).getId()).isEqualTo(opinion2.getId()),
+            () -> assertThat(responses.get(2).getOpinions().get(0).getId()).isEqualTo(opinion3.getId())
+        );
+    }
+
+    @DisplayName("GET /reprocessed-issue/{issueId}/opinion/paragraph?viewMode=doubt 요청을 보내는 경우, 상태 코드 200과 전체 문단에 대한 의견을 반환한다.")
+    @Test
+    void getReprocessedIssueOpinionsOrderByParagraphByDoubt() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final ReprocessedIssueParagraph paragraph3 = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+
+        final long memberId = 1L;
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, memberId, "내용1"));
+        final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, false, memberId, "내용2"));
+        final ReprocessedIssueOpinion opinion3 = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph3.getId(), reprocessedIssueId, true, memberId, "내용3"));
+
+        when(memberRepository.getMemberById(memberId))
+            .thenReturn(Member.forSave("뉴피1", "https://neupinion/image/1"));
+
+        // when
+        final var responses = RestAssured.given().log().all()
+            .when().log().all()
+            .get("/reprocessed-issue/{issueId}/opinion/paragraph?viewMode=doubt", reprocessedIssueId)
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .jsonPath().getList(".", OpinionParagraphResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(1),
+            () -> assertThat(responses).extracting(OpinionParagraphResponse::getId).containsExactly(paragraph2.getId()),
+            () -> assertThat(responses.get(0).getOpinions().get(0).getId()).isEqualTo(opinion2.getId())
         );
     }
 }

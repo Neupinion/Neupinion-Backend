@@ -3,6 +3,7 @@ package com.neupinion.neupinion.opinion.ui;
 import com.neupinion.neupinion.opinion.application.OpinionService;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
@@ -125,9 +126,24 @@ public class OpinionController {
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
         @PathVariable final Long issueId
     ) {
-        List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId,
-                                                                                                        1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+        final List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId,
+                                                                                                              1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
 
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/reprocessed-issue/{issueId}/opinion/paragraph")
+    public ResponseEntity<List<OpinionParagraphResponse>> getReprocessedIssueOpinionsOrderByParagraph(
+        @PathVariable final Long issueId,
+        @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
+    ) {
+        final OpinionViewMode filter = OpinionViewMode.from(viewMode);
+        if (filter == OpinionViewMode.ALL) {
+            return ResponseEntity.ok(opinionService.getReprocessedIssueOpinionsOrderByParagraph(issueId,
+                                                                                                1L)); // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+        }
+
+        return ResponseEntity.ok(
+            opinionService.getReprocessedIssueOpinionsOrderByParagraph(filter == OpinionViewMode.TRUST, issueId, 1L));
     }
 }
