@@ -228,6 +228,11 @@ public class OpinionService {
         final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
             issueId);
 
+        return toDtos(memberId, opinions);
+    }
+
+    private List<ReprocessedIssueOpinionResponse> toDtos(final long memberId,
+                                                                                      final List<ReprocessedIssueOpinion> opinions) {
         List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
         for (ReprocessedIssueOpinion opinion : opinions) {
             final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
@@ -267,5 +272,11 @@ public class OpinionService {
         }
 
         return responses;
+    }
+
+    public List<ReprocessedIssueOpinionResponse> getOpinionsByReliable(final boolean isReliable, final Long issueId, final Long memberId) {
+        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(issueId, isReliable);
+
+        return toDtos(memberId, opinions);
     }
 }

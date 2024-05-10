@@ -26,6 +26,13 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "ORDER BY r.createdAt DESC")
     List<ReprocessedIssueOpinion> findByReprocessedIssueIdWithLikes(final Long issueId);
 
+    @Query(value = "SELECT r "
+        + "FROM ReprocessedIssueOpinion r "
+        + "LEFT JOIN FETCH ReprocessedIssueOpinionLike l ON r.id = l.reprocessedIssueOpinionId "
+        + "WHERE r.reprocessedIssueId = :issueId AND r.isReliable = :isReliable "
+        + "ORDER BY r.createdAt DESC")
+    List<ReprocessedIssueOpinion> findByIssueIdAndIsReliableWithLikes(final Long issueId, final boolean isReliable);
+
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
         + "LEFT JOIN r.likes l "

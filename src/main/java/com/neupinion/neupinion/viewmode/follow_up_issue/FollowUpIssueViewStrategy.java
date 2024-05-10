@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.issue.application.viewmode;
+package com.neupinion.neupinion.viewmode.follow_up_issue;
 
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import java.util.List;
