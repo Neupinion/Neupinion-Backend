@@ -27,11 +27,11 @@ public class MyOpinionResponse {
     private boolean isReliable;
 
     public static MyOpinionResponse from(final FollowUpIssueOpinion opinion, final String paragraphContent) {
-        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.isReliable());
+        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.getIsReliable());
     }
 
     public static MyOpinionResponse from(final ReprocessedIssueOpinion opinion, final String paragraphContent) {
-        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.isReliable());
+        return new MyOpinionResponse(opinion.getId(), opinion.getParagraphId(), paragraphContent, opinion.getContent(), opinion.getIsReliable());
     }
 
     public boolean getIsReliable() {

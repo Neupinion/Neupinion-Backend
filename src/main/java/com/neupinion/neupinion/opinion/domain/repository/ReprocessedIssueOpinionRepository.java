@@ -40,5 +40,4 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "GROUP BY r.id "
         + "ORDER BY COUNT(l) DESC, r.id DESC")
     List<ReprocessedIssueOpinion> findTop5ByActiveLikes(Pageable pageable, Long issueId);
-
 }

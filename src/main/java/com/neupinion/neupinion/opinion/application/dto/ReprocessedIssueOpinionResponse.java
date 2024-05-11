@@ -51,7 +51,7 @@ public class ReprocessedIssueOpinionResponse {
                                                      final boolean isLiked) {
         return new ReprocessedIssueOpinionResponse(opinion.getId(), opinion.getMemberId(),
                                                    member.getNickname(), member.getProfileImageUrl(),
-                                                   opinion.getCreatedAt(), opinion.isReliable(),
+                                                   opinion.getCreatedAt(), opinion.getIsReliable(),
                                                    opinion.getParagraphId(), paragraph.getContent(),
                                                    opinion.getContent(), likeCount, isLiked);
     }

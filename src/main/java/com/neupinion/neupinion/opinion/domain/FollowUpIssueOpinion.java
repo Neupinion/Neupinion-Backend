@@ -6,11 +6,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -37,6 +41,10 @@ public class FollowUpIssueOpinion {
 
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
+
+    @OneToMany
+    @JoinColumn(name = "follow_up_issue_opinion_id")
+    List<FollowUpIssueOpinionLike> likes = new ArrayList<>();
 
     @Embedded
     private OpinionContent content;
@@ -76,6 +84,10 @@ public class FollowUpIssueOpinion {
         this.paragraphId = paragraphId;
         this.content = new OpinionContent(content);
         this.isReliable = isReliable;
+    }
+
+    public boolean getIsReliable() {
+        return isReliable;
     }
 
     public String getContent() {

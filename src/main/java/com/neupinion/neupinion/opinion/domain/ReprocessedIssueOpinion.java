@@ -72,6 +72,10 @@ public class ReprocessedIssueOpinion {
         return new ReprocessedIssueOpinion(null, paragraphId, reprocessedIssueId, isReliable, memberId, content);
     }
 
+    public boolean getIsReliable() {
+        return isReliable;
+    }
+
     @PrePersist
     private void prePersist() {
         createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
