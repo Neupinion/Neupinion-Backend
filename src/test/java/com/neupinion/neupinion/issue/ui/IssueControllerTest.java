@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.issue.application.dto.IntegratedVoteResultResponse;
+import com.neupinion.neupinion.issue.application.dto.TimelineResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
@@ -83,6 +84,36 @@ class IssueControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(response.getVoteRankings()).usingRecursiveComparison()
                 .comparingOnlyFields("count")
                 .isEqualTo(List.of(3, 2, 1, 0))
+        );
+    }
+
+    @DisplayName("GET /issue/{issueId}/time-line 요청을 받아 상태 코드 200과 해당 이슈의 타임라인을 반환한다.")
+    @Test
+    void getIssueTimeLine() {
+        // given
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
+            ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY, "논제"));
+        final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈1 제목", "이미지링크", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
+                                  reprocessedIssue.getId()));
+        final FollowUpIssue followUpIssue2 = followUpIssueRepository.save(
+            FollowUpIssue.forSave("후속 이슈2 제목", "이미지링크", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
+                                  reprocessedIssue.getId()));
+
+        // when
+        final var responses = RestAssured.given()
+            .when().log().all()
+            .get("/issue/{issueId}/time-line", reprocessedIssue.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.OK.value()).extract()
+            .jsonPath().getList(".", TimelineResponse.class);
+
+        // then
+        assertAll(
+            () -> assertThat(responses).hasSize(3),
+            () -> assertThat(responses).usingRecursiveComparison()
+                .comparingOnlyFields("id")
+                .isEqualTo(List.of(reprocessedIssue.getId(), followUpIssue1.getId(), followUpIssue2.getId()))
         );
     }
 }

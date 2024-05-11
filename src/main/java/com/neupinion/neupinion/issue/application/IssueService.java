@@ -1,16 +1,22 @@
 package com.neupinion.neupinion.issue.application;
 
 import com.neupinion.neupinion.issue.application.dto.IntegratedVoteResultResponse;
+import com.neupinion.neupinion.issue.application.dto.TimelineResponse;
 import com.neupinion.neupinion.issue.application.dto.VoteRankingResponse;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.IssueType;
+import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueTrustVoteRepository;
+import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
+import com.neupinion.neupinion.issue.exception.ReprocessedIssueException.ReprocessedIssueNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +34,7 @@ public class IssueService {
     private final ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
     private final FollowUpIssueRepository followUpIssueRepository;
     private final FollowUpIssueTrustVoteRepository followUpIssueTrustVoteRepository;
+    private final ReprocessedIssueRepository reprocessedIssueRepository;
 
     public IntegratedVoteResultResponse getIntegratedVoteResult(final Long issueId) {
         final List<ReprocessedIssueTrustVote> reprocessedIssueTrustVotes = reprocessedIssueTrustVoteRepository.findByReprocessedIssueId(
@@ -50,7 +57,8 @@ public class IssueService {
         final Map<VoteStatus, Integer> totalVotes = getTotalVotes(reprocessedIssueTrustVoteCount,
                                                                   followUpIssueTrustVoteCount);
 
-        final List<Map<Boolean, Integer>> voteResultResponses = toVoteResults(reprocessedIssueTrustVoteCount, followUpIssueTrustVoteCount);
+        final List<Map<Boolean, Integer>> voteResultResponses = toVoteResults(reprocessedIssueTrustVoteCount,
+                                                                              followUpIssueTrustVoteCount);
 
         final List<VoteRankingResponse> voteRankingResponses = toVoteRankings(totalVotes,
                                                                               reprocessedIssueTrustVoteCount,
@@ -77,9 +85,7 @@ public class IssueService {
 
         mergeByReliability(reprocessedIssueTrustVoteCount, issueTrustVoteRate);
 
-        followUpIssueTrustVoteCount.forEach((k, v) -> {
-            mergeByReliability(v, issueTrustVoteRate);
-        });
+        followUpIssueTrustVoteCount.forEach((k, v) -> mergeByReliability(v, issueTrustVoteRate));
 
         return issueTrustVoteRate;
     }
@@ -126,5 +132,24 @@ public class IssueService {
             .sorted(Entry.<VoteStatus, Integer>comparingByValue().reversed())
             .map(entry -> new VoteRankingResponse(entry.getKey().getValue(), entry.getValue()))
             .collect(Collectors.toList());
+    }
+
+    public List<TimelineResponse> getIssueTimeLine(final Long issueId) {
+        final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(issueId)
+            .orElseThrow(ReprocessedIssueNotFoundException::new);
+        final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findByReprocessedIssueId(issueId).stream()
+            .sorted(Comparator.comparing(FollowUpIssue::getCreatedAt))
+            .toList();
+
+        final List<TimelineResponse> timelineResponses = new ArrayList<>();
+
+        timelineResponses.add(
+            new TimelineResponse(IssueType.REPROCESSED.name(), reprocessedIssue.getId(), reprocessedIssue.getTitle(),
+                                 reprocessedIssue.getCreatedAt()));
+        followUpIssues.forEach(followUpIssue -> timelineResponses.add(
+            new TimelineResponse(IssueType.FOLLOW_UP.name(), followUpIssue.getId(), followUpIssue.getTitle().getValue(),
+                                 followUpIssue.getCreatedAt())));
+
+        return timelineResponses;
     }
 }
