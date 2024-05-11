@@ -116,7 +116,10 @@ create table if not exists reprocessed_issue_trust_vote
     id                   bigint auto_increment,
     reprocessed_issue_id bigint      not null,
     member_id            bigint      not null,
-    status               varchar(50) not null,
+    status               varchar(50) not null check ( status in
+                                                      ('HIGHLY_TRUSTED', 'SOMEWHAT_TRUSTED',
+                                                       'SOMEWHAT_DISTRUSTED', 'HIGHLY_DISTRUSTED',
+                                                       'NOT_VOTED')),
     primary key (id)
 );
 
@@ -126,5 +129,16 @@ create table if not exists reprocessed_issue_opinion_like
     reprocessed_issue_opinion_id bigint  not null,
     member_id                    bigint  not null,
     is_deleted                   boolean not null,
+    primary key (id)
+);
+
+create table if not exists follow_up_issue_trust_vote
+(
+    id                 bigint auto_increment,
+    follow_up_issue_id bigint      not null,
+    member_id          bigint      not null,
+    status             varchar(50) not null check ( status in ('HIGHLY_TRUSTED', 'SOMEWHAT_TRUSTED',
+                                                               'SOMEWHAT_DISTRUSTED',
+                                                               'HIGHLY_DISTRUSTED', 'NOT_VOTED')),
     primary key (id)
 );
