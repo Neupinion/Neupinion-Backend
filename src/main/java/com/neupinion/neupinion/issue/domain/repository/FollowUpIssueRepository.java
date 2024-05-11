@@ -32,6 +32,8 @@ public interface FollowUpIssueRepository extends JpaRepository<FollowUpIssue, Lo
     List<FollowUpIssue> findByReprocessedIssueIdOrderByCreatedAtDesc(final Long reprocessedIssueId,
                                                                      final Pageable pageable);
 
+    List<FollowUpIssue> findByReprocessedIssueId(final Long reprocessedIssueId);
+
     @Query(value = "SELECT f "
         + "FROM FollowUpIssue f "
         + "WHERE f.reprocessedIssueId <> :reprocessedIssueId "

@@ -39,7 +39,19 @@ public class ReprocessedIssueTrustVote {
         this.status = VoteStatus.from(status);
     }
 
+    private ReprocessedIssueTrustVote(final Long id, final Long reprocessedIssueId, final Long memberId,
+                                     final VoteStatus status) {
+        this.id = id;
+        this.reprocessedIssueId = reprocessedIssueId;
+        this.memberId = memberId;
+        this.status = status;
+    }
+
     public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final String status) {
+        return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, status);
+    }
+
+    public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final VoteStatus status) {
         return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, status);
     }
 
