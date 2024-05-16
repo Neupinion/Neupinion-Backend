@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.viewmode.opinion;
+package com.neupinion.neupinion.query_mode.view.opinion;
 
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import java.util.List;

@@ -56,4 +56,11 @@ public class OpinionException extends CustomException {
             super(ErrorCode.INVALID_OPINION_VIEW_MODE);
         }
     }
+
+    public static class InvalidOrderModeException extends OpinionException {
+
+        public InvalidOrderModeException(final Map<String, String> inputValuesByProperty) {
+            super(ErrorCode.INVALID_OPINION_ORDER_MODE, inputValuesByProperty);
+        }
+    }
 }

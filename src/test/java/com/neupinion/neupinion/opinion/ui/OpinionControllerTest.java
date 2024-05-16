@@ -524,7 +524,7 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
             ReprocessedIssueOpinion.forSave(paragraph2.getId(), reprocessedIssueId, true, 1L, "내용2"));
         reprocessedIssueOpinionLikeRepository.save(
-            ReprocessedIssueOpinionLike.forSave(opinion.getId(), 1L));
+            ReprocessedIssueOpinionLike.forSave(1L, opinion.getId()));
 
         // when
         final var responses = RestAssured.given().log().all()

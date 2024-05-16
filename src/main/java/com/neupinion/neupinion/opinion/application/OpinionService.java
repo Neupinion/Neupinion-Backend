@@ -17,13 +17,17 @@ import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException;
+import com.neupinion.neupinion.query_mode.order.OpinionOrderStrategy;
+import com.neupinion.neupinion.query_mode.order.OrderMode;
+import com.neupinion.neupinion.query_mode.view.opinion.OpinionViewMode;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -40,7 +44,11 @@ public class OpinionService {
     private final FollowUpIssueParagraphRepository followUpIssueParagraphRepository;
     private final ReprocessedIssueOpinionRepository reprocessedIssueOpinionRepository;
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
+    private final ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
     private final MemberRepository memberRepository;
+
+    private final Map<OrderMode, OpinionOrderStrategy> orderStrategies;
+    private final Map<OpinionViewMode, List<Boolean>> opinionViewStrategies;
 
     @Transactional
     public Long createFollowUpIssueOpinion(final Long memberId, final FollowUpIssueOpinionCreateRequest request) {
@@ -227,28 +235,27 @@ public class OpinionService {
         reprocessedIssueOpinionRepository.delete(opinion);
     }
 
-    public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final Long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
-            issueId);
+    public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final Long memberId,
+                                                                             final OpinionViewMode filter,
+                                                                             final OrderMode orderFilter) {
+        final OpinionOrderStrategy strategy = orderStrategies.get(orderFilter);
+        final List<Boolean> reliabilities = opinionViewStrategies.get(filter);
 
-        return toDtos(memberId, opinions);
+        return toDtos(memberId, strategy.getOpinionsByReliabilitiesOrderBy(issueId, reliabilities));
     }
 
     private List<ReprocessedIssueOpinionResponse> toDtos(final long memberId,
                                                          final List<ReprocessedIssueOpinion> opinions) {
         List<ReprocessedIssueOpinionResponse> responses = new ArrayList<>();
         for (ReprocessedIssueOpinion opinion : opinions) {
-            final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
-                .filter(like -> !like.getIsDeleted())
-                .toList();
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
                 opinion.getParagraphId());
-            final Member member = memberRepository.getMemberById(opinion.getMemberId());
-            final int likeCount = likes.size();
-            final boolean isLiked = likes.stream()
-                .anyMatch(like -> like.getMemberId().equals(memberId));
+            final Member writer = memberRepository.getMemberById(opinion.getMemberId());
+            final int likeCount = opinion.getLikes().size();
+            final boolean isLiked = reprocessedIssueOpinionLikeRepository.existsByMemberIdAndReprocessedIssueOpinionIdAndIsDeletedFalse(
+                memberId, opinion.getId());
 
-            responses.add(ReprocessedIssueOpinionResponse.of(opinion, likeCount, member, paragraph, isLiked));
+            responses.add(ReprocessedIssueOpinionResponse.of(opinion, likeCount, writer, paragraph, isLiked));
         }
 
         return responses;
@@ -277,47 +284,44 @@ public class OpinionService {
         return responses;
     }
 
-    public List<ReprocessedIssueOpinionResponse> getOpinionsByReliable(final boolean isReliable, final Long issueId,
-                                                                       final Long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(
-            issueId, isReliable);
-
-        return toDtos(memberId, opinions);
-    }
-
     public List<OpinionParagraphResponse> getReprocessedIssueOpinionsOrderByParagraph(final Long issueId,
-                                                                                      final Long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByReprocessedIssueIdWithLikes(
+                                                                                      final Long memberId,
+                                                                                      final OrderMode orderMode,
+                                                                                      final OpinionViewMode opinionViewMode) {
+        final List<ReprocessedIssueParagraph> paragraphs = reprocessedIssueParagraphRepository.findByReprocessedIssueIdAndSelectableTrueOrderById(
             issueId);
+        final List<Boolean> reliabilities = opinionViewStrategies.get(opinionViewMode);
 
-        return toParagraphDtos(memberId, opinions).stream()
-            .sorted(Comparator.comparing(OpinionParagraphResponse::getId))
-            .toList();
+        return toParagraphDtos(memberId, paragraphs, orderMode, reliabilities);
     }
 
     private List<OpinionParagraphResponse> toParagraphDtos(final Long memberId,
-                                                           final List<ReprocessedIssueOpinion> opinions) {
-        final Map<Long, List<ReprocessedIssueOpinion>> opinionsByParagraphId = opinions.stream()
-            .collect(Collectors.groupingBy(ReprocessedIssueOpinion::getParagraphId));
+                                                           final List<ReprocessedIssueParagraph> paragraphs,
+                                                           final OrderMode orderMode,
+                                                           final List<Boolean> reliabilities) {
+        final Map<ReprocessedIssueParagraph, List<ReprocessedIssueOpinionResponse>> dtos = new HashMap<>();
+        for (final ReprocessedIssueParagraph paragraph : paragraphs) {
+            final OpinionOrderStrategy strategy = orderStrategies.get(orderMode);
+            final List<ReprocessedIssueOpinion> opinions = strategy
+                .getOpinionsByParagraphOrderBy(paragraph.getId(), reliabilities);
+            if (opinions.isEmpty()) {
+                continue;
+            }
+            final List<ReprocessedIssueOpinionResponse> responses = opinions.stream()
+                .map(opinion -> {
+                    final boolean isLiked = reprocessedIssueOpinionLikeRepository.existsByMemberIdAndReprocessedIssueOpinionIdAndIsDeletedFalse(
+                        memberId, opinion.getId());
+                    final Member writer = memberRepository.getMemberById(opinion.getMemberId());
+                    return ReprocessedIssueOpinionResponse.of(opinion, opinion.getLikes().size(), writer, paragraph,
+                                                              isLiked);
+                })
+                .toList();
 
-        List<OpinionParagraphResponse> responses = new ArrayList<>();
-        for (Map.Entry<Long, List<ReprocessedIssueOpinion>> entry : opinionsByParagraphId.entrySet()) {
-            final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(entry.getKey());
-            final List<ReprocessedIssueOpinionResponse> opinionResponses = toDtos(memberId, entry.getValue());
-
-            responses.add(new OpinionParagraphResponse(paragraph.getId(), paragraph.getContent(), opinionResponses));
+            dtos.put(paragraph, responses);
         }
 
-        return responses;
-    }
-
-    public List<OpinionParagraphResponse> getReprocessedIssueOpinionsOrderByParagraph(final boolean isReliable,
-                                                                                      final Long issueId,
-                                                                                      final Long memberId) {
-        final List<ReprocessedIssueOpinion> opinions = reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(
-            issueId, isReliable);
-
-        return toParagraphDtos(memberId, opinions).stream()
+        return dtos.entrySet().stream()
+            .map(entry -> OpinionParagraphResponse.of(entry.getKey(), entry.getValue()))
             .sorted(Comparator.comparing(OpinionParagraphResponse::getId))
             .toList();
     }

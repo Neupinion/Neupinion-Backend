@@ -1,6 +1,5 @@
-package com.neupinion.neupinion.viewmode.opinion;
+package com.neupinion.neupinion.query_mode.view.opinion;
 
-import com.neupinion.neupinion.opinion.exception.OpinionException.InvalidViewModeException;
 import java.util.Arrays;
 
 public enum OpinionViewMode {
@@ -10,6 +9,6 @@ public enum OpinionViewMode {
         return Arrays.stream(values())
             .filter(viewMode -> viewMode.name().equalsIgnoreCase(mode))
             .findFirst()
-            .orElseThrow(InvalidViewModeException::new);
+            .orElse(ALL);
     }
 }

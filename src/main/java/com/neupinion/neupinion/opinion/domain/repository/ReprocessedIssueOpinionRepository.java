@@ -21,17 +21,10 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
 
     @Query(value = "SELECT r "
         + "FROM ReprocessedIssueOpinion r "
-        + "LEFT JOIN FETCH ReprocessedIssueOpinionLike l ON r.id = l.reprocessedIssueOpinionId "
-        + "WHERE r.reprocessedIssueId = :issueId "
+        + "WHERE r.reprocessedIssueId = :issueId AND r.isReliable in :reliabilities "
         + "ORDER BY r.createdAt DESC")
-    List<ReprocessedIssueOpinion> findByReprocessedIssueIdWithLikes(final Long issueId);
-
-    @Query(value = "SELECT r "
-        + "FROM ReprocessedIssueOpinion r "
-        + "LEFT JOIN FETCH ReprocessedIssueOpinionLike l ON r.id = l.reprocessedIssueOpinionId "
-        + "WHERE r.reprocessedIssueId = :issueId AND r.isReliable = :isReliable "
-        + "ORDER BY r.createdAt DESC")
-    List<ReprocessedIssueOpinion> findByIssueIdAndIsReliableWithLikes(final Long issueId, final boolean isReliable);
+    List<ReprocessedIssueOpinion> findByIssueIdAndIsReliableWithLikes(final Long issueId,
+                                                                      final List<Boolean> reliabilities);
 
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
@@ -40,4 +33,22 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "GROUP BY r.id "
         + "ORDER BY COUNT(l) DESC, r.id DESC")
     List<ReprocessedIssueOpinion> findTop5ByActiveLikes(Pageable pageable, Long issueId);
+
+    @Query("SELECT r "
+        + "FROM ReprocessedIssueOpinion r "
+        + "LEFT JOIN r.likes l "
+        + "WHERE r.paragraphId = :paragraphId AND r.isReliable in :reliability "
+        + "GROUP BY r.id "
+        + "ORDER BY COUNT(l) DESC, r.id DESC"
+    )
+    List<ReprocessedIssueOpinion> findTop5ByParagraphIdOrderByLikes(final Long paragraphId,
+                                                                    final List<Boolean> reliability);
+
+    @Query("SELECT r "
+        + "FROM ReprocessedIssueOpinion r "
+        + "WHERE r.paragraphId = :paragraphId AND r.isReliable in :reliability "
+        + "ORDER BY r.createdAt DESC"
+    )
+    List<ReprocessedIssueOpinion> findTop5ByParagraphIdOrderByCreatedAt(final Long paragraphId,
+                                                                        final List<Boolean> reliability);
 }

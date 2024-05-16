@@ -15,10 +15,17 @@ import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCr
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException.AlreadyExistedOpinionException;
 import com.neupinion.neupinion.opinion.exception.OpinionException.NotMatchedMemberException;
+import com.neupinion.neupinion.query_mode.order.OpinionOrderStrategy;
+import com.neupinion.neupinion.query_mode.order.OrderMode;
+import com.neupinion.neupinion.query_mode.order.PopularOpinionOrderStrategy;
+import com.neupinion.neupinion.query_mode.view.opinion.OpinionViewMode;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,6 +47,20 @@ class OpinionServiceTest extends JpaRepositoryTest {
     private ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
 
     @Autowired
+    private ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
+
+    private final Map<OrderMode, OpinionOrderStrategy> orderStrategies = Map.of(
+        OrderMode.POPULAR, new PopularOpinionOrderStrategy(reprocessedIssueOpinionRepository),
+        OrderMode.RECENT, new PopularOpinionOrderStrategy(reprocessedIssueOpinionRepository)
+    );
+
+    private final Map<OpinionViewMode, List<Boolean>> opinionViewStrategies = Map.of(
+        OpinionViewMode.ALL, List.of(true, false),
+        OpinionViewMode.DOUBT, List.of(false),
+        OpinionViewMode.TRUST, List.of(true)
+    );
+
+    @Autowired
     private MemberRepository memberRepository;
 
     private OpinionService opinionService;
@@ -48,7 +69,8 @@ class OpinionServiceTest extends JpaRepositoryTest {
     void setUp() {
         opinionService = new OpinionService(followUpIssueOpinionRepository, followUpIssueParagraphRepository,
                                             reprocessedIssueOpinionRepository, reprocessedIssueParagraphRepository,
-                                            memberRepository);
+                                            reprocessedIssueOpinionLikeRepository, memberRepository, orderStrategies,
+                                            opinionViewStrategies);
     }
 
     @Nested
@@ -60,7 +82,8 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final long followUpIssueId = 1L;
             final Long paragraphId = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, followUpIssueId)).getId();
-            final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraphId, followUpIssueId,
+            final FollowUpIssueOpinionCreateRequest request = FollowUpIssueOpinionCreateRequest.of(paragraphId,
+                                                                                                   followUpIssueId,
                                                                                                    "내용", true);
             final Long memberId = 1L;
             saveAndClearEntityManager();
@@ -121,7 +144,7 @@ class OpinionServiceTest extends JpaRepositoryTest {
             final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.save(
                 FollowUpIssueParagraph.forSave("내용", false, issueId));
             final FollowUpIssueOpinion opinion = followUpIssueOpinionRepository.save(
-                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId,  true, memberId, "내용"));
+                FollowUpIssueOpinion.forSave(paragraph.getId(), issueId, true, memberId, "내용"));
 
             final OpinionUpdateRequest request = OpinionUpdateRequest.of(paragraph.getId(), "수정된 내용", false);
 

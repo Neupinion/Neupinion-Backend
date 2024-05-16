@@ -19,6 +19,7 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,6 +47,7 @@ public class ReprocessedIssueOpinion {
     private Long memberId;
 
     @OneToMany
+    @SQLRestriction("is_deleted = false")
     @JoinColumn(name = "reprocessed_issue_opinion_id")
     List<ReprocessedIssueOpinionLike> likes = new ArrayList<>();
 

@@ -17,4 +17,6 @@ public interface ReprocessedIssueParagraphRepository extends JpaRepository<Repro
     }
 
     List<ReprocessedIssueParagraph> findByReprocessedIssueIdOrderById(final Long reprocessedIssueId);
+
+    List<ReprocessedIssueParagraph> findByReprocessedIssueIdAndSelectableTrueOrderById(final Long reprocessedIssueId);
 }

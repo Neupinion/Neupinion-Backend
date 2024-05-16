@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.opinion.application.dto;
 
+import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -18,4 +19,8 @@ public class OpinionParagraphResponse {
 
     @Schema(description = "문단과 관련된 의견들")
     private final List<ReprocessedIssueOpinionResponse> opinions;
+
+    public static OpinionParagraphResponse of(final ReprocessedIssueParagraph paragraph, final List<ReprocessedIssueOpinionResponse> opinionResponses) {
+        return new OpinionParagraphResponse(paragraph.getId(), paragraph.getContent(), opinionResponses);
+    }
 }
