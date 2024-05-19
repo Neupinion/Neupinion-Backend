@@ -24,13 +24,14 @@ public class IntegratedOpinionController {
     public ResponseEntity<List<IssueOpinionResponse>> getOpinions(
         @PathVariable final Long issueId,
         @RequestParam(defaultValue = "RECENT", required = false) final String orderMode,
-        @RequestParam(defaultValue = "ALL", required = false) final String viewMode
+        @RequestParam(defaultValue = "ALL", required = false) final String viewMode,
+        @RequestParam(defaultValue = "0", required = false) final Integer page
     ) {
         final OrderMode orderFilter = OrderMode.from(orderMode);
         final OpinionViewMode viewFilter = OpinionViewMode.from(viewMode);
         return ResponseEntity.ok(
-            integratedOpinionService.getIntegratedOpinions(issueId, 1L, orderFilter,
-                                                           viewFilter));  // TODO: 24. 5. 11. 추후 액세스 토큰 인증 로직 추가하기
+            integratedOpinionService.getIntegratedOpinions(issueId, 1L, orderFilter, viewFilter,
+                                                           page));  // TODO: 24. 5. 11. 추후 액세스 토큰 인증 로직 추가하기
     }
 
     @GetMapping("/top")

@@ -1,6 +1,5 @@
 package com.neupinion.neupinion.opinion.ui;
 
-import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.OpinionService;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpinionController {
 
     private final OpinionService opinionService;
-    private final MemberRepository memberRepository;
 
     @PostMapping("/follow-up-issue/opinion")
     public ResponseEntity<Void> createFollowUpIssueOpinion(
@@ -113,13 +111,15 @@ public class OpinionController {
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getReprocessedIssueOpinions(
         @PathVariable final Long issueId,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
-        @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode
+        @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
+        @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
 
         return ResponseEntity.ok(opinionService.getReprocessedIssueOpinions(issueId, 1L, filter,
-                                                                            orderFilter)); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+                                                                            orderFilter,
+                                                                            page)); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
     }
 
     @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
@@ -136,12 +136,13 @@ public class OpinionController {
     public ResponseEntity<List<OpinionParagraphResponse>> getReprocessedIssueOpinionsOrderByParagraph(
         @PathVariable final Long issueId,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
-        @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode
+        @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
+        @RequestParam(required = false, defaultValue = "0") final Integer page
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
         final List<OpinionParagraphResponse> responses = opinionService.getReprocessedIssueOpinionsOrderByParagraph(
-            issueId, 1L, orderFilter, filter);
+            issueId, 1L, orderFilter, filter, page);
 
         return ResponseEntity.ok(responses);
     }

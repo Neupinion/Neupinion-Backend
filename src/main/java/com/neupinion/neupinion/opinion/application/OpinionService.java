@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OpinionService {
 
     private static final int TOP_OPINION_PAGE_SIZE = 5;
+    private static final int OPINION_PAGE_SIZE = 10;
 
     private final FollowUpIssueOpinionRepository followUpIssueOpinionRepository;
     private final FollowUpIssueParagraphRepository followUpIssueParagraphRepository;
@@ -237,11 +238,13 @@ public class OpinionService {
 
     public List<ReprocessedIssueOpinionResponse> getReprocessedIssueOpinions(final Long issueId, final Long memberId,
                                                                              final OpinionViewMode filter,
-                                                                             final OrderMode orderFilter) {
+                                                                             final OrderMode orderFilter,
+                                                                             final Integer page) {
         final OpinionOrderStrategy strategy = orderStrategies.get(orderFilter);
         final List<Boolean> reliabilities = opinionViewStrategies.get(filter);
 
-        return toDtos(memberId, strategy.getOpinionsByReliabilitiesOrderBy(issueId, reliabilities));
+        return toDtos(memberId, strategy.getOpinionsByReliabilitiesOrderBy(issueId, reliabilities,
+                                                                           PageRequest.of(page, OPINION_PAGE_SIZE)));
     }
 
     private List<ReprocessedIssueOpinionResponse> toDtos(final long memberId,
@@ -287,23 +290,26 @@ public class OpinionService {
     public List<OpinionParagraphResponse> getReprocessedIssueOpinionsOrderByParagraph(final Long issueId,
                                                                                       final Long memberId,
                                                                                       final OrderMode orderMode,
-                                                                                      final OpinionViewMode opinionViewMode) {
+                                                                                      final OpinionViewMode opinionViewMode,
+                                                                                      final Integer page) {
         final List<ReprocessedIssueParagraph> paragraphs = reprocessedIssueParagraphRepository.findByReprocessedIssueIdAndSelectableTrueOrderById(
             issueId);
         final List<Boolean> reliabilities = opinionViewStrategies.get(opinionViewMode);
 
-        return toParagraphDtos(memberId, paragraphs, orderMode, reliabilities);
+        return toParagraphDtos(memberId, paragraphs, orderMode, reliabilities, page);
     }
 
     private List<OpinionParagraphResponse> toParagraphDtos(final Long memberId,
                                                            final List<ReprocessedIssueParagraph> paragraphs,
-                                                           final OrderMode orderMode,
-                                                           final List<Boolean> reliabilities) {
+                                                           final OrderMode orderMode, final List<Boolean> reliabilities,
+                                                           final Integer page) {
         final Map<ReprocessedIssueParagraph, List<ReprocessedIssueOpinionResponse>> dtos = new HashMap<>();
         for (final ReprocessedIssueParagraph paragraph : paragraphs) {
             final OpinionOrderStrategy strategy = orderStrategies.get(orderMode);
-            final List<ReprocessedIssueOpinion> opinions = strategy
-                .getOpinionsByParagraphOrderBy(paragraph.getId(), reliabilities);
+            final List<ReprocessedIssueOpinion> opinions = strategy.getOpinionsByParagraphOrderBy(paragraph.getId(),
+                                                                                                  reliabilities,
+                                                                                                  PageRequest.of(page,
+                                                                                                                 OPINION_PAGE_SIZE));
             if (opinions.isEmpty()) {
                 continue;
             }

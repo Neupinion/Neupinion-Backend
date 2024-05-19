@@ -109,12 +109,13 @@ public class IntegratedOpinionService {
     }
 
     public List<IssueOpinionResponse> getIntegratedOpinions(final Long issueId, final Long memberId,
-                                                            final OrderMode orderMode, final OpinionViewMode viewMode) {
+                                                            final OrderMode orderMode, final OpinionViewMode viewMode,
+                                                            final Integer page) {
         final List<Boolean> reliabilities = opinionViewStrategies.get(viewMode);
         final AllOpinionOrderStrategy orderStrategy = allOrderStrategies.get(orderMode);
 
         final List<IssueOpinionMapping> issueOpinionMappings =
-            orderStrategy.getOpinionsByReliabilitiesOrderBy(issueId, reliabilities, PageRequest.of(0, PAGE_SIZE));
+            orderStrategy.getOpinionsByReliabilitiesOrderBy(issueId, reliabilities, PageRequest.of(page, PAGE_SIZE));
 
         return issueOpinionMappings.stream()
             .map(mapping -> toDto(mapping, memberId))

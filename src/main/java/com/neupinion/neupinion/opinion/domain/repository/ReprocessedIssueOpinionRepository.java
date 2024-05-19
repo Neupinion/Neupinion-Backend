@@ -24,7 +24,8 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "WHERE r.reprocessedIssueId = :issueId AND r.isReliable in :reliabilities "
         + "ORDER BY r.createdAt DESC")
     List<ReprocessedIssueOpinion> findByIssueIdAndIsReliableWithLikes(final Long issueId,
-                                                                      final List<Boolean> reliabilities);
+                                                                      final List<Boolean> reliabilities,
+                                                                      final Pageable pageable);
 
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
@@ -42,7 +43,8 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "ORDER BY COUNT(l) DESC, r.id DESC"
     )
     List<ReprocessedIssueOpinion> findTop5ByParagraphIdOrderByLikes(final Long paragraphId,
-                                                                    final List<Boolean> reliability);
+                                                                    final List<Boolean> reliability,
+                                                                    final Pageable pageable);
 
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
@@ -50,5 +52,6 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
         + "ORDER BY r.createdAt DESC"
     )
     List<ReprocessedIssueOpinion> findTop5ByParagraphIdOrderByCreatedAt(final Long paragraphId,
-                                                                        final List<Boolean> reliability);
+                                                                        final List<Boolean> reliability,
+                                                                        final Pageable pageable);
 }
