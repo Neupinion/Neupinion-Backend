@@ -1,6 +1,6 @@
 package com.neupinion.neupinion.issue.domain;
 
-import com.neupinion.neupinion.opinion.domain.repository.dto.IssueCommentMapping;
+import com.neupinion.neupinion.opinion.domain.repository.dto.IssueOpinionMapping;
 import jakarta.persistence.Column;
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.ConstructorResult;
@@ -26,9 +26,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @SqlResultSetMapping(
-    name = "IssueCommentMapping",
+    name = "IssueOpinionMapping",
     classes = @ConstructorResult(
-        targetClass = IssueCommentMapping.class,
+        targetClass = IssueOpinionMapping.class,
         columns = {
             @ColumnResult(name = "id", type = Long.class),
             @ColumnResult(name = "paragraphId", type = Long.class),
@@ -38,21 +38,43 @@ import lombok.NoArgsConstructor;
             @ColumnResult(name = "isReliable", type = Boolean.class),
             @ColumnResult(name = "issueType", type = String.class),
             @ColumnResult(name = "createdAt", type = LocalDateTime.class),
+            @ColumnResult(name = "likeCount", type = Integer.class)
         }
     )
 )
 @NamedNativeQuery(
-    name = "ReprocessedIssue.findAllCommentsOrderByCreatedAtDesc",
+    name = "ReprocessedIssue.findAllOpinionsOrderByCreatedAtDesc",
     query =
-        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt "
+        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt, COUNT(riol.id) AS likeCount "
             + "FROM reprocessed_issue_opinion rio "
-            + "WHERE rio.reprocessed_issue_id = :issueId "
+            + "LEFT JOIN reprocessed_issue_opinion_like riol on rio.id = riol.reprocessed_issue_opinion_id "
+            + "WHERE rio.reprocessed_issue_id = :issueId AND rio.is_reliable IN :reliabilities "
+            + "GROUP BY rio.id, rio.id, rio.paragraph_id, rio.reprocessed_issue_id, rio.member_id, rio.content, rio.is_reliable, 'REPROCESSED', rio.created_at "
             + "UNION ALL "
-            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt "
+            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt, COUNT(fiol.id) AS likeCount "
             + "FROM follow_up_issue_opinion fuo "
-            + "WHERE fuo.follow_up_issue_id IN :followUpIssueIds "
+            + "LEFT JOIN follow_up_issue_opinion_like fiol on fuo.id = fiol.follow_up_issue_opinion_id "
+            + "WHERE fuo.follow_up_issue_id IN :followUpIssueIds AND fuo.is_reliable IN :reliabilities "
+            + "GROUP BY fuo.id, fuo.paragraph_id, fuo.follow_up_issue_id, fuo.member_id, fuo.content, fuo.is_reliable, fuo.created_at "
             + "ORDER BY createdAt DESC",
-    resultSetMapping = "IssueCommentMapping"
+    resultSetMapping = "IssueOpinionMapping"
+)
+@NamedNativeQuery(
+    name = "ReprocessedIssue.findAllOpinionsOrderByLikesAtDesc",
+    query =
+        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt, COUNT(riol.id) AS likeCount "
+            + "FROM reprocessed_issue_opinion rio "
+            + "LEFT JOIN reprocessed_issue_opinion_like riol on rio.id = riol.reprocessed_issue_opinion_id "
+            + "WHERE rio.reprocessed_issue_id = :issueId AND rio.is_reliable IN :reliabilities "
+            + "GROUP BY rio.id, rio.id, rio.paragraph_id, rio.reprocessed_issue_id, rio.member_id, rio.content, rio.is_reliable, 'REPROCESSED', rio.created_at "
+            + "UNION ALL "
+            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt, COUNT(fiol.id) AS likeCount "
+            + "FROM follow_up_issue_opinion fuo "
+            + "LEFT JOIN follow_up_issue_opinion_like fiol on fuo.id = fiol.follow_up_issue_opinion_id "
+            + "WHERE fuo.follow_up_issue_id IN :followUpIssueIds AND fuo.is_reliable IN :reliabilities "
+            + "GROUP BY fuo.id, fuo.paragraph_id, fuo.follow_up_issue_id, fuo.member_id, fuo.content, fuo.is_reliable, fuo.created_at "
+            + "ORDER BY likeCount DESC, createdAt DESC",
+    resultSetMapping = "IssueOpinionMapping"
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter

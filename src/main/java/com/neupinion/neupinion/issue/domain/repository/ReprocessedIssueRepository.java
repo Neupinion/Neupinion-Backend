@@ -3,7 +3,7 @@ package com.neupinion.neupinion.issue.domain.repository;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.repository.dto.ReprocessedIssueWithCommentCount;
-import com.neupinion.neupinion.opinion.domain.repository.dto.IssueCommentMapping;
+import com.neupinion.neupinion.opinion.domain.repository.dto.IssueOpinionMapping;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -44,8 +44,15 @@ public interface ReprocessedIssueRepository extends JpaRepository<ReprocessedIss
     List<ReprocessedIssue> findRandomReprocessedIssuesExceptId(final Long id, final Date standard,
                                                                final Pageable pageable);
 
-    @Query(name = "ReprocessedIssue.findAllCommentsOrderByCreatedAtDesc", nativeQuery = true)
-    List<IssueCommentMapping> findAllCommentsOrderByCreatedAtDesc(final Long issueId,
+    @Query(name = "ReprocessedIssue.findAllOpinionsOrderByCreatedAtDesc", nativeQuery = true)
+    List<IssueOpinionMapping> findAllCommentsOrderByCreatedAtDesc(final Long issueId,
                                                                   final List<Long> followUpIssueIds,
+                                                                  final List<Boolean> reliabilities,
                                                                   final Pageable pageable);
+
+    @Query(name = "ReprocessedIssue.findAllOpinionsOrderByLikesAtDesc", nativeQuery = true)
+    List<IssueOpinionMapping> findAllCommentsOrderByLikesAtDesc(final Long issueId,
+                                                                final List<Long> followUpIssueIds,
+                                                                final List<Boolean> reliabilities,
+                                                                final Pageable pageable);
 }

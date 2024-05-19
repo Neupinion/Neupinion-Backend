@@ -6,6 +6,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.member.domain.Member;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
+import com.neupinion.neupinion.opinion.domain.repository.dto.IssueOpinionMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -72,6 +73,22 @@ public class IssueOpinionResponse {
                                         opinion.getParagraphId(), paragraph.getContent(), opinion.getIsReliable(),
                                         opinion.getContent(), opinion.getLikes().size(), isLiked,
                                         opinion.getCreatedAt());
+    }
+
+    public static IssueOpinionResponse of(final IssueOpinionMapping mapping, final Member writer,
+                                          final ReprocessedIssueParagraph paragraph, final boolean isLiked) {
+        return new IssueOpinionResponse(mapping.issueType(), mapping.issueId(), mapping.id(),
+                                        mapping.writerId(), writer.getNickname(), writer.getProfileImageUrl(),
+                                        mapping.paragraphId(), paragraph.getContent(), mapping.isReliable(),
+                                        mapping.content(), mapping.likeCount(), isLiked, mapping.createdAt());
+    }
+
+    public static IssueOpinionResponse of(final IssueOpinionMapping mapping, final Member writer,
+                                          final FollowUpIssueParagraph paragraph, final boolean isLiked) {
+        return new IssueOpinionResponse(mapping.issueType(), mapping.issueId(), mapping.id(),
+                                        mapping.writerId(), writer.getNickname(), writer.getProfileImageUrl(),
+                                        mapping.paragraphId(), paragraph.getContent(), mapping.isReliable(),
+                                        mapping.content(), mapping.likeCount(), isLiked, mapping.createdAt());
     }
 
     public boolean getIsLiked() {

@@ -14,4 +14,8 @@ public enum IssueType {
             .findAny()
             .orElseThrow(() -> new IssueTypeNotFoundException(Map.of("wrongType", value)));
     }
+
+    public static boolean isReprocessed(final String value) {
+        return REPROCESSED.name().equalsIgnoreCase(value);
+    }
 }

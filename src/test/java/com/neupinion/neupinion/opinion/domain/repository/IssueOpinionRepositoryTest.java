@@ -12,7 +12,7 @@ import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
-import com.neupinion.neupinion.opinion.domain.repository.dto.IssueCommentMapping;
+import com.neupinion.neupinion.opinion.domain.repository.dto.IssueOpinionMapping;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -64,31 +64,33 @@ public class IssueOpinionRepositoryTest extends JpaRepositoryTest {
 
         // when
         final var reprocessedIssueOpinions = reprocessedIssueRepository.findAllCommentsOrderByCreatedAtDesc(
-            reprocessedIssue.getId(), List.of(followUpIssue1.getId(), followUpIssue2.getId()), PageRequest.of(0, 5));
+            reprocessedIssue.getId(), List.of(followUpIssue1.getId(), followUpIssue2.getId()), List.of(true, false),
+            PageRequest.of(0, 5));
         final var nextReprocessedIssueOpinions = reprocessedIssueRepository.findAllCommentsOrderByCreatedAtDesc(
-            reprocessedIssue.getId(), List.of(followUpIssue1.getId(), followUpIssue2.getId()), PageRequest.of(1, 5));
+            reprocessedIssue.getId(), List.of(followUpIssue1.getId(), followUpIssue2.getId()), List.of(true, false),
+            PageRequest.of(1, 5));
 
         // then
         assertAll(
             () -> assertThat(reprocessedIssueOpinions).hasSize(5),
             () -> assertThat(reprocessedIssueOpinions.stream()
-                                 .map(IssueCommentMapping::id)
+                                 .map(IssueOpinionMapping::id)
                                  .toList()).containsExactly(followUpIssueOpinion4.getId(),
                                                             followUpIssueOpinion3.getId(),
                                                             followUpIssueOpinion2.getId(),
                                                             followUpIssueOpinion1.getId(),
                                                             reprocessedIssueOpinion3.getId()),
             () -> assertThat(reprocessedIssueOpinions.stream()
-                                 .map(IssueCommentMapping::issueType)
+                                 .map(IssueOpinionMapping::issueType)
                                  .toList()).containsExactly("FOLLOW_UP", "FOLLOW_UP", "FOLLOW_UP", "FOLLOW_UP",
                                                             "REPROCESSED"),
             () -> assertThat(nextReprocessedIssueOpinions).hasSize(2),
             () -> assertThat(nextReprocessedIssueOpinions.stream()
-                                 .map(IssueCommentMapping::id)
+                                 .map(IssueOpinionMapping::id)
                                  .toList()).containsExactly(reprocessedIssueOpinion2.getId(),
                                                             reprocessedIssueOpinion1.getId()),
             () -> assertThat(nextReprocessedIssueOpinions.stream()
-                                 .map(IssueCommentMapping::issueType)
+                                 .map(IssueOpinionMapping::issueType)
                                  .toList()).containsExactly("REPROCESSED", "REPROCESSED")
         );
     }

@@ -8,5 +8,6 @@ public interface OpinionOrderStrategy {
     List<ReprocessedIssueOpinion> getOpinionsByParagraphOrderBy(final Long paragraphId,
                                                                 final List<Boolean> reliabilities);
 
-    List<ReprocessedIssueOpinion> getOpinionsByReliabilitiesOrderBy(final Long issueId, final List<Boolean> reliabilities);
+    List<ReprocessedIssueOpinion> getOpinionsByReliabilitiesOrderBy(final Long issueId,
+                                                                    final List<Boolean> reliabilities);
 }
