@@ -5,8 +5,8 @@ import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResp
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
-import com.neupinion.neupinion.viewmode.follow_up_issue.FollowUpIssueViewStrategy;
-import com.neupinion.neupinion.viewmode.follow_up_issue.ViewMode;
+import com.neupinion.neupinion.query_mode.view.follow_up_issue.FollowUpIssueViewStrategy;
+import com.neupinion.neupinion.query_mode.view.follow_up_issue.ViewMode;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;

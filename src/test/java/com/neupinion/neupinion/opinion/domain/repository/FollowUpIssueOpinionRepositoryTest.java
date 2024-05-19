@@ -1,10 +1,9 @@
-package com.neupinion.neupinion.opinion.repository;
+package com.neupinion.neupinion.opinion.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
-import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.utils.JpaRepositoryTest;
 import java.util.Set;
 import org.junit.jupiter.api.Test;

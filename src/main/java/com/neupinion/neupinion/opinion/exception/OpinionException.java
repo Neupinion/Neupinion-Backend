@@ -49,11 +49,4 @@ public class OpinionException extends CustomException {
             super(ErrorCode.NOT_MATCHED_MEMBER, inputValuesByProperty);
         }
     }
-
-    public static class InvalidViewModeException extends OpinionException {
-
-        public InvalidViewModeException() {
-            super(ErrorCode.INVALID_OPINION_VIEW_MODE);
-        }
-    }
 }

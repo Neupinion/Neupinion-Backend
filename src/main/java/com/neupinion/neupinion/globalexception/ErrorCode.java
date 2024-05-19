@@ -29,6 +29,7 @@ public enum ErrorCode {
     NOT_FOUND_OPINION(2003, "해당 의견을 찾을 수 없습니다."),
     NOT_MATCHED_MEMBER(2004, "자신의 의견만 수정할 수 있습니다."),
     INVALID_OPINION_VIEW_MODE(2005, "잘못된 조회 인자입니다."),
+    INVALID_OPINION_ORDER_MODE(2006, "잘못된 정렬 인자입니다."),
 
     // 3000: 회원
     MEMBER_NOT_FOUND(3000, "해당 회원을 찾을 수 없습니다."),

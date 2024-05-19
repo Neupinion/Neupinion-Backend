@@ -1,4 +1,4 @@
-package com.neupinion.neupinion.viewmode.follow_up_issue;
+package com.neupinion.neupinion.query_mode.view.follow_up_issue;
 
 import com.neupinion.neupinion.issue.exception.FollowUpIssueException.InvalidViewModeException;
 import java.util.Arrays;

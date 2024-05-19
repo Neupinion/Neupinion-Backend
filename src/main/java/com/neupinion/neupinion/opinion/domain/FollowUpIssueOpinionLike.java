@@ -24,15 +24,15 @@ public class FollowUpIssueOpinionLike {
     private Long memberId;
 
     @Column(name = "follow_up_issue_opinion_id")
-    private Long followUpIssueId;
+    private Long followUpIssueOpinionId;
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
-    private FollowUpIssueOpinionLike(final Long id, final Long memberId, final Long followUpIssueId) {
+    private FollowUpIssueOpinionLike(final Long id, final Long memberId, final Long followUpIssueOpinionId) {
         this.id = id;
         this.memberId = memberId;
-        this.followUpIssueId = followUpIssueId;
+        this.followUpIssueOpinionId = followUpIssueOpinionId;
         this.isDeleted = false;
     }
 
