@@ -1,6 +1,9 @@
 package com.neupinion.neupinion.issue.domain;
 
+import com.neupinion.neupinion.opinion.domain.repository.dto.IssueCommentMapping;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,8 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.time.Clock;
@@ -20,6 +25,35 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@SqlResultSetMapping(
+    name = "IssueCommentMapping",
+    classes = @ConstructorResult(
+        targetClass = IssueCommentMapping.class,
+        columns = {
+            @ColumnResult(name = "id", type = Long.class),
+            @ColumnResult(name = "paragraphId", type = Long.class),
+            @ColumnResult(name = "issueId", type = Long.class),
+            @ColumnResult(name = "writerId", type = Long.class),
+            @ColumnResult(name = "content", type = String.class),
+            @ColumnResult(name = "isReliable", type = Boolean.class),
+            @ColumnResult(name = "issueType", type = String.class),
+            @ColumnResult(name = "createdAt", type = LocalDateTime.class),
+        }
+    )
+)
+@NamedNativeQuery(
+    name = "ReprocessedIssue.findAllCommentsOrderByCreatedAtDesc",
+    query =
+        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt "
+            + "FROM reprocessed_issue_opinion rio "
+            + "WHERE rio.reprocessed_issue_id = :issueId "
+            + "UNION ALL "
+            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt "
+            + "FROM follow_up_issue_opinion fuo "
+            + "WHERE fuo.follow_up_issue_id IN :followUpIssueIds "
+            + "ORDER BY createdAt DESC",
+    resultSetMapping = "IssueCommentMapping"
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "reprocessed_issue")
