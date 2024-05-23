@@ -20,13 +20,13 @@ public class ReprocessedIssueOpinionLike {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id")
+    @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "reprocessed_issue_opinion_id")
+    @Column(name = "reprocessed_issue_opinion_id", nullable = false)
     private Long reprocessedIssueOpinionId;
 
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     private ReprocessedIssueOpinionLike(final Long id, final Long memberId, final Long reprocessedIssueOpinionId) {
