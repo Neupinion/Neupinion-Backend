@@ -40,8 +40,10 @@ public enum ErrorCode {
 
     // 5000: 인증, 인가
     OAUTH_TYPE_NOT_FOUND(5000, "해당 OAuth 타입을 찾을 수 없습니다."),
-    INVALID_AUTHORIZATION_CODE(5001, "잘못된 인증 코드입니다."),
+    INVALID_ACCESS_TOKEN(5001, "잘못된 액세스 코드입니다."),
     KAKAO_SERVER_EXCEPTION(5002, "카카오 서버에서 오류가 발생하였습니다."),
+    GOOGLE_SERVER_EXCEPTION(5003, "구글 서버에서 오류가 발생하였습니다."),
+    INVALID_AUTHORIZATION_CODE(5004, "잘못된 인증 코드입니다."),
 
     // 6000: 토큰
     EXPIRED_TOKEN(6000, "토큰이 만료되었습니다."),
@@ -49,6 +51,11 @@ public enum ErrorCode {
     NOT_FOUND_REFRESH_TOKEN(6002, "리프레시 토큰을 찾을 수 없습니다."),
     TOKEN_PAIR_NOT_MATCHING_EXCEPTION(6003, "토큰 쌍이 일치하지 않습니다."),
     NOT_FOUND_ACCESS_TOKEN(6004, "액세스 토큰을 찾을 수 없습니다."),
+
+    // 7000: 리소스, 이미지
+    IMAGE_READ_EXCEPTION(7000, "이미지를 읽어오는 중 오류가 발생하였습니다."),
+    IMAGE_NOT_FOUND(7001, "해당 이미지를 찾을 수 없습니다."),
+    INVALID_FILE_NAME(7002, "잘못된 파일 이름입니다."),
     ;
 
     private final int code;

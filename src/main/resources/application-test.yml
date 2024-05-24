@@ -31,3 +31,14 @@ jwt:
   secret-code: alksejgihslkdjf2r2i40djsbfkajdslfkjkljalskd
   access-token-valid-time: 12000 # 12초
   refresh-token-valid-time: 6000000 # 10분
+
+oauth2:
+  google:
+    access-token-url: http://localhost:8000/token
+    member-info-url: http://localhost:8000/userinfo
+    client-id: 12345678901234567890123456789012
+    client-secret: 12345678901234567890123456789012
+    redirect-uri: http://localhost:8080/redirect
+
+cookie:
+  valid-time: 12000 # 12초

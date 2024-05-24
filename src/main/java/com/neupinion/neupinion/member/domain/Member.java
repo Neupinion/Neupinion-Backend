@@ -1,8 +1,11 @@
 package com.neupinion.neupinion.member.domain;
 
+import com.neupinion.neupinion.auth.application.OAuthType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +35,13 @@ public class Member {
     @Column(name = "profile_image_url", nullable = false)
     private String profileImageUrl;
 
+    @Column(name = "auth_type")
+    @Enumerated(EnumType.STRING)
+    private OAuthType authType;
+
+    @Column(name = "auth_key")
+    private String authKey;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
@@ -48,14 +58,22 @@ public class Member {
         updatedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 
-    public Member(final Long id, final String nickname, final String profileImageUrl) {
+    public Member(final Long id, final String nickname, final String profileImageUrl, final OAuthType authType,
+                  final String authKey) {
         this.id = id;
         this.nickname = new Nickname(nickname);
         this.profileImageUrl = profileImageUrl;
+        this.authType = authType;
+        this.authKey = authKey;
     }
 
     public static Member forSave(final String nickname, final String profileImageUrl) {
-        return new Member(null, nickname, profileImageUrl);
+        return new Member(null, nickname, profileImageUrl, null, null);
+    }
+
+    public static Member forSave(final String nickname, final String profileImageUrl, final OAuthType authType,
+                                 final String authKey) {
+        return new Member(null, nickname, profileImageUrl, authType, authKey);
     }
 
     public String getNickname() {

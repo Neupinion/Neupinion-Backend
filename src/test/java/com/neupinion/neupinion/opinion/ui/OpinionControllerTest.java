@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
+import com.neupinion.neupinion.auth.application.OAuthType;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueParagraphRepository;
@@ -516,9 +517,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
         when(memberRepository.getMemberById(1L))
-            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1"));
+            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1", OAuthType.GOOGLE, "googleId"));
         when(memberRepository.getMemberById(2L))
-            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2"));
+            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2", OAuthType.GOOGLE, "googleId2"));
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
             ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, 2L, "내용1"));
         final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
@@ -558,9 +559,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
         when(memberRepository.getMemberById(1L))
-            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1"));
+            .thenReturn(new Member(1L, "뉴피1", "https://neupinion/image/1", OAuthType.GOOGLE, "googleId"));
         when(memberRepository.getMemberById(2L))
-            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2"));
+            .thenReturn(new Member(2L, "뉴피2", "https://neupinion/image/2", OAuthType.GOOGLE, "googleId"));
         final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
             ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, 2L, "내용1"));
         final ReprocessedIssueOpinion opinion2 = reprocessedIssueOpinionRepository.save(
