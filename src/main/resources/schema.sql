@@ -62,6 +62,8 @@ create table if not exists member
     id                bigint auto_increment,
     nickname          varchar(30)  not null,
     profile_image_url text         not null,
+    auth_type         varchar(50) check (auth_type in ('GOOGLE')),
+    auth_key          varchar(513),
     created_at        timestamp(6) not null,
     updated_at        timestamp(6) not null,
     primary key (id)
