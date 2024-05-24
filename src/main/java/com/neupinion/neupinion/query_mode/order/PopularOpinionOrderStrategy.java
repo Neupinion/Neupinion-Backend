@@ -15,7 +15,7 @@ public class PopularOpinionOrderStrategy implements OpinionOrderStrategy {
     public List<ReprocessedIssueOpinion> getOpinionsByReliabilitiesOrderBy(final Long issueId,
                                                                            final List<Boolean> reliabilities,
                                                                            final Pageable pageable) {
-        return reprocessedIssueOpinionRepository.findByIssueIdAndIsReliableWithLikes(issueId, reliabilities, pageable);
+        return reprocessedIssueOpinionRepository.findOpinionsOrderByLike(issueId, reliabilities, pageable);
     }
 
     @Override
