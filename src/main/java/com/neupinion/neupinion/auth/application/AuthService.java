@@ -21,7 +21,7 @@ public class AuthService {
 
     @Transactional
     public TokenPair oAuthLogin(final String type, final String authorizationCode) {
-        final OAuthType oAuthType = OAuthType.valueOf(type);
+        final OAuthType oAuthType = OAuthType.from(type);
         final OAuthInfoProvider oAuthInfoProvider = oAuthProviderFinder.findOAuthProvider(oAuthType);
 
         final String oAuthAccessToken = oAuthInfoProvider.getAccessToken(authorizationCode);
