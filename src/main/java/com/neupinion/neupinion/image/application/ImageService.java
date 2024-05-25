@@ -5,10 +5,10 @@ import com.neupinion.neupinion.image.exception.ImageException.ImageProcessingExc
 import com.neupinion.neupinion.image.exception.ImageException.InvalidFileNameException;
 import com.neupinion.neupinion.utils.StringChecker;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ImageService {
 
-    private static final String SRC_MAIN_RESOURCES_STATIC_IMAGES = "./src/main/resources/static/images/";
+    private static final String STATIC_IMAGES_DIR = "static/images/";
 
     public byte[] getImage(final String fileName) {
         validateFileName(fileName);
+        final ClassPathResource classPathResource = new ClassPathResource(STATIC_IMAGES_DIR + fileName);
 
-        try (final InputStream in = new FileInputStream(SRC_MAIN_RESOURCES_STATIC_IMAGES + fileName);
+        try (final InputStream in = classPathResource.getInputStream();
             final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             return readImage(in, out);
         } catch (IOException e) {
