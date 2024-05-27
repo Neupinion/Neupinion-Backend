@@ -19,7 +19,7 @@ public class OpinionLikeService {
                            final Long memberId) {
         final ReprocessedIssueOpinionLike opinionLike = reprocessedIssueOpinionLikeRepository.findByMemberIdAndReprocessedIssueOpinionId(
                 memberId, opinionId)
-            .orElse(reprocessedIssueOpinionLikeRepository.saveAndFlush(
+            .orElseGet(() -> reprocessedIssueOpinionLikeRepository.saveAndFlush(
                 ReprocessedIssueOpinionLike.forSave(memberId, opinionId)
             ));
 
