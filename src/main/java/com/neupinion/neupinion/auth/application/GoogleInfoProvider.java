@@ -63,7 +63,7 @@ public class GoogleInfoProvider implements OAuthInfoProvider {
             return Objects.requireNonNull(response.getBody()).getAccessToken();
         } catch (HttpClientErrorException e) {
             throw new InvalidAuthorizationCodeException(
-                Map.of("invalidAuthorizationCode", authorizationCode));
+                Map.of("invalidAuthorizationCode", authorizationCode, "error", e.getMessage()));
         } catch (HttpServerErrorException | NullPointerException e) {
             throw new GoogleServerException(Map.of("authorizationCode", authorizationCode));
         }
