@@ -153,3 +153,26 @@ create table if not exists follow_up_issue_opinion_like
     is_deleted                 boolean not null,
     primary key (id)
 );
+
+create table if not exists article
+(
+    id                 bigint auto_increment,
+    title              varchar(1000) not null,
+    original_link      text          not null,
+    description        varchar(3000) not null,
+    pub_date           timestamp(6)  not null,
+    stand              varchar(255)  not null check ( stand in
+                                                      ('ADVANTAGEOUS', 'NEGATIVE', 'NEUTRAL',
+                                                       'IRRELEVANT')),
+    selected_stand     varchar(255)  not null,
+    article_keyword_id bigint        not null,
+    reason             varchar(5000),
+    primary key (id)
+);
+
+create table if not exists article_keyword
+(
+    id         bigint auto_increment,
+    keyword    varchar(255) not null,
+    primary key (id)
+);
