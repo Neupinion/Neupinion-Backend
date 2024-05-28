@@ -83,7 +83,7 @@ public class GoogleInfoProvider implements OAuthInfoProvider {
                 GoogleMemberInfoResponse.class
             );
 
-            return Objects.requireNonNull(response.getBody()).getEmail();
+            return Objects.requireNonNull(response.getBody()).getId();
         } catch (HttpClientErrorException e) {
             throw new InvalidAccessTokenException(Map.of("invalidAccessToken", accessToken));
         } catch (HttpServerErrorException | NullPointerException e) {
