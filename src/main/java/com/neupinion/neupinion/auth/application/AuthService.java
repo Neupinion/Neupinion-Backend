@@ -28,7 +28,7 @@ public class AuthService {
         final String authKey = oAuthInfoProvider.getMemberInfo(oAuthAccessToken);
 
         final Member member = memberService.findByAuthKeyAndAuthType(authKey, oAuthType)
-            .orElse(memberService.registerMember(authKey, oAuthType));
+            .orElseGet(() -> memberService.registerMember(authKey, oAuthType));
 
         final Long memberId = member.getId();
         final String accessToken = tokenProvider.createAccessToken(memberId);
