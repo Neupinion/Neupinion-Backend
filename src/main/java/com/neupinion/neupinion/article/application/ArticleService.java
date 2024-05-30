@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -97,8 +98,7 @@ public class ArticleService {
         put("www.imaeil.com", TagInfo.ofByClass("div", "article_content"));
         put("www.ajunews.com", TagInfo.ofByClass("div", "article_con"));
     }};
-    private static final int CONTENT_THRESHOLD = 16300;
-    private static final int ABSTRACT_TOKEN_SIZE = 4;
+    private static final int CONTENT_THRESHOLD = 10000;
 
     @Value("${naver-api.client.id}")
     private String clientId;
@@ -113,29 +113,92 @@ public class ArticleService {
 
     @Transactional
     public AnalyzedArticleResponse getArticles(final ArticleSearchRequest request) {
+        final Optional<ArticleKeyword> optionalArticleKeyword = articleKeywordRepository.findByKeyword(
+            request.getSearchKeyword());
+
+        return optionalArticleKeyword.map(articleKeyword -> getExistedAnalyzedArticleResponse(request, articleKeyword))
+                                     .orElseGet(() -> getAnalyzedArticleResponse(request));
+    }
+
+    private AnalyzedArticleResponse getExistedAnalyzedArticleResponse(final ArticleSearchRequest request,
+                                                                      final ArticleKeyword articleKeyword) {
+        final List<Article> existingArticleResponses = articleRepository.findAllByArticleKeywordId(
+            articleKeyword.getId());
+
+        final List<NaverNewsItemResponse> items = getArticlesFromNaver(articleKeyword.getKeyword());
+        final List<NaverNewsItemResponse> filteredItems = items.stream()
+                                                               .filter(item -> existingArticleResponses.stream()
+                                                                                                       .noneMatch(
+                                                                                                           article -> article.isSameArticle(
+                                                                                                               Jsoup.parse(
+                                                                                                                        item.getTitle())
+                                                                                                                    .text(),
+                                                                                                               item.getOriginallink()))
+                                                               ).toList();
+
+        final List<Mono<Article>> articleMonos = filteredItems.parallelStream()
+                                                              .map(
+                                                                  item -> getArticleMono(request, item, articleKeyword))
+                                                              .toList();
+
+        final List<ArticleResponse> articleResponses = new ArrayList<>(existingArticleResponses.stream()
+                                                                                               .map(this::toDto)
+                                                                                               .toList());
+        articleResponses.addAll(makeArticleResponses(articleMonos));
+
+        return distributeArticlesByStand(articleResponses);
+    }
+
+    private ArticleResponse toDto(final Article article) {
+        return new ArticleResponse(article.getId(), article.getTitle(), article.getDescription(),
+                                   article.getOriginalLink(), article.getPubDate(),
+                                   article.getStand().name(), article.getReason());
+    }
+
+    private List<ArticleResponse> makeArticleResponses(final List<Mono<Article>> articleMonos) {
+        return Flux.merge(articleMonos)
+                   .collectList()
+                   .map(articles -> articles.stream()
+                                            .map(this::toDto)
+                                            .toList())
+                   .block();
+    }
+
+    private AnalyzedArticleResponse distributeArticlesByStand(final List<ArticleResponse> responses) {
+        final List<ArticleResponse> positiveArticles = new ArrayList<>();
+        final List<ArticleResponse> neutralArticles = new ArrayList<>();
+        final List<ArticleResponse> negativeArticles = new ArrayList<>();
+
+        for (ArticleResponse article : responses) {
+            final Stand stand = Stand.fromByName(article.getStand());
+            if (stand == Stand.ADVANTAGEOUS) {
+                positiveArticles.add(article);
+            } else if (stand == Stand.NEUTRAL) {
+                neutralArticles.add(article);
+            } else if (stand == Stand.DISADVANTAGEOUS) {
+                negativeArticles.add(article);
+            }
+        }
+
+        return AnalyzedArticleResponse.of(positiveArticles, neutralArticles, negativeArticles);
+    }
+
+    private AnalyzedArticleResponse getAnalyzedArticleResponse(final ArticleSearchRequest request) {
+        final List<NaverNewsItemResponse> items = getArticlesFromNaver(request.getSearchKeyword());
+
         final ArticleKeyword articleKeyword = articleKeywordRepository.save(
             ArticleKeyword.forSave(request.getSearchKeyword()));
 
-        final ResponseEntity<NaverNewsResponse> response = getArticlesFromNaver(request.getSearchKeyword());
-        final LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        final List<Mono<Article>> articleMonos = items.parallelStream()
+                                                      .map(item -> getArticleMono(request, item, articleKeyword))
+                                                      .toList();
 
-        final List<Mono<Article>> articleMonos = Objects.requireNonNull(response.getBody()).getItems().parallelStream()
-            .map(item -> getArticleMono(request, item, oneMonthAgo, articleKeyword))
-            .toList();
-
-        final List<ArticleResponse> responses = Flux.merge(articleMonos)
-            .collectList()
-            .map(articles -> articles.stream()
-                .map(article -> new ArticleResponse(article.getId(), article.getTitle(), article.getDescription(),
-                                                    article.getOriginalLink(), article.getPubDate(),
-                                                    article.getStand().name(), article.getReason()))
-                .toList())
-            .block();
+        final List<ArticleResponse> responses = makeArticleResponses(articleMonos);
 
         return distributeArticlesByStand(responses);
     }
 
-    private ResponseEntity<NaverNewsResponse> getArticlesFromNaver(final String searchKeyword) {
+    private List<NaverNewsItemResponse> getArticlesFromNaver(final String searchKeyword) {
         final String encodedKeyword = URLEncoder.encode(searchKeyword, StandardCharsets.UTF_8);
         final URI uri = URI.create(String.format(NAVER_API_URL, encodedKeyword));
         final HttpHeaders headers = new HttpHeaders();
@@ -143,16 +206,19 @@ public class ArticleService {
         headers.set(CLIENT_SECRET_HEADER, clientSecret);
 
         final RequestEntity<Void> request = RequestEntity.get(uri)
-            .headers(headers)
-            .build();
+                                                         .headers(headers)
+                                                         .build();
 
-        return restTemplate.exchange(request, new ParameterizedTypeReference<>() {
-        });
+        final ResponseEntity<NaverNewsResponse> response = restTemplate.exchange(request,
+                                                                                 new ParameterizedTypeReference<>() {
+                                                                                 });
+        return Objects.requireNonNull(response.getBody()).getItems();
     }
 
     private Mono<Article> getArticleMono(final ArticleSearchRequest request, final NaverNewsItemResponse item,
-                                         final LocalDateTime oneMonthAgo, final ArticleKeyword articleKeyword) {
+                                         final ArticleKeyword articleKeyword) {
         final LocalDateTime publishedDate = LocalDateTime.parse(item.getPubDate(), DATE_TIME_FORMATTER);
+        final LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         if (publishedDate.isBefore(oneMonthAgo)) {
             return Mono.empty();
         }
@@ -176,18 +242,19 @@ public class ArticleService {
                     articleBody = document.selectFirst(tagInfo.getTag() + "#" + tagInfo.getIdName());
                 }
                 if (articleBody != null) {
-                    if(countToken(articleBody) > CONTENT_THRESHOLD) {
+                    if (countToken(articleBody) > CONTENT_THRESHOLD) {
                         return Mono.empty();
                     }
                     final String content = articleBody.text();
                     return chatGptService.getAnalyzedResult(request, content)
-                        .map(analyzedResult -> Article.forSave(
-                            articleTitle, item.getOriginallink(), item.getDescription(), publishedDate,
-                            Stand.fromByValue(analyzedResult.getCategory()), request.getSelectedStand(),
-                            articleKeyword.getId(), analyzedResult.getReason()
-                        ))
-                        .flatMap(article -> Mono.fromCallable(() -> articleRepository.save(article))
-                            .subscribeOn(Schedulers.boundedElastic()));
+                                         .map(analyzedResult -> Article.forSave(
+                                             articleTitle, item.getOriginallink(), item.getDescription(), publishedDate,
+                                             Stand.fromByValue(analyzedResult.getCategory()),
+                                             request.getSelectedStand(),
+                                             articleKeyword.getId(), analyzedResult.getReason()
+                                         ))
+                                         .flatMap(article -> Mono.fromCallable(() -> articleRepository.save(article))
+                                                                 .subscribeOn(Schedulers.boundedElastic()));
                 }
             }
         } catch (Exception e) {
@@ -198,7 +265,7 @@ public class ArticleService {
     }
 
     private int countToken(final Element articleBody) {
-        return articleBody.text().length() / ABSTRACT_TOKEN_SIZE;
+        return articleBody.text().length();
     }
 
     private String extractDomain(final String originalLink) {
@@ -208,24 +275,5 @@ public class ArticleService {
         } catch (URISyntaxException e) {
             throw new ArticleException.NotFoundDomainException(Map.of("originalLink", originalLink));
         }
-    }
-
-    private AnalyzedArticleResponse distributeArticlesByStand(final List<ArticleResponse> responses) {
-        final List<ArticleResponse> positiveArticles = new ArrayList<>();
-        final List<ArticleResponse> neutralArticles = new ArrayList<>();
-        final List<ArticleResponse> negativeArticles = new ArrayList<>();
-
-        for (ArticleResponse article : responses) {
-            final Stand stand = Stand.fromByName(article.getStand());
-            if (stand == Stand.ADVANTAGEOUS) {
-                positiveArticles.add(article);
-            } else if (stand == Stand.NEUTRAL) {
-                neutralArticles.add(article);
-            } else if (stand == Stand.DISADVANTAGEOUS) {
-                negativeArticles.add(article);
-            }
-        }
-
-        return AnalyzedArticleResponse.of(positiveArticles, neutralArticles, negativeArticles);
     }
 }

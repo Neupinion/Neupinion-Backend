@@ -12,7 +12,7 @@ public class PromptParameters {
     private final String type = "object";
     private final Map<String, Object> properties = Map.of(
         "category", Map.of("type", "string", "enum", new String[]{"유리", "불리", "중립", "무관"}),
-        "reason", Map.of("type", "string", "enum", new String[]{"기사 내용의 관점을 그렇게 판단한 이유를 존댓말로 반환한다."})
+        "reason", Map.of("type", "string", "description", "기사가 주어진 입장에 대해 '유리/불리/중립/무관한' 관점을 가지고 있다고 판단한 이유에 대해 경어체로 작성해줘.")
     );
     private final List<String> required = List.of("category", "reason");
 }

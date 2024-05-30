@@ -68,4 +68,8 @@ public class Article {
         return new Article(null, title, originalLink, description, pubDate, stand, selectedStand, articleKeywordId,
                            reason);
     }
+
+    public boolean isSameArticle(final String title, final String originalLink) {
+        return this.title.equals(title) && this.originalLink.equals(originalLink);
+    }
 }

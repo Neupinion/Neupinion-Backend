@@ -21,7 +21,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class ChatGptService {
 
-    private static final String FORMATTED_STRING = "이 이슈는 %s 에 대한 내용이야. 이 이슈는 각각 %s 입장으로 나뉘어 있어. 이 이슈의 자세한 설명은 다음과 같아. %s \n 아래에 있는 기사의 내용이 %s 입장에 대해서 유리하게 쓰여져 있는지/중립적으로 쓰여져 있는지/불리하게 쓰여져 있는지/무관하게 쓰여졌는지 분류해줘. \n\n %s \n '분류: '유리/불리/중립/무관' 중 하나의 값, 이유: 네가 그렇게 판단한 이유' 형태로 대답해 줘";
+    private static final String FORMATTED_STRING = "이 이슈는 %s 에 대한 내용이야. 이 이슈는 각각 %s 입장으로 나뉘어 있어. 이 이슈의 자세한 설명은 다음과 같아. %s \n 아래에 있는 기사의 내용이 %s 입장에 대해서 유리하게 쓰여져 있는지/중립적으로 쓰여져 있는지/불리하게 쓰여져 있는지/무관하게 쓰여졌는지 분류해줘. \n\n %s";
+    private static final String AUTHORIZATION_PREFIX = "Bearer ";
 
     @Value("${openai.secret-key}")
     private String secretKey;
@@ -37,7 +38,7 @@ public class ChatGptService {
 
         return webClient.post()
             .uri("/chat/completions")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
+            .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_PREFIX + secretKey)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(Mono.just(promptRequest), OpenAiPromptRequest.class)
             .retrieve()

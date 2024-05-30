@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class OpenAiPromptRequest {
 
-    private final String model = "gpt-3.5-turbo";
+    private final String model = "gpt-4-turbo";
 
     @JsonProperty("max_tokens")
     private final int maxTokens = 500;
