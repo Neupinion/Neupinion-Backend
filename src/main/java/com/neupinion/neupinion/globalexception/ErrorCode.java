@@ -56,6 +56,12 @@ public enum ErrorCode {
     IMAGE_READ_EXCEPTION(7000, "이미지를 읽어오는 중 오류가 발생하였습니다."),
     IMAGE_NOT_FOUND(7001, "해당 이미지를 찾을 수 없습니다."),
     INVALID_FILE_NAME(7002, "잘못된 파일 이름입니다."),
+
+    // 8000: 기사 분석
+    UNSUPPORTED_STAND(8000, "지원하지 않는 입장입니다."),
+    ORIGINAL_LINK_NOT_ACCESSIBLE(8001, "원본 링크에 접근할 수 없습니다."),
+    NOT_FOUND_DOMAIN(8002, "해당 도메인을 찾을 수 없습니다."),
+    UNORGANIZED_RESULT(8003, "정리되지 않은 분석 결과입니다."),
     ;
 
     private final int code;
