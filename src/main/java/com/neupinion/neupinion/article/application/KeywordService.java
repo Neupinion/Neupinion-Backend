@@ -2,13 +2,13 @@ package com.neupinion.neupinion.article.application;
 
 import com.neupinion.neupinion.article.application.dto.KeywordResponse;
 import com.neupinion.neupinion.article.domain.IssueKeyword;
-import com.neupinion.neupinion.article.domain.KeywordType;
 import com.neupinion.neupinion.article.domain.repository.IssueKeywordRepository;
 import com.neupinion.neupinion.issue.domain.IssueStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,14 +31,17 @@ public class KeywordService {
         if (keywords.isEmpty()) {
             return extractKeyword(issueId, stands);
         }
+        final IssueStand firstStand = stands.get(0);
+        final IssueStand secondStand = stands.get(1);
         return new KeywordResponse(
-            stands.get(0).getStand(),
+            firstStand.getStand(),
             keywords.stream()
-                    .filter(keyword -> keyword.getType() == KeywordType.POSITIVE)
+                    .filter(keyword -> Objects.equals(keyword.getIssueStandId(), firstStand.getId()))
                     .map(IssueKeyword::getKeyword)
                     .toList(),
+            secondStand.getStand(),
             keywords.stream()
-                    .filter(keyword -> keyword.getType() == KeywordType.NEGATIVE)
+                    .filter(keyword -> Objects.equals(keyword.getIssueStandId(), secondStand.getId()))
                     .map(IssueKeyword::getKeyword)
                     .toList());
     }
@@ -49,13 +52,13 @@ public class KeywordService {
                                                                       .map(ReprocessedIssueParagraph::getContent)
                                                                       .collect(Collectors.joining("\n"));
 
-        final KeywordResponse response = chatGptService.getKeywords(articleBody, stands, stands.get(0))
+        final KeywordResponse response = chatGptService.getKeywords(articleBody, stands)
                                                        .block();
-        response.getPositiveKeywords().forEach(keyword -> issueKeywordRepository.save(
-            IssueKeyword.forSave(KeywordType.POSITIVE, keyword, issueId)
+        response.getFirstKeywords().forEach(keyword -> issueKeywordRepository.save(
+            IssueKeyword.forSave(keyword, stands.get(0).getId(), issueId)
         ));
-        response.getNegativeKeywords().forEach(keyword -> issueKeywordRepository.save(
-            IssueKeyword.forSave(KeywordType.NEGATIVE, keyword, issueId)
+        response.getSecondKeywords().forEach(keyword -> issueKeywordRepository.save(
+            IssueKeyword.forSave(keyword, stands.get(1).getId(), issueId)
         ));
 
         return response;

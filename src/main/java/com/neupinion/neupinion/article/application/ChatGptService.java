@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 public class ChatGptService {
 
     private static final String ANALYZED_RESULT_FORMATTED_STRING = "이 이슈는 %s 에 대한 내용이야. 이 이슈는 각각 %s 입장으로 나뉘어 있어. 이 이슈의 자세한 설명은 다음과 같아. %s \n 아래에 있는 기사의 내용이 %s 입장에 대해서 유리하게 쓰여져 있는지/중립적으로 쓰여져 있는지/불리하게 쓰여져 있는지/무관하게 쓰여졌는지 분류해줘. \n\n %s";
-    private static final String KEYWORD_FORMATTED_STRING = "%s 두 입장을 모두 다루는 아래의 기사에서 독자 입장에서 주의해야 할 단어들을 골라줘. %s 에게 유리한 내용 5가지, 불리한 내용 5가지를 뽑되, 하나 당 두 세 단어 정도로 짧게 만들어줘. 키워드에 최대한 중복된 단어가 들어가지 않도록 해줘. \n %s";
+    private static final String KEYWORD_FORMATTED_STRING = "%s 두 입장을 모두 다루는 아래의 기사에서 독자 입장에서 각 입장에 대해 유의해야 할 단어들을 골라줘. %s 의 입장에서 유의해야 하는 내용 5가지, %s 의 입장에서 유의해야 하는 내용 5가지를 뽑되, 하나 당 두 세 단어 정도로 짧게 만들어줘. 키워드에 최대한 중복된 단어가 들어가지 않도록 해줘. \n %s";
     private static final String AUTHORIZATION_PREFIX = "Bearer ";
 
     @Value("${openai.secret-key}")
@@ -67,14 +67,13 @@ public class ChatGptService {
                         });
     }
 
-    public Mono<KeywordResponse> getKeywords(final String articleBody, final List<IssueStand> stands,
-                                             final IssueStand selectedStand) {
+    public Mono<KeywordResponse> getKeywords(final String articleBody, final List<IssueStand> stands) {
         final String joinedStands = stands.stream()
                                           .map(IssueStand::getStand)
                                           .reduce((stand1, stand2) -> stand1 + ", " + stand2)
                                           .orElse("");
-        final String prompt = String.format(KEYWORD_FORMATTED_STRING, joinedStands, selectedStand.getStand(),
-                                            articleBody);
+        final String prompt = String.format(KEYWORD_FORMATTED_STRING, joinedStands, stands.get(0).getStand(),
+                                            stands.get(1).getStand(), articleBody);
 
         return webClient.post()
                         .uri("/chat/completions")
@@ -90,17 +89,19 @@ public class ChatGptService {
                             System.out.println(result);
                             try {
                                 final JsonNode argumentsNode = objectMapper.readTree(result);
-                                final List<String> positiveKeywords = new ArrayList<>();
-                                final List<String> negativeKeywords = new ArrayList<>();
+                                final List<String> firstKeywords = new ArrayList<>();
+                                final List<String> secondKeywords = new ArrayList<>();
 
-                                argumentsNode.get("positiveKeywords").forEach(keywordNode ->
-                                                                                  positiveKeywords.add(
-                                                                                      keywordNode.asText()));
-                                argumentsNode.get("negativeKeywords").forEach(keywordNode ->
-                                                                                  negativeKeywords.add(
-                                                                                      keywordNode.asText()));
-                                final KeywordResponse response = new KeywordResponse(selectedStand.getStand(), positiveKeywords,
-                                                                                     negativeKeywords);
+                                argumentsNode.get("firstKeywords").forEach(keywordNode ->
+                                                                               firstKeywords.add(
+                                                                                   keywordNode.asText()));
+                                argumentsNode.get("secondKeywords").forEach(keywordNode ->
+                                                                                secondKeywords.add(
+                                                                                    keywordNode.asText()));
+                                final KeywordResponse response = new KeywordResponse(stands.get(0).getStand(),
+                                                                                     firstKeywords,
+                                                                                     stands.get(1).getStand(),
+                                                                                     secondKeywords);
                                 sink.next(response);
                             } catch (Exception e) {
                                 sink.error(new UnorganizedResultException(Map.of("result", result)));

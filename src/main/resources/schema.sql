@@ -178,10 +178,10 @@ create table if not exists article_keyword
 
 create table if not exists issue_keyword
 (
-    id       bigint auto_increment,
-    type     varchar(255) not null check ( type in ('POSITIVE', 'NEGATIVE')),
-    keyword  varchar(255) not null,
-    issue_id bigint       not null,
+    id             bigint auto_increment,
+    issue_stand_id bigint       not null,
+    keyword        varchar(255) not null,
+    issue_id       bigint       not null,
     primary key (id)
 );
 

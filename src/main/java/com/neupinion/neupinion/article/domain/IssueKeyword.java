@@ -2,8 +2,6 @@ package com.neupinion.neupinion.article.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,24 +20,23 @@ public class IssueKeyword {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private KeywordType type;
-
     @Column(name = "keyword", nullable = false)
     private String keyword;
+
+    @Column(name = "issue_stand_id", nullable = false)
+    private Long issueStandId;
 
     @Column(name = "issue_id", nullable = false)
     private Long issueId;
 
-    private IssueKeyword(final Long id, final KeywordType type, final String keyword, final Long issueId) {
+    private IssueKeyword(final Long id, final String keyword, final Long issueStandId, final Long issueId) {
         this.id = id;
-        this.type = type;
         this.keyword = keyword;
+        this.issueStandId = issueStandId;
         this.issueId = issueId;
     }
 
-    public static IssueKeyword forSave(final KeywordType type, final String keyword, final Long issueId) {
-        return new IssueKeyword(null, type, keyword, issueId);
+    public static IssueKeyword forSave(final String keyword, final Long issueStandId, final Long issueId) {
+        return new IssueKeyword(null, keyword, issueStandId, issueId);
     }
 }
