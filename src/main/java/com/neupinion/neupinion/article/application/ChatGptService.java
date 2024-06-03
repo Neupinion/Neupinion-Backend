@@ -99,7 +99,7 @@ public class ChatGptService {
                                 argumentsNode.get("negativeKeywords").forEach(keywordNode ->
                                                                                   negativeKeywords.add(
                                                                                       keywordNode.asText()));
-                                final KeywordResponse response = new KeywordResponse(positiveKeywords,
+                                final KeywordResponse response = new KeywordResponse(selectedStand.getStand(), positiveKeywords,
                                                                                      negativeKeywords);
                                 sink.next(response);
                             } catch (Exception e) {
