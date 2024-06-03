@@ -27,10 +27,12 @@ public class KeywordService {
     @Transactional
     public KeywordResponse getKeywords(final Long issueId) {
         final List<IssueKeyword> keywords = issueKeywordRepository.findByIssueId(issueId);
+        final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(issueId);
         if (keywords.isEmpty()) {
-            return extractKeyword(issueId);
+            return extractKeyword(issueId, stands);
         }
         return new KeywordResponse(
+            stands.get(0).getStand(),
             keywords.stream()
                     .filter(keyword -> keyword.getType() == KeywordType.POSITIVE)
                     .map(IssueKeyword::getKeyword)
@@ -41,12 +43,12 @@ public class KeywordService {
                     .toList());
     }
 
-    private KeywordResponse extractKeyword(final Long issueId) {
+    private KeywordResponse extractKeyword(final Long issueId, final List<IssueStand> stands) {
         final String articleBody = reprocessedIssueParagraphRepository.findByReprocessedIssueIdOrderById(issueId)
                                                                       .stream()
                                                                       .map(ReprocessedIssueParagraph::getContent)
                                                                       .collect(Collectors.joining("\n"));
-        final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(issueId);
+
         final KeywordResponse response = chatGptService.getKeywords(articleBody, stands, stands.get(0))
                                                        .block();
         response.getPositiveKeywords().forEach(keyword -> issueKeywordRepository.save(

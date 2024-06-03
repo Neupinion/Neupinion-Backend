@@ -8,6 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class KeywordResponse {
 
+    private final String selectedStand;
     private final List<String> positiveKeywords;
     private final List<String> negativeKeywords;
 }
