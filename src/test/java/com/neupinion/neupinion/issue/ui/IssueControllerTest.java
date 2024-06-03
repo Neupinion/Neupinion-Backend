@@ -43,7 +43,7 @@ class IssueControllerTest extends RestAssuredSpringBootTest {
     void getIntegratedVoteResult() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY));
         reprocessedIssueTrustVoteRepository.save(
             ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, VoteStatus.HIGHLY_TRUSTED));
         reprocessedIssueTrustVoteRepository.save(
@@ -92,7 +92,7 @@ class IssueControllerTest extends RestAssuredSpringBootTest {
     void getIssueTimeLine() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY));
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈1 제목", "이미지링크", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue.getId()));

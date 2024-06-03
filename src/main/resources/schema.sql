@@ -9,7 +9,6 @@ create table if not exists reprocessed_issue
                                    ('ENTERTAINMENTS', 'POLITICS', 'ECONOMY', 'SOCIETY', 'WORLD',
                                     'SPORTS')),
     views      integer      not null,
-    topic      varchar(255) not null,
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     primary key (id)
@@ -172,7 +171,24 @@ create table if not exists article
 
 create table if not exists article_keyword
 (
-    id         bigint auto_increment,
-    keyword    varchar(255) not null,
+    id      bigint auto_increment,
+    keyword varchar(255) not null,
+    primary key (id)
+);
+
+create table if not exists issue_keyword
+(
+    id       bigint auto_increment,
+    type     varchar(255) not null check ( type in ('POSITIVE', 'NEGATIVE')),
+    keyword  varchar(255) not null,
+    issue_id bigint       not null,
+    primary key (id)
+);
+
+create table if not exists issue_stand
+(
+    id       bigint auto_increment,
+    stand    varchar(255) not null,
+    issue_id bigint       not null,
     primary key (id)
 );

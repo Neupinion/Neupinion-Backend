@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PromptParameters {
+public class AnalyzedResultPromptParameters {
 
     private final String type = "object";
     private final Map<String, Object> properties = Map.of(

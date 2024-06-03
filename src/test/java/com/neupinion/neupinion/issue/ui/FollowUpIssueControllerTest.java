@@ -53,7 +53,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
     void createFollowUpIssue() {
         // given
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
         final FollowUpIssueCreateRequest request = FollowUpIssueCreateRequest.of("후속 이슈 제목", Category.WORLD.name(),
                                                                                  "https://neupinion.com/image.jpg",
                                                                                  FollowUpIssueTag.OFFICIAL_POSITION.name(),
@@ -102,7 +102,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성","반대")));
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId, clock));
@@ -143,9 +143,9 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
 
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
@@ -188,7 +188,7 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final Category category = Category.WORLD;
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
         final FollowUpIssue followUpIssue = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId));
@@ -221,9 +221,9 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Long memberId = 1L;
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", category.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", category.name(), List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", category.name(), "논제"));
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", category.name(), List.of("찬성", "반대")));
 
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
