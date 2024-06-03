@@ -2,6 +2,7 @@ package com.neupinion.neupinion.issue.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,12 +31,13 @@ public class ReprocessedIssueCreateRequest {
     @NotBlank
     private final String category;
 
-    @Schema(description = "재가공 이슈 논제", example = "재가공 이슈는 무엇을 논해야 하는가?")
+    @Schema(description = "재가공 이슈 입장들")
     @NotBlank
-    private final String topic;
+    private final List<String> stands;
 
     public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String caption,
-                                                   final String originUrl, final String category, final String topic) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, topic);
+                                                   final String originUrl, final String category,
+                                                   final List<String> stands) {
+        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, stands);
     }
 }

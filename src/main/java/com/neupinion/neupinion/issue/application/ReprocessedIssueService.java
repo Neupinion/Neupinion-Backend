@@ -10,12 +10,14 @@ import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueRespon
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
+import com.neupinion.neupinion.issue.domain.IssueStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
@@ -51,6 +53,7 @@ public class ReprocessedIssueService {
     private final ReprocessedIssueTagRepository reprocessedIssueTagRepository;
     private final ReprocessedIssueBookmarkRepository reprocessedIssueBookmarkRepository;
     private final ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
+    private final IssueStandRepository issueStandRepository;
     private final FollowUpIssueRepository followUpIssueRepository;
 
     @Transactional
@@ -59,9 +62,16 @@ public class ReprocessedIssueService {
                                                                            request.getImageUrl(),
                                                                            request.getCaption(),
                                                                            request.getOriginUrl(),
-                                                                           Category.from(request.getCategory()), request.getTopic());
+                                                                           Category.from(request.getCategory()));
 
-        return reprocessedIssueRepository.save(reprocessedIssue).getId();
+        final Long issueId = reprocessedIssueRepository.save(reprocessedIssue).getId();
+        issueStandRepository.saveAll(
+            request.getStands().stream()
+                   .map(stand -> IssueStand.forSave(stand, issueId))
+                   .toList()
+        );
+
+        return issueId;
     }
 
     public List<ShortReprocessedIssueResponse> findReprocessedIssues(final String dateFormat) {
@@ -75,12 +85,13 @@ public class ReprocessedIssueService {
 
     public ReprocessedIssueResponse findReprocessedIssue(final Long memberId, final Long id) {
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
-            .orElseThrow(ReprocessedIssueNotFoundException::new);
+                                                                            .orElseThrow(
+                                                                                ReprocessedIssueNotFoundException::new);
         final List<ReprocessedIssueParagraph> paragraphs = reprocessedIssueParagraphRepository.findByReprocessedIssueIdOrderById(
             id);
         final List<String> tags = reprocessedIssueTagRepository.findByReprocessedIssueId(id).stream()
-            .map(ReprocessedIssueTag::getTag)
-            .toList();
+                                                               .map(ReprocessedIssueTag::getTag)
+                                                               .toList();
         final boolean isBookmarked = reprocessedIssueBookmarkRepository.existsByReprocessedIssueIdAndMemberIdAndIsBookmarkedIsTrue(
             id, memberId);
         final Optional<ReprocessedIssueTrustVote> trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
@@ -96,16 +107,18 @@ public class ReprocessedIssueService {
     @Transactional
     public void vote(final Long memberId, final Long id, final TrustVoteRequest request) {
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
-            .orElseThrow(ReprocessedIssueNotFoundException::new);
+                                                                            .orElseThrow(
+                                                                                ReprocessedIssueNotFoundException::new);
         final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
-                id, memberId)
-            .orElseGet(() -> {
-                final ReprocessedIssueTrustVote newTrustVote = ReprocessedIssueTrustVote.forSave(
-                    reprocessedIssue.getId(),
-                    memberId,
-                    request.getStatus());
-                return reprocessedIssueTrustVoteRepository.save(newTrustVote);
-            });
+                                                                                           id, memberId)
+                                                                                       .orElseGet(() -> {
+                                                                                           final ReprocessedIssueTrustVote newTrustVote = ReprocessedIssueTrustVote.forSave(
+                                                                                               reprocessedIssue.getId(),
+                                                                                               memberId,
+                                                                                               request.getStatus());
+                                                                                           return reprocessedIssueTrustVoteRepository.save(
+                                                                                               newTrustVote);
+                                                                                       });
 
         trustVote.updateStatus(request.getStatus());
     }
@@ -113,32 +126,36 @@ public class ReprocessedIssueService {
     public List<RecentReprocessedIssueByCategoryResponse> findReprocessedIssuesByCategory(final Long id,
                                                                                           final String category) {
         return reprocessedIssueRepository.findCurrentReprocessedIssuesByCategory(
-                Category.from(category), id).stream()
-            .map(RecentReprocessedIssueByCategoryResponse::of)
-            .toList();
+                                             Category.from(category), id).stream()
+                                         .map(RecentReprocessedIssueByCategoryResponse::of)
+                                         .toList();
     }
 
     public ReprocessedIssueVoteResultResponse getVoteResult(final Long id) {
         final List<ReprocessedIssueTrustVote> votes = reprocessedIssueTrustVoteRepository.findByReprocessedIssueId(id);
         final Map<VoteStatus, Integer> votesCount = votes.stream()
-            .collect(Collectors.toMap(ReprocessedIssueTrustVote::getStatus, v -> 1, Integer::sum));
+                                                         .collect(Collectors.toMap(ReprocessedIssueTrustVote::getStatus,
+                                                                                   v -> 1, Integer::sum));
         final int totalVotesCount = votesCount.values().stream()
-            .mapToInt(Integer::intValue)
-            .sum();
+                                              .mapToInt(Integer::intValue)
+                                              .sum();
         final Map<VoteStatus, Integer> percentages = votesCount.entrySet().stream()
-            .sorted(Entry.comparingByValue())
-            .map(entry -> Map.entry(entry.getKey(), (int) (entry.getValue() / (double) totalVotesCount * 100)))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                                                               .sorted(Entry.comparingByValue())
+                                                               .map(entry -> Map.entry(entry.getKey(), (int) (
+                                                                   entry.getValue() / (double) totalVotesCount * 100)))
+                                                               .collect(
+                                                                   Collectors.toMap(Entry::getKey, Entry::getValue));
         Arrays.stream(VoteStatus.values())
-            .filter(voteStatus -> !percentages.containsKey(voteStatus) && voteStatus != VoteStatus.NOT_VOTED)
-            .forEach(voteStatus -> percentages.put(voteStatus, 0));
+              .filter(voteStatus -> !percentages.containsKey(voteStatus) && voteStatus != VoteStatus.NOT_VOTED)
+              .forEach(voteStatus -> percentages.put(voteStatus, 0));
 
         return ReprocessedIssueVoteResultResponse.of(votesCount, percentages);
     }
 
     public FollowUpIssuesByReprocessedIssueResponse getFollowUpIssues(final Long id) {
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.findById(id)
-            .orElseThrow(ReprocessedIssueNotFoundException::new);
+                                                                            .orElseThrow(
+                                                                                ReprocessedIssueNotFoundException::new);
         final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findByReprocessedIssueIdOrderByCreatedAtDesc(
             id, PageRequest.of(0, FOLLOW_UP_ISSUE_PAGE_SIZE));
 

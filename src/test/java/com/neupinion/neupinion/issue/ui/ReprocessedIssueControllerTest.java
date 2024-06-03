@@ -30,6 +30,7 @@ import io.restassured.http.ContentType;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,15 +62,15 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock otherClock = Clock.fixed(Instant.parse("2024-03-06T00:00:00Z"), ZoneId.systemDefault());
 
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY, "논제", clock));
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", "이미지", "originUrl", Category.ECONOMY, "논제", clock));
+            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", "이미지", "originUrl", Category.ECONOMY, "논제", clock));
+            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", "이미지", "originUrl", Category.ECONOMY, clock));
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.SOCIETY, "논제", clock));
+            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.SOCIETY, clock));
         reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목5", "image", "이미지", "originUrl", Category.ECONOMY, "논제", otherClock));
+            ReprocessedIssue.forSave("재가공 이슈 제목5", "image", "이미지", "originUrl", Category.ECONOMY, otherClock));
 
         // when
         final var response = RestAssured.given().log().all()
@@ -94,7 +95,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     @Test
     void saveReprocessedIssue() {
         // given
-        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originUrl", "ECONOMY", "논제");
+        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originUrl", "ECONOMY", List.of("찬성", "반대"));
 
         // when
         final var response = RestAssured.given().log().all()
@@ -117,7 +118,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void findReprocessedIssueResponses() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
         final ReprocessedIssueParagraph paragraph1 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용1", true, reprocessedIssue.getId()));
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
@@ -154,7 +155,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void voteTrust() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
         final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
 
         // when
@@ -173,16 +174,16 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void findReprocessedIssueResponsesByCategory() {
         // given
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY, "논제",
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T00:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", "이미지", "originUrl", Category.ECONOMY, "논제",
+            ReprocessedIssue.forSave("재가공 이슈 제목2", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T06:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", "이미지", "originUrl", Category.ECONOMY, "논제",
+            ReprocessedIssue.forSave("재가공 이슈 제목3", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T08:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.ECONOMY, "논제",
+            ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T10:00:00Z"), ZoneId.systemDefault())));
 
         // when
@@ -209,7 +210,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void getVoteResult() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
         reprocessedIssueTrustVoteRepository.save(
             ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, VoteStatus.HIGHLY_TRUSTED.name()));
         reprocessedIssueTrustVoteRepository.save(
@@ -244,7 +245,7 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void getFollowUpIssues() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY, "논제"));
+            ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
         final FollowUpIssue followUpIssue = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "image", Category.ECONOMY, FollowUpIssueTag.INTERVIEW,
                                   reprocessedIssue.getId()));

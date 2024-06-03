@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class OpenAiResponse {
+public class AnalyzedResultResponse {
 
     private final String category;
     private final String reason;
