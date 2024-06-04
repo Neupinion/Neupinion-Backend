@@ -24,4 +24,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(ErrorResponse.from(e));
     }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponse> handleGlobalException(final CustomException e) {
+        log.error(e.getErrorInfoLog());
+
+        return ResponseEntity.internalServerError().body(ErrorResponse.from(e));
+    }
 }
