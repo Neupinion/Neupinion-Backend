@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,7 +20,9 @@ public class SimpleIdInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response,
                              final Object handler) {
-        final long memberId = Long.parseLong(request.getHeader(HttpHeaders.AUTHORIZATION));
+        final String header = TokenHeaderExtractor.extractToken(request)
+                                             .orElse("1");
+        final long memberId = Long.parseLong(header);
         memberService.validateByIdThrowIfNotExist(memberId);
         authContext.setAuthenticatedMember(memberId);
 
