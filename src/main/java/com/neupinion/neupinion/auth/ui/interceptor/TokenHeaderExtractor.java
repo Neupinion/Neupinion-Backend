@@ -14,7 +14,7 @@ public class TokenHeaderExtractor {
 
     public static Optional<String> extractToken(final HttpServletRequest request) {
         final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (Strings.isEmpty(authorization)) {
+        if (authorization == null || Strings.isEmpty(authorization)) {
             return Optional.empty();
         }
         return getToken(authorization.split(" "));
