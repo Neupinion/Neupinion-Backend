@@ -81,7 +81,7 @@ create table if not exists reprocessed_issue_paragraph
 (
     id                   bigint auto_increment,
     reprocessed_issue_id bigint  not null,
-    content              text    not null,
+    content              varchar(1000)    not null,
     selectable           boolean not null,
     primary key (id)
 );
