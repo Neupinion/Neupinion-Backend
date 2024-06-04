@@ -20,10 +20,10 @@ public class ReprocessedIssueParagraph {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "selectable")
+    @Column(name = "selectable", nullable = false)
     private boolean selectable;
 
     @Column(name = "reprocessed_issue_id", nullable = false, updatable = false)
