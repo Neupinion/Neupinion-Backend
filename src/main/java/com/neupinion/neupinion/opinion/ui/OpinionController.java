@@ -1,5 +1,7 @@
 package com.neupinion.neupinion.opinion.ui;
 
+import com.neupinion.neupinion.auth.ui.argumentresolver.Authenticated;
+import com.neupinion.neupinion.auth.ui.argumentresolver.MemberInfo;
 import com.neupinion.neupinion.opinion.application.OpinionService;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
@@ -41,10 +43,10 @@ public class OpinionController {
 
     @PostMapping("/reprocessed-issue/opinion")
     public ResponseEntity<Void> createReprocessedIssueOpinion(
-        @Valid @RequestBody final ReprocessedIssueOpinionCreateRequest request
+        @Valid @RequestBody final ReprocessedIssueOpinionCreateRequest request,
+        @Authenticated final MemberInfo memberInfo
     ) {
-        final Long opinionId = opinionService.createReprocessedIssueOpinion(1L,
-                                                                            request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        final Long opinionId = opinionService.createReprocessedIssueOpinion(memberInfo.memberId(), request);
 
         return ResponseEntity.created(URI.create("/reprocessed-issue/opinion/" + opinionId)).build();
     }
@@ -52,9 +54,10 @@ public class OpinionController {
     @PatchMapping("/reprocessed-issue/opinion/{opinionId}")
     public ResponseEntity<Void> updateReprocessedIssueOpinion(
         @PathVariable final Long opinionId,
-        @Valid @RequestBody final OpinionUpdateRequest request
+        @Valid @RequestBody final OpinionUpdateRequest request,
+        @Authenticated final MemberInfo memberInfo
     ) {
-        opinionService.updateReprocessedIssueOpinion(1L, opinionId, request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        opinionService.updateReprocessedIssueOpinion(memberInfo.memberId(), opinionId, request);
 
         return ResponseEntity.noContent().build();
     }
@@ -81,10 +84,10 @@ public class OpinionController {
 
     @GetMapping("/reprocessed-issue/{issueId}/me")
     public ResponseEntity<List<MyOpinionResponse>> getMyReprocessedIssueOpinions(
-        @PathVariable final Long issueId
+        @PathVariable final Long issueId,
+        @Authenticated final MemberInfo memberInfo
     ) {
-        final List<MyOpinionResponse> responses = opinionService.getMyReprocessedOpinions(1L,
-                                                                                          issueId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        final List<MyOpinionResponse> responses = opinionService.getMyReprocessedOpinions(memberInfo.memberId(), issueId);
 
         return ResponseEntity.ok(responses);
     }
@@ -100,9 +103,10 @@ public class OpinionController {
 
     @DeleteMapping("/reprocessed-issue/opinion/{opinionId}")
     public ResponseEntity<Void> deleteReprocessedIssueOpinion(
-        @PathVariable final Long opinionId
+        @PathVariable final Long opinionId,
+        @Authenticated final MemberInfo memberInfo
     ) {
-        opinionService.deleteReprocessedIssueOpinion(1L, opinionId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        opinionService.deleteReprocessedIssueOpinion(memberInfo.memberId(), opinionId);
 
         return ResponseEntity.noContent().build();
     }
@@ -112,22 +116,23 @@ public class OpinionController {
         @PathVariable final Long issueId,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
         @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
-        @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page
+        @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
+        @Authenticated final MemberInfo memberInfo
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
 
-        return ResponseEntity.ok(opinionService.getReprocessedIssueOpinions(issueId, 1L, filter,
-                                                                            orderFilter,
-                                                                            page)); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        return ResponseEntity.ok(
+            opinionService.getReprocessedIssueOpinions(issueId, memberInfo.memberId(), filter, orderFilter, page));
     }
 
     @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
-        @PathVariable final Long issueId
+        @PathVariable final Long issueId,
+        @Authenticated final MemberInfo memberInfo
     ) {
         final List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId,
-                                                                                                              1L);  // TODO: 24. 4. 20. 추후 액세스 토큰 인증 로직 추가하기
+                                                                                                              memberInfo.memberId());
 
         return ResponseEntity.ok(responses);
     }
@@ -137,12 +142,13 @@ public class OpinionController {
         @PathVariable final Long issueId,
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
         @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
-        @RequestParam(required = false, defaultValue = "0") final Integer page
+        @RequestParam(required = false, defaultValue = "0") final Integer page,
+        @Authenticated final MemberInfo memberInfo
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
         final List<OpinionParagraphResponse> responses = opinionService.getReprocessedIssueOpinionsOrderByParagraph(
-            issueId, 1L, orderFilter, filter, page);
+            issueId, memberInfo.memberId(), orderFilter, filter, page);
 
         return ResponseEntity.ok(responses);
     }
