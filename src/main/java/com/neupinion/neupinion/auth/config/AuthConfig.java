@@ -7,11 +7,13 @@ import com.neupinion.neupinion.auth.ui.interceptor.TokenInterceptor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@Profile("test")
 @RequiredArgsConstructor
 @Configuration
 public class AuthConfig implements WebMvcConfigurer {

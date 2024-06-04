@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-@Profile("!prod")
+@Profile("dev")
 @RequiredArgsConstructor
 @Component
 public class SimpleIdInterceptor implements HandlerInterceptor {
