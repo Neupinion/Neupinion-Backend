@@ -12,10 +12,10 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Profile({"local", "dev"})
+@Profile({"local"})
 @RequiredArgsConstructor
 @Configuration
-public class DevAuthConfig implements WebMvcConfigurer {
+public class LocalAuthConfig implements WebMvcConfigurer {
 
     private final AuthArgumentResolver authArgumentResolver;
     private final SimpleIdInterceptor simpleIdInterceptor;
