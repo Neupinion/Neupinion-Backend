@@ -14,6 +14,7 @@ import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionReportRequest;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
@@ -22,6 +23,7 @@ import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionReportRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
@@ -51,6 +53,9 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
+
+    @Autowired
+    private ReprocessedIssueOpinionReportRepository reprocessedIssueOpinionReportRepository;
 
     @Autowired
     private TokenProvider tokenProvider;
@@ -776,5 +781,30 @@ class OpinionControllerTest extends RestAssuredSpringBootTest {
             () -> assertThat(responses).extracting(OpinionParagraphResponse::getId).containsExactly(paragraph2.getId()),
             () -> assertThat(responses.get(0).getOpinions().get(0).getId()).isEqualTo(opinion2.getId())
         );
+    }
+
+    @DisplayName("POST /reprocessed-issue/opinion/{opinionId}/report 요청을 보내는 경우, 의견을 신고하고 상태 코드 204를 반환한다.")
+    @Test
+    void reportReprocessedIssueOpinion() {
+        // given
+        final long reprocessedIssueId = 1L;
+        final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.save(
+            ReprocessedIssueParagraph.forSave("내용", true, reprocessedIssueId));
+        final Member member1 = memberRepository.save(Member.forSave("이름", "image"));
+        final Member member2 = memberRepository.save(Member.forSave("이름2", "image"));
+        final ReprocessedIssueOpinion opinion = reprocessedIssueOpinionRepository.save(
+            ReprocessedIssueOpinion.forSave(paragraph.getId(), reprocessedIssueId, true, member1.getId(), "내용1"));
+        final OpinionReportRequest request = new OpinionReportRequest("스팸", "스팸이에요");
+
+        // when
+        // then
+        RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(member2.getId()))
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when().log().all()
+            .post("/reprocessed-issue/opinion/{opinionId}/report", opinion.getId())
+            .then().log().all()
+            .statusCode(HttpStatus.NO_CONTENT.value());
     }
 }
