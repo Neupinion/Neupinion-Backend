@@ -27,6 +27,8 @@ import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraph
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
+import com.neupinion.neupinion.member.domain.Member;
+import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -62,6 +64,9 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private TokenProvider tokenProvider;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @DisplayName("GET /reprocessed-issue?date={date} 로 요청을 보내는 경우, 상태 코드 200과 해당 날짜의 재가공 이슈 리스트를 반환한다.")
     @Test
@@ -142,9 +147,11 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueTag tag2 = reprocessedIssueTagRepository.save(
             ReprocessedIssueTag.forSave(reprocessedIssue.getId(), "태그2"));
 
+        final Member member = memberRepository.save(Member.forSave("닉네임", "image"));
+
         // when
         final var response = RestAssured.given().log().all()
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(1L))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(member.getId()))
             .contentType(ContentType.JSON)
             .when().log().all()
             .get("/reprocessed-issue/{id}", reprocessedIssue.getId())
@@ -179,10 +186,12 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
         final TrustVoteRequest request = new TrustVoteRequest(issueStands.get(0).getId(), true,
                                                               issueStands.get(1).getId(), false);
+        final long memberId = memberRepository.save(Member.forSave("닉네임", "image")).getId();
 
         // when
         // then
         RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
             .contentType(ContentType.JSON)
             .body(request)
             .when().log().all()
@@ -207,9 +216,12 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T10:00:00Z"), ZoneId.systemDefault())));
+        final long memberId = memberRepository.save(Member.forSave("닉네임", "image")).getId();
 
         // when
         final var responses = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
+            .contentType(ContentType.JSON)
             .when().log().all()
             .get("/reprocessed-issue/by-category?current={id}&category={category}", issue1.getId(),
                  Category.ECONOMY.name())

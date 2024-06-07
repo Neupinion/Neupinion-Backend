@@ -41,6 +41,7 @@ public class AuthConfig implements WebMvcConfigurer {
             .includePathPattern("/follow-up-issue/**", PathMethod.GET)
             .includePathPattern("/follow-up-issue/opinion", PathMethod.POST)
             .includePathPattern("/follow-up-issue/opinion/**", PathMethod.PATCH)
+            .includePathPattern("/follow-up-issue/opinion/**", PathMethod.DELETE)
             .includePathPattern("/follow-up-issue/**/me", PathMethod.GET)
             .includePathPattern("/issue/**/opinion/**", PathMethod.GET);
     }
