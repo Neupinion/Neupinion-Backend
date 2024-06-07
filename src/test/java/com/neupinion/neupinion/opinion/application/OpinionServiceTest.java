@@ -16,6 +16,7 @@ import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionReportRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException.AlreadyExistedOpinionException;
 import com.neupinion.neupinion.opinion.exception.OpinionException.NotMatchedMemberException;
@@ -63,13 +64,17 @@ class OpinionServiceTest extends JpaRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private ReprocessedIssueOpinionReportRepository reprocessedIssueOpinionReportRepository;
+
     private OpinionService opinionService;
 
     @BeforeEach
     void setUp() {
         opinionService = new OpinionService(followUpIssueOpinionRepository, followUpIssueParagraphRepository,
                                             reprocessedIssueOpinionRepository, reprocessedIssueParagraphRepository,
-                                            reprocessedIssueOpinionLikeRepository, memberRepository, orderStrategies,
+                                            reprocessedIssueOpinionLikeRepository, memberRepository,
+                                            reprocessedIssueOpinionReportRepository, orderStrategies,
                                             opinionViewStrategies);
     }
 

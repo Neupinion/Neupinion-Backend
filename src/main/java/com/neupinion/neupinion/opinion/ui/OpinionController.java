@@ -6,6 +6,7 @@ import com.neupinion.neupinion.opinion.application.OpinionService;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionReportRequest;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
@@ -156,5 +157,16 @@ public class OpinionController {
             issueId, memberInfo.memberId(), orderFilter, filter, page);
 
         return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/reprocessed-issue/opinion/{opinionId}/report")
+    public ResponseEntity<Void> reportReprocessedIssueOpinion(
+        @PathVariable final Long opinionId,
+        @RequestBody @Valid final OpinionReportRequest request,
+        @Authenticated@Schema(hidden = true) final MemberInfo memberInfo
+    ) {
+        opinionService.reportReprocessedIssueOpinion(memberInfo.memberId(), opinionId, request);
+
+        return ResponseEntity.noContent().build();
     }
 }

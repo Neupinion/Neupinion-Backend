@@ -10,14 +10,17 @@ import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.opinion.application.dto.FollowUpIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.MyOpinionResponse;
 import com.neupinion.neupinion.opinion.application.dto.OpinionParagraphResponse;
+import com.neupinion.neupinion.opinion.application.dto.OpinionReportRequest;
 import com.neupinion.neupinion.opinion.application.dto.OpinionUpdateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCreateRequest;
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
+import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionReport;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionReportRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.exception.OpinionException;
 import com.neupinion.neupinion.query_mode.order.OpinionOrderStrategy;
@@ -47,6 +50,7 @@ public class OpinionService {
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
     private final ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
     private final MemberRepository memberRepository;
+    private final ReprocessedIssueOpinionReportRepository reprocessedIssueOpinionReportRepository;
 
     private final Map<OrderMode, OpinionOrderStrategy> orderStrategies;
     private final Map<OpinionViewMode, List<Boolean>> opinionViewStrategies;
@@ -330,5 +334,12 @@ public class OpinionService {
             .map(entry -> OpinionParagraphResponse.of(entry.getKey(), entry.getValue()))
             .sorted(Comparator.comparing(OpinionParagraphResponse::getId))
             .toList();
+    }
+
+    @Transactional
+    public void reportReprocessedIssueOpinion(final Long memberId, final Long opinionId,
+                                              final OpinionReportRequest request) {
+        reprocessedIssueOpinionReportRepository.save(
+            ReprocessedIssueOpinionReport.forSave(opinionId, memberId, request.getReason(), request.getContent()));
     }
 }

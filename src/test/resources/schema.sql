@@ -114,13 +114,13 @@ create table if not exists reprocessed_issue_bookmark
 
 create table if not exists reprocessed_issue_trust_vote
 (
-    id                     bigint auto_increment,
-    reprocessed_issue_id   bigint  not null,
-    member_id              bigint  not null,
-    first_stand_id         bigint  not null,
-    first_relatable  boolean not null,
-    second_stand_id        bigint  not null,
-    second_relatable boolean not null,
+    id                   bigint auto_increment,
+    reprocessed_issue_id bigint  not null,
+    member_id            bigint  not null,
+    first_stand_id       bigint  not null,
+    first_relatable      boolean not null,
+    second_stand_id      bigint  not null,
+    second_relatable     boolean not null,
     primary key (id)
 );
 
@@ -136,12 +136,12 @@ create table if not exists reprocessed_issue_opinion_like
 create table if not exists follow_up_issue_trust_vote
 (
     id                 bigint auto_increment,
-    follow_up_issue_id bigint      not null,
-    member_id          bigint      not null,
-    first_stand_id         bigint  not null,
-    first_relatable  boolean not null,
-    second_stand_id        bigint  not null,
-    second_relatable boolean not null,
+    follow_up_issue_id bigint  not null,
+    member_id          bigint  not null,
+    first_stand_id     bigint  not null,
+    first_relatable    boolean not null,
+    second_stand_id    bigint  not null,
+    second_relatable   boolean not null,
     primary key (id)
 );
 
@@ -191,5 +191,15 @@ create table if not exists issue_stand
     id       bigint auto_increment,
     stand    varchar(255) not null,
     issue_id bigint       not null,
+    primary key (id)
+);
+
+create table if not exists reprocessed_issue_opinion_report
+(
+    id                           bigint auto_increment,
+    reprocessed_issue_opinion_id bigint        not null,
+    reporter_id                  bigint        not null,
+    reason                       varchar(255)  not null,
+    content                      varchar(1000) not null,
     primary key (id)
 );
