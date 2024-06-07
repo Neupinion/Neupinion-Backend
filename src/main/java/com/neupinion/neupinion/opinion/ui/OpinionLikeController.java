@@ -1,7 +1,10 @@
 package com.neupinion.neupinion.opinion.ui;
 
+import com.neupinion.neupinion.auth.ui.argumentresolver.Authenticated;
+import com.neupinion.neupinion.auth.ui.argumentresolver.MemberInfo;
 import com.neupinion.neupinion.opinion.application.OpinionLikeService;
 import com.neupinion.neupinion.opinion.application.dto.OpinionLikeRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +25,10 @@ public class OpinionLikeController {
     public ResponseEntity<Void> likeOpinion(
         @PathVariable final Long reprocessedIssueId,
         @PathVariable final Long opinionId,
-        @RequestBody @Valid final OpinionLikeRequest request
+        @RequestBody @Valid final OpinionLikeRequest request,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        opinionLikeService.updateLike(opinionId, request, 1L); // TODO: 23/5/24 추후 액세스 토큰 인증 로직 추가하기
+        opinionLikeService.updateLike(opinionId, request, memberInfo.memberId());
 
         return ResponseEntity.ok().build();
     }

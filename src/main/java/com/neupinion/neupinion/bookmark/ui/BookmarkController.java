@@ -1,7 +1,10 @@
 package com.neupinion.neupinion.bookmark.ui;
 
+import com.neupinion.neupinion.auth.ui.argumentresolver.Authenticated;
+import com.neupinion.neupinion.auth.ui.argumentresolver.MemberInfo;
 import com.neupinion.neupinion.bookmark.application.BookmarkService;
 import com.neupinion.neupinion.bookmark.application.dto.ReprocessedIssueBookmarkRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +24,10 @@ public class BookmarkController {
     @PutMapping
     public ResponseEntity<Void> register(
         @PathVariable final Long id,
-        @RequestBody @Valid final ReprocessedIssueBookmarkRequest request
+        @RequestBody @Valid final ReprocessedIssueBookmarkRequest request,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        bookmarkService.register(1L, id, request); // TODO: 3/25/24 추후 액세스 토큰 인증 로직 추가하기
+        bookmarkService.register(memberInfo.memberId(), id, request);
 
         return ResponseEntity.ok().build();
     }
