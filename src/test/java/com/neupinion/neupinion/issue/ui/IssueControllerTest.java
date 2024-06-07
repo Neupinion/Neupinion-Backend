@@ -3,25 +3,30 @@ package com.neupinion.neupinion.issue.ui;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.auth.application.TokenProvider;
 import com.neupinion.neupinion.issue.application.dto.IntegratedVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.TimelineResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTrustVote;
+import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
-import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueTrustVoteRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 class IssueControllerTest extends RestAssuredSpringBootTest {
@@ -38,33 +43,50 @@ class IssueControllerTest extends RestAssuredSpringBootTest {
     @Autowired
     private FollowUpIssueTrustVoteRepository followUpIssueTrustVoteRepository;
 
+    @Autowired
+    private IssueStandRepository issueStandRepository;
+
+    @Autowired
+    private TokenProvider tokenProvider;
+
     @DisplayName("GET /issue/{issueId}/integrated-result 요청을 받아 상태 코드 200과 통합 투표 결과를 반환한다.")
     @Test
     void getIntegratedVoteResult() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목", "이미지링크", "캡션", "원본링크", Category.ECONOMY));
+
+        final List<IssueStand>  issueStands = List.of(
+            issueStandRepository.save(IssueStand.forSave("찬성", reprocessedIssue.getId())),
+            issueStandRepository.save(IssueStand.forSave("반대", reprocessedIssue.getId()))
+        );
+
+        final RelatableStand relatableStand1 = new RelatableStand(issueStands.get(0).getId(), true, issueStands.get(1).getId(), false);
+        final RelatableStand relatableStand2 = new RelatableStand(issueStands.get(0).getId(), false, issueStands.get(1).getId(), true);
+
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, VoteStatus.HIGHLY_TRUSTED));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, relatableStand1));
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 2L, VoteStatus.SOMEWHAT_DISTRUSTED));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 2L, relatableStand2));
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈1 제목", "이미지링크", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue.getId()));
         followUpIssueTrustVoteRepository.save(
-            FollowUpIssueTrustVote.forSave(followUpIssue1.getId(), 1L, VoteStatus.HIGHLY_TRUSTED));
+            FollowUpIssueTrustVote.forSave(followUpIssue1.getId(), 1L, relatableStand1));
         followUpIssueTrustVoteRepository.save(
-            FollowUpIssueTrustVote.forSave(followUpIssue1.getId(), 2L, VoteStatus.HIGHLY_TRUSTED));
+            FollowUpIssueTrustVote.forSave(followUpIssue1.getId(), 2L, relatableStand1));
         final FollowUpIssue followUpIssue2 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈2 제목", "이미지링크", Category.POLITICS, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue.getId()));
         followUpIssueTrustVoteRepository.save(
-            FollowUpIssueTrustVote.forSave(followUpIssue2.getId(), 1L, VoteStatus.SOMEWHAT_DISTRUSTED));
+            FollowUpIssueTrustVote.forSave(followUpIssue2.getId(), 1L, relatableStand2));
         followUpIssueTrustVoteRepository.save(
-            FollowUpIssueTrustVote.forSave(followUpIssue2.getId(), 2L, VoteStatus.SOMEWHAT_TRUSTED));
+            FollowUpIssueTrustVote.forSave(followUpIssue2.getId(), 2L, relatableStand1));
 
         // when
         final var response = RestAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(1L))
+            .contentType(ContentType.JSON)
             .when().log().all()
             .get("/issue/{issueId}/integrated-result", reprocessedIssue.getId())
             .then().log().all()
@@ -73,17 +95,16 @@ class IssueControllerTest extends RestAssuredSpringBootTest {
 
         // then
         assertAll(
-            () -> assertThat(response.getMostVoted()).isEqualTo(VoteStatus.HIGHLY_TRUSTED.getValue()),
-            () -> assertThat(response.getMostVotedCount()).isEqualTo(3),
+            () -> assertThat(response.getMostVotedStand()).isEqualTo("찬성"),
+            () -> assertThat(response.getMostVotedCount()).isEqualTo(4),
             () -> assertThat(response.getTotalVoteCount()).isEqualTo(6),
             () -> assertThat(response.getVoteResults()).hasSize(3),
             () -> assertThat(response.getVoteRankings()).usingRecursiveComparison()
-                .comparingOnlyFields("voteStatus")
-                .isEqualTo(List.of(VoteStatus.HIGHLY_TRUSTED.getValue(), VoteStatus.SOMEWHAT_DISTRUSTED.getValue(),
-                                   VoteStatus.SOMEWHAT_TRUSTED.getValue(), VoteStatus.HIGHLY_DISTRUSTED.getValue())),
+                .comparingOnlyFields("stand")
+                .isEqualTo(List.of("찬성", "반대")),
             () -> assertThat(response.getVoteRankings()).usingRecursiveComparison()
-                .comparingOnlyFields("count")
-                .isEqualTo(List.of(3, 2, 1, 0))
+                .comparingOnlyFields("relatablePercentage")
+                .isEqualTo(List.of(66, 33))
         );
     }
 

@@ -1,9 +1,8 @@
 package com.neupinion.neupinion.issue.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,19 +27,18 @@ public class FollowUpIssueTrustVote {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private VoteStatus status;
+    @Embedded
+    private RelatableStand relatableStand;
 
     private FollowUpIssueTrustVote(final Long id, final Long followUpIssueId, final Long memberId,
-                                  final VoteStatus status) {
+                                  final RelatableStand relatableStand) {
         this.id = id;
         this.followUpIssueId = followUpIssueId;
         this.memberId = memberId;
-        this.status = status;
+        this.relatableStand = relatableStand;
     }
 
-    public static FollowUpIssueTrustVote forSave(final Long followUpIssueId, final Long memberId, final VoteStatus status) {
-        return new FollowUpIssueTrustVote(null, followUpIssueId, memberId, status);
+    public static FollowUpIssueTrustVote forSave(final Long followUpIssueId, final Long memberId, final RelatableStand relatableStand) {
+        return new FollowUpIssueTrustVote(null, followUpIssueId, memberId, relatableStand);
     }
 }

@@ -1,8 +1,9 @@
 package com.neupinion.neupinion.issue.application.dto;
 
+import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
-import com.neupinion.neupinion.issue.domain.VoteStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,8 +33,11 @@ public class ReprocessedIssueResponse {
     @Schema(description = "북마크 여부", example = "true")
     private final boolean isBookmarked;
 
-    @Schema(description = "이슈 신뢰도 투표", example = "TRUSTED")
-    private final String trustVote;
+    @Schema(description = "투표 여부", example = "true")
+    private final boolean isVoted;
+
+    @Schema(description = "이슈 전체 입장")
+    private final List<RelatableStandResponse> stands;
 
     @Schema(description = "발행일", example = "2024-02-28T11:44:30.327959")
     private final LocalDateTime createdAt;
@@ -49,12 +53,20 @@ public class ReprocessedIssueResponse {
 
     public static ReprocessedIssueResponse of(final ReprocessedIssue reprocessedIssue,
                                               final boolean isBookmarked,
-                                              final VoteStatus trustVote,
+                                              final List<IssueStand> stands,
+                                              final boolean isVoted,
+                                              final RelatableStand relatableStand,
                                               final List<ReprocessedIssueParagraph> paragraphs,
                                               final List<String> tags) {
         final List<ReprocessedIssueParagraphResponse> content = paragraphs.stream()
             .map(ReprocessedIssueParagraphResponse::of)
             .toList();
+        final List<RelatableStandResponse> relatableStandResponses = List.of(
+            new RelatableStandResponse(stands.get(0).getId(), stands.get(0).getStand(),
+                                       relatableStand.isFirstRelatable()),
+            new RelatableStandResponse(stands.get(1).getId(), stands.get(1).getStand(),
+                                       relatableStand.isSecondRelatable())
+        );
 
         return new ReprocessedIssueResponse(
             reprocessedIssue.getId(),
@@ -63,7 +75,8 @@ public class ReprocessedIssueResponse {
             reprocessedIssue.getCaption(),
             reprocessedIssue.getCategory().getValue(),
             isBookmarked,
-            trustVote.name(),
+            isVoted,
+            relatableStandResponses,
             reprocessedIssue.getCreatedAt(),
             reprocessedIssue.getOriginUrl(),
             content,
@@ -73,5 +86,9 @@ public class ReprocessedIssueResponse {
 
     public boolean getIsBookmarked() {
         return isBookmarked;
+    }
+
+    public boolean getIsVoted() {
+        return isVoted;
     }
 }

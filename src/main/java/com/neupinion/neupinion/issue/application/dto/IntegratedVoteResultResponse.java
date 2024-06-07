@@ -1,6 +1,6 @@
 package com.neupinion.neupinion.issue.application.dto;
 
-import com.neupinion.neupinion.issue.domain.VoteStatus;
+import com.neupinion.neupinion.issue.domain.IssueStand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +12,8 @@ import lombok.Getter;
 @Getter
 public class IntegratedVoteResultResponse {
 
-    @Schema(description = "가장 많은 투표를 받은 투표 결과", example = "완전 신뢰")
-    private final String mostVoted;
+    @Schema(description = "가장 많은 투표를 받은 이슈 입장", example = "민희진")
+    private final String mostVotedStand;
 
     @Schema(description = "가장 많은 투표를 받은 투표 결과 개수", example = "5342")
     private final int mostVotedCount;
@@ -28,10 +28,11 @@ public class IntegratedVoteResultResponse {
     private final List<VoteRankingResponse> voteRankings;
 
 
-    public static IntegratedVoteResultResponse of(final Map<VoteStatus, Integer> totalVotes,
-                                                  final List<Map<Boolean, Integer>> voteResultResponses,
+    public static IntegratedVoteResultResponse of(final List<IssueStand> stands,
+                                                  final Map<IssueStand, Integer> totalVotes,
+                                                  final List<Map<IssueStand, Integer>> voteResultResponses,
                                                   final List<VoteRankingResponse> voteRankingResponses) {
-        final VoteStatus mostVoted = totalVotes.entrySet().stream()
+        final IssueStand mostVoted = totalVotes.entrySet().stream()
             .max(Map.Entry.comparingByValue())
             .map(Map.Entry::getKey).get();
 
@@ -41,10 +42,10 @@ public class IntegratedVoteResultResponse {
             .sum();
 
         final List<IssueVoteResultResponse> voteResults = voteResultResponses.stream()
-            .map(entry -> new IssueVoteResultResponse(entry.get(true), entry.get(false)))
+            .map(entry -> new IssueVoteResultResponse(entry.get(stands.get(0)), entry.get(stands.get(1))))
             .toList();
 
-        return new IntegratedVoteResultResponse(mostVoted.getValue(), mostVotedCount, totalVoteCount, voteResults,
+        return new IntegratedVoteResultResponse(mostVoted.getStand(), mostVotedCount, totalVoteCount, voteResults,
                                                 voteRankingResponses);
     }
 }

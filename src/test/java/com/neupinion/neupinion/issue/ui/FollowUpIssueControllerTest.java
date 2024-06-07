@@ -12,10 +12,11 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateReque
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
-import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueViewsRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
 import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
@@ -48,12 +49,16 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
     @Autowired
     private FollowUpIssueViewsRepository followUpIssueViewsRepository;
 
+    @Autowired
+    private IssueStandRepository issueStandRepository;
+
     @DisplayName("POST /follow-up-issue 요청을 보내는 경우, 상태 코드 201과 후속 이슈를 생성한다.")
     @Test
     void createFollowUpIssue() {
         // given
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+                                             List.of("찬성", "반대")));
         final FollowUpIssueCreateRequest request = FollowUpIssueCreateRequest.of("후속 이슈 제목", Category.WORLD.name(),
                                                                                  "https://neupinion.com/image.jpg",
                                                                                  FollowUpIssueTag.OFFICIAL_POSITION.name(),
@@ -102,7 +107,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성","반대")));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+                                             List.of("찬성", "반대")));
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId, clock));
@@ -143,9 +149,11 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+                                             List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+                                             List.of("찬성", "반대")));
 
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
@@ -188,7 +196,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final Category category = Category.WORLD;
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+                                             List.of("찬성", "반대")));
         final FollowUpIssue followUpIssue = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.OFFICIAL_POSITION, reprocessedIssueId));
@@ -221,9 +230,11 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Long memberId = 1L;
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", category.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", category.name(),
+                                             List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", category.name(), List.of("찬성", "반대")));
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", category.name(),
+                                             List.of("찬성", "반대")));
 
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
@@ -247,7 +258,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
                                   Clock.fixed(Instant.parse("2024-02-10T00:00:00Z"), ZoneId.systemDefault())));
 
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssueId, memberId, VoteStatus.HIGHLY_TRUSTED.name()));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssueId, memberId,
+                                              new RelatableStand(1L, true, 2L, true)));
 
         // when
         final var responses = RestAssured.given().log().all()

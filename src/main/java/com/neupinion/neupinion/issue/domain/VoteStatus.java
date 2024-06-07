@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Map;
 import lombok.Getter;
 
+@Deprecated
 @Getter
 public enum VoteStatus {
 
