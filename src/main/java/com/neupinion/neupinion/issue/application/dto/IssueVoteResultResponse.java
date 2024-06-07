@@ -9,9 +9,9 @@ import lombok.Getter;
 @Getter
 public class IssueVoteResultResponse {
 
-    @Schema(description = "신뢰 비율", example = "82")
-    private final int trustRate;
+    @Schema(description = "첫 번째 입장 공감 비율", example = "82")
+    private final int firstStandRelatablePercentage;
 
-    @Schema(description = "의심 비율", example = "18")
-    private final int doubtRate;
+    @Schema(description = "두 번째 입장 공감 비율", example = "18")
+    private final int secondStandRelatablePercentage;
 }

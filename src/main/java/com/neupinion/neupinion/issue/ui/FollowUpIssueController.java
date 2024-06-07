@@ -1,5 +1,7 @@
 package com.neupinion.neupinion.issue.ui;
 
+import com.neupinion.neupinion.auth.ui.argumentresolver.Authenticated;
+import com.neupinion.neupinion.auth.ui.argumentresolver.MemberInfo;
 import com.neupinion.neupinion.issue.application.FollowUpIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueCreateRequest;
@@ -7,6 +9,7 @@ import com.neupinion.neupinion.issue.application.dto.FollowUpIssueOfVotedReproce
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.query_mode.view.follow_up_issue.FollowUpIssueViewStrategy;
 import com.neupinion.neupinion.query_mode.view.follow_up_issue.ViewMode;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -40,28 +43,29 @@ public class FollowUpIssueController {
     public ResponseEntity<List<FollowUpIssueByCategoryResponse>> getByCategoryAndDate(
         @RequestParam(name = "category") final String category,
         @RequestParam(name = "date") final String dateFormat,
-        @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode
-    ) {
+        @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
+        ) {
         final ViewMode filter = ViewMode.from(viewMode);
         final FollowUpIssueViewStrategy strategy = strategies.getOrDefault(filter, strategies.get(ViewMode.ALL));
 
         return ResponseEntity.ok(
-            strategy.findIssueByCategoryAndDate(dateFormat, category, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+            strategy.findIssueByCategoryAndDate(dateFormat, category, memberInfo.memberId()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FollowUpIssueResponse> getById(
         @PathVariable final Long id,
-        final Long memberId
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        return ResponseEntity.ok(followUpIssueService.findById(id, 1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+        return ResponseEntity.ok(followUpIssueService.findById(id, memberInfo.memberId()));
     }
 
     @GetMapping("/unviewed")
     public ResponseEntity<List<FollowUpIssueOfVotedReprocessedIssueResponse>> getUnviewedSortByLatest(
-        final Long memberId
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         return ResponseEntity.ok(
-            followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(1L)); // TODO: 추후 액세스 토큰 인증 로직 추가하기
+            followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(memberInfo.memberId()));
     }
 }

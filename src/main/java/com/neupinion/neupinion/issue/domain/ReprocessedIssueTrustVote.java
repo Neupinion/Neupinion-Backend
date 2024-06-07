@@ -1,9 +1,8 @@
 package com.neupinion.neupinion.issue.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,34 +27,22 @@ public class ReprocessedIssueTrustVote {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private VoteStatus status;
-
-    private ReprocessedIssueTrustVote(final Long id, final Long reprocessedIssueId, final Long memberId, final String status) {
-        this.id = id;
-        this.reprocessedIssueId = reprocessedIssueId;
-        this.memberId = memberId;
-        this.status = VoteStatus.from(status);
-    }
+    @Embedded
+    private RelatableStand relatableStand;
 
     private ReprocessedIssueTrustVote(final Long id, final Long reprocessedIssueId, final Long memberId,
-                                     final VoteStatus status) {
+                                     final RelatableStand relatableStand) {
         this.id = id;
         this.reprocessedIssueId = reprocessedIssueId;
         this.memberId = memberId;
-        this.status = status;
+        this.relatableStand = relatableStand;
     }
 
-    public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final String status) {
-        return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, status);
+    public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final RelatableStand relatableStand) {
+        return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, relatableStand);
     }
 
-    public static ReprocessedIssueTrustVote forSave(final Long reprocessedIssueId, final Long memberId, final VoteStatus status) {
-        return new ReprocessedIssueTrustVote(null, reprocessedIssueId, memberId, status);
-    }
-
-    public void updateStatus(final String status) {
-        this.status = VoteStatus.from(status);
+    public void updateSelectedStand(final Long firstStandId, final boolean firstRelatable, final Long secondStandId, final boolean secondRelatable) {
+        this.relatableStand = new RelatableStand(firstStandId, firstRelatable, secondStandId, secondRelatable);
     }
 }

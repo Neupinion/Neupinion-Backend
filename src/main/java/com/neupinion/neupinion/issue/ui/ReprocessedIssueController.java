@@ -1,5 +1,7 @@
 package com.neupinion.neupinion.issue.ui;
 
+import com.neupinion.neupinion.auth.ui.argumentresolver.Authenticated;
+import com.neupinion.neupinion.auth.ui.argumentresolver.MemberInfo;
 import com.neupinion.neupinion.issue.application.ReprocessedIssueService;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
@@ -8,6 +10,7 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -47,9 +50,12 @@ public class ReprocessedIssueController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReprocessedIssueResponse> findReprocessedIssueResponse(@PathVariable final Long id) {
-        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(1L,
-                                                                                               id);  // TODO: 3/8/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
+    public ResponseEntity<ReprocessedIssueResponse> findReprocessedIssueResponse(
+        @PathVariable final Long id,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
+    ) {
+        final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(memberInfo.memberId(),
+                                                                                               id);
 
         return ResponseEntity.ok(response);
     }
@@ -57,9 +63,10 @@ public class ReprocessedIssueController {
     @PutMapping("/{id}/trust-vote")
     public ResponseEntity<Void> voteTrust(
         @PathVariable final Long id,
-        @RequestBody final TrustVoteRequest vote
+        @RequestBody final TrustVoteRequest vote,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        reprocessedIssueService.vote(1L, id, vote);  // TODO: 3/18/24 추후 로그인 기능 추가 후 memberId 파라미터로 받아오기
+        reprocessedIssueService.vote(memberInfo.memberId(), id, vote);
 
         return ResponseEntity.ok().build();
     }

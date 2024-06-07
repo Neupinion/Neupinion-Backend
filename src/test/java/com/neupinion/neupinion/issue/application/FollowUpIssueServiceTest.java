@@ -13,6 +13,7 @@ import com.neupinion.neupinion.issue.application.dto.FollowUpIssueResponse;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.event.FollowUpIssueViewedEvent;
@@ -189,7 +190,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
                                   Clock.fixed(Instant.parse("2024-02-09T10:00:00Z"),
                                               Clock.systemDefaultZone().getZone())));
 
-        reprocessedIssueTrustVoteRepository.save(ReprocessedIssueTrustVote.forSave(savedReprocessedIssue.getId(), memberId, "HIGHLY_TRUSTED"));
+        reprocessedIssueTrustVoteRepository.save(ReprocessedIssueTrustVote.forSave(savedReprocessedIssue.getId(), memberId, new RelatableStand(1L, true, 2L, false)));
 
         // when
         final List<FollowUpIssueOfVotedReprocessedIssueResponse> responses = followUpIssueService.findFollowUpIssuesOfVotedReprocessedIssue(

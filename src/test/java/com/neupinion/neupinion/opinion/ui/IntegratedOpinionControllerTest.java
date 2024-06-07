@@ -3,6 +3,7 @@ package com.neupinion.neupinion.opinion.ui;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.auth.application.TokenProvider;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueParagraph;
@@ -24,10 +25,12 @@ import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinion
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 class IntegratedOpinionControllerTest extends RestAssuredSpringBootTest {
@@ -55,6 +58,9 @@ class IntegratedOpinionControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private FollowUpIssueOpinionLikeRepository followUpIssueOpinionLikeRepository;
+
+    @Autowired
+    private TokenProvider tokenProvider;
 
     @DisplayName("GET /issue/{issueId}/opinion 요청을 받아 상태 코드 200 과 해당 이슈의 전체 의견을 최신순으로 조회한다.")
     @Test
@@ -88,7 +94,10 @@ class IntegratedOpinionControllerTest extends RestAssuredSpringBootTest {
                                          "의견 내용3"));
 
         // when
-        final var responses = RestAssured.when()
+        final var responses = RestAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
+            .contentType(ContentType.JSON)
+            .when()
             .get("/issue/{issueId}/opinion", reprocessedIssueId)
             .then().log().all()
             .statusCode(HttpStatus.OK.value()).extract()
@@ -154,7 +163,10 @@ class IntegratedOpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueOpinionLike.forSave(memberId, followUpIssueOpinion3.getId()));
 
         // when
-        final var responses = RestAssured.when()
+        final var responses = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
+            .contentType(ContentType.JSON)
+            .when().log().all()
             .get("/issue/{issueId}/opinion?orderMode=popular&viewMode=doubt", reprocessedIssueId)
             .then().log().all()
             .statusCode(HttpStatus.OK.value()).extract()
@@ -220,7 +232,10 @@ class IntegratedOpinionControllerTest extends RestAssuredSpringBootTest {
             FollowUpIssueOpinionLike.forSave(memberId, followUpIssueOpinion3.getId()));
 
         // when
-        final var responses = RestAssured.when()
+        final var responses = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
+            .contentType(ContentType.JSON)
+            .when()
             .get("/issue/{issueId}/opinion/top", reprocessedIssueId)
             .then().log().all()
             .statusCode(HttpStatus.OK.value()).extract()

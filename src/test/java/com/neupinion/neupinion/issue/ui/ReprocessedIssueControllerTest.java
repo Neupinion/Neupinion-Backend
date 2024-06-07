@@ -4,6 +4,7 @@ import static java.lang.Long.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.neupinion.neupinion.auth.application.TokenProvider;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
@@ -14,16 +15,20 @@ import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.FollowUpIssueTag;
+import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
-import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTagRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueTrustVoteRepository;
+import com.neupinion.neupinion.member.domain.Member;
+import com.neupinion.neupinion.member.domain.repository.MemberRepository;
 import com.neupinion.neupinion.utils.RestAssuredSpringBootTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -34,6 +39,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
@@ -52,6 +58,15 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
 
     @Autowired
     private FollowUpIssueRepository followUpIssueRepository;
+
+    @Autowired
+    private IssueStandRepository issueStandRepository;
+
+    @Autowired
+    private TokenProvider tokenProvider;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @DisplayName("GET /reprocessed-issue?date={date} 로 요청을 보내는 경우, 상태 코드 200과 해당 날짜의 재가공 이슈 리스트를 반환한다.")
     @Test
@@ -95,7 +110,8 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     @Test
     void saveReprocessedIssue() {
         // given
-        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originUrl", "ECONOMY", List.of("찬성", "반대"));
+        final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originUrl", "ECONOMY",
+                                                             List.of("찬성", "반대"));
 
         // when
         final var response = RestAssured.given().log().all()
@@ -119,6 +135,9 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
+        issueStandRepository.saveAll(List.of(IssueStand.forSave("찬성", reprocessedIssue.getId()),
+                                             IssueStand.forSave("반대", reprocessedIssue.getId())));
+
         final ReprocessedIssueParagraph paragraph1 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용1", true, reprocessedIssue.getId()));
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
@@ -128,8 +147,12 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssueTag tag2 = reprocessedIssueTagRepository.save(
             ReprocessedIssueTag.forSave(reprocessedIssue.getId(), "태그2"));
 
+        final Member member = memberRepository.save(Member.forSave("닉네임", "image"));
+
         // when
         final var response = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(member.getId()))
+            .contentType(ContentType.JSON)
             .when().log().all()
             .get("/reprocessed-issue/{id}", reprocessedIssue.getId())
             .then().log().all()
@@ -156,11 +179,19 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
-        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
+        final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", reprocessedIssue.getId()),
+            IssueStand.forSave("반대", reprocessedIssue.getId())
+        ));
+
+        final TrustVoteRequest request = new TrustVoteRequest(issueStands.get(0).getId(), true,
+                                                              issueStands.get(1).getId(), false);
+        final long memberId = memberRepository.save(Member.forSave("닉네임", "image")).getId();
 
         // when
         // then
         RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
             .contentType(ContentType.JSON)
             .body(request)
             .when().log().all()
@@ -185,9 +216,12 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목4", "image", "이미지", "originUrl", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T10:00:00Z"), ZoneId.systemDefault())));
+        final long memberId = memberRepository.save(Member.forSave("닉네임", "image")).getId();
 
         // when
         final var responses = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(memberId))
+            .contentType(ContentType.JSON)
             .when().log().all()
             .get("/reprocessed-issue/by-category?current={id}&category={category}", issue1.getId(),
                  Category.ECONOMY.name())
@@ -211,15 +245,26 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("재가공 이슈 제목", "image", "이미지", "originUrl", Category.ECONOMY));
+        final List<IssueStand> issueStands = issueStandRepository.saveAll(
+            List.of(IssueStand.forSave("찬성", reprocessedIssue.getId()),
+                    IssueStand.forSave("반대", reprocessedIssue.getId())));
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L, VoteStatus.HIGHLY_TRUSTED.name()));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 1L,
+                                              new RelatableStand(issueStands.get(0).getId(), true,
+                                                                 issueStands.get(1).getId(), false)));
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 2L, VoteStatus.SOMEWHAT_DISTRUSTED.name()));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 2L,
+                                              new RelatableStand(issueStands.get(0).getId(), true,
+                                                                 issueStands.get(1).getId(), false)));
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 3L, VoteStatus.SOMEWHAT_DISTRUSTED.name()));
+            ReprocessedIssueTrustVote.forSave(reprocessedIssue.getId(), 3L,
+                                              new RelatableStand(issueStands.get(1).getId(), false,
+                                                                 issueStands.get(0).getId(), true)));
 
         // when
         final var response = RestAssured.given().log().all()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.createAccessToken(1L))
+            .contentType(ContentType.JSON)
             .when().log().all()
             .get("/reprocessed-issue/{id}/trust-vote", reprocessedIssue.getId())
             .then().log().all()
@@ -231,12 +276,12 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
         assertAll(
             () -> assertThat(response.getMostVotedCount()).isEqualTo(2),
             () -> assertThat(response.getTotalVoteCount()).isEqualTo(3),
-            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
-            () -> assertThat(response.getVoteRankings()).hasSize(4),
-            () -> assertThat(response.getVoteRankings().get(0).getStatus()).isEqualTo(
-                VoteStatus.SOMEWHAT_DISTRUSTED.getValue()),
-            () -> assertThat(response.getVoteRankings().get(1).getStatus()).isEqualTo(
-                VoteStatus.HIGHLY_TRUSTED.getValue())
+            () -> assertThat(response.getMostVotedStand()).isEqualTo("찬성"),
+            () -> assertThat(response.getVoteRankings()).hasSize(2),
+            () -> assertThat(response.getVoteRankings().get(0).getStand()).isEqualTo("찬성"),
+            () -> assertThat(response.getVoteRankings().get(1).getStand()).isEqualTo("반대"),
+            () -> assertThat(response.getVoteRankings().get(0).getRelatablePercentage()).isEqualTo(66),
+            () -> assertThat(response.getVoteRankings().get(1).getRelatablePercentage()).isEqualTo(33)
         );
     }
 

@@ -10,11 +10,12 @@ import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultR
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
+import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
-import com.neupinion.neupinion.issue.domain.VoteStatus;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
 import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
@@ -99,6 +100,10 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final List<IssueStand> stands = issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", issue.getId()),
+            IssueStand.forSave("반대", issue.getId())
+        ));
         final ReprocessedIssueParagraph paragraph1 = reprocessedIssueParagraphRepository.save(
             ReprocessedIssueParagraph.forSave("내용1", true, issue.getId()));
         final ReprocessedIssueParagraph paragraph2 = reprocessedIssueParagraphRepository.save(
@@ -117,8 +122,10 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         final ReprocessedIssueTag tag3 = reprocessedIssueTagRepository.save(
             ReprocessedIssueTag.forSave(issue.getId(), "태그3"));
 
-        final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(issue.getId(), 1L, "HIGHLY_TRUSTED"));
+        reprocessedIssueTrustVoteRepository.save(ReprocessedIssueTrustVote.forSave(issue.getId(), 1L,
+                                                                                   new RelatableStand(
+                                                                                       stands.get(0).getId(), true,
+                                                                                       stands.get(1).getId(), false)));
 
         final Long memberId = 1L;
 
@@ -138,7 +145,9 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
                 .isEqualTo(List.of(paragraph1, paragraph2, paragraph3, paragraph4, paragraph5)),
             () -> assertThat(response.getCreatedAt()).isEqualTo(issue.getCreatedAt()),
             () -> assertThat(response.getOriginUrl()).isEqualTo(issue.getOriginUrl()),
-            () -> assertThat(response.getTrustVote()).isEqualTo(trustVote.getStatus().name()),
+            () -> assertThat(response.getStands()).hasSize(2),
+            () -> assertThat(response.getStands().get(0).getRelatable()).isTrue(),
+            () -> assertThat(response.getStands().get(1).getRelatable()).isFalse(),
             () -> assertThat(response.getIsBookmarked()).isFalse(),
             () -> assertThat(response.getTags())
                 .containsExactlyInAnyOrder(tag1.getTag(), tag2.getTag(), tag3.getTag())
@@ -146,17 +155,21 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     }
 
     @Test
-    void 재가공_이슈를_조회할_때_신뢰도_평가가_되어_있지_않으면_NOT_VOTED를_반환한다() {
+    void 재가공_이슈를_조회할_때_신뢰도_평가가_되어_있지_않으면_각_입장의_ID로_0을_반환한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", issue.getId()),
+            IssueStand.forSave("반대", issue.getId())
+        ));
         final long memberId = 1L;
 
         // when
         final ReprocessedIssueResponse response = reprocessedIssueService.findReprocessedIssue(memberId, issue.getId());
 
         // then
-        assertThat(response.getTrustVote()).isEqualTo("NOT_VOTED");
+        assertThat(response.getIsVoted()).isFalse();
     }
 
     @Test
@@ -165,7 +178,12 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
         final long memberId = 1L;
-        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
+        final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", issue.getId()),
+            IssueStand.forSave("반대", issue.getId())
+        ));
+        final TrustVoteRequest request = new TrustVoteRequest(issueStands.get(0).getId(), true,
+                                                              issueStands.get(1).getId(), false);
         saveAndClearEntityManager();
 
         // when
@@ -175,7 +193,12 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
             issue.getId(), memberId).get();
 
-        assertThat(trustVote.getStatus()).isEqualTo(VoteStatus.from(request.getStatus()));
+        assertAll(
+            () -> assertThat(trustVote.getRelatableStand().getFirstStandId()).isEqualTo(issueStands.get(0).getId()),
+            () -> assertThat(trustVote.getRelatableStand().isFirstRelatable()).isTrue(),
+            () -> assertThat(trustVote.getRelatableStand().getSecondStandId()).isEqualTo(issueStands.get(1).getId()),
+            () -> assertThat(trustVote.getRelatableStand().isSecondRelatable()).isFalse()
+        );
     }
 
     @Test
@@ -183,10 +206,17 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", issue.getId()),
+            IssueStand.forSave("반대", issue.getId())
+        ));
         final long memberId = 1L;
-        final TrustVoteRequest request = new TrustVoteRequest("HIGHLY_TRUSTED");
+        final TrustVoteRequest request = new TrustVoteRequest(issueStands.get(0).getId(), true,
+                                                              issueStands.get(1).getId(), false);
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId, VoteStatus.NOT_VOTED.name()));
+            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId,
+                                              new RelatableStand(issueStands.get(0).getId(), true,
+                                                                 issueStands.get(1).getId(), true)));
 
         // when
         reprocessedIssueService.vote(memberId, issue.getId(), request);
@@ -195,7 +225,12 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         final ReprocessedIssueTrustVote trustVote = reprocessedIssueTrustVoteRepository.findByReprocessedIssueIdAndMemberId(
             issue.getId(), memberId).get();
 
-        assertThat(trustVote.getStatus()).isEqualTo(VoteStatus.from(request.getStatus()));
+        assertAll(
+            () -> assertThat(trustVote.getRelatableStand().getFirstStandId()).isEqualTo(issueStands.get(0).getId()),
+            () -> assertThat(trustVote.getRelatableStand().isFirstRelatable()).isTrue(),
+            () -> assertThat(trustVote.getRelatableStand().getSecondStandId()).isEqualTo(issueStands.get(1).getId()),
+            () -> assertThat(trustVote.getRelatableStand().isSecondRelatable()).isFalse()
+        );
     }
 
     @Test
@@ -234,9 +269,15 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
             ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+        final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
+            IssueStand.forSave("찬성", issue.getId()),
+            IssueStand.forSave("반대", issue.getId())
+        ));
         final long memberId = 1L;
         reprocessedIssueTrustVoteRepository.save(
-            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId, VoteStatus.SOMEWHAT_TRUSTED.name()));
+            ReprocessedIssueTrustVote.forSave(issue.getId(), memberId,
+                                              new RelatableStand(issueStands.get(0).getId(), true,
+                                                                 issueStands.get(1).getId(), false)));
 
         saveAndClearEntityManager();
 
@@ -246,13 +287,18 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         // then
         assertAll(
             () -> assertThat(response.getMostVotedCount()).isEqualTo(1),
-            () -> assertThat(response.getMostVotedStatus()).isEqualTo(VoteStatus.SOMEWHAT_TRUSTED.getValue()),
+            () -> assertThat(response.getMostVotedStand()).isEqualTo("찬성"),
             () -> assertThat(response.getTotalVoteCount()).isEqualTo(1),
             () -> assertThat(response.getVoteRankings().stream()
-                                 .filter(vote -> vote.getStatus().equals(VoteStatus.SOMEWHAT_TRUSTED.getValue()))
+                                 .filter(vote -> vote.getStand().equals(issueStands.get(0).getStand()))
                                  .findFirst()
-                                 .get().getVotePercentage())
-                .isEqualTo(100)
+                                 .get().getRelatablePercentage())
+                .isEqualTo(100),
+            () -> assertThat(response.getVoteRankings().stream()
+                                 .filter(vote -> vote.getStand().equals(issueStands.get(1).getStand()))
+                                 .findFirst()
+                                 .get().getRelatablePercentage())
+                .isEqualTo(0)
         );
     }
 }

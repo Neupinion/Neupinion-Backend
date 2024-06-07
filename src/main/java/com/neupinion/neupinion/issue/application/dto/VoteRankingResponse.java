@@ -9,9 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class VoteRankingResponse {
 
-    @Schema(description = "투표 결과 값", example = "완전 신뢰")
-    private final String status;
+    @Schema(description = "이슈 입장", example = "하이브")
+    private final String stand;
 
-    @Schema(description = "득표율", example = "10")
-    private final int votePercentage;
+    @Schema(description = "공감율", example = "10")
+    private final int relatablePercentage;
 }

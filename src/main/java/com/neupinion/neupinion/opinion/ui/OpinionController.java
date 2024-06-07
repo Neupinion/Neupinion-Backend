@@ -11,6 +11,7 @@ import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionCr
 import com.neupinion.neupinion.opinion.application.dto.ReprocessedIssueOpinionResponse;
 import com.neupinion.neupinion.query_mode.order.OrderMode;
 import com.neupinion.neupinion.query_mode.view.opinion.OpinionViewMode;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -33,10 +34,11 @@ public class OpinionController {
 
     @PostMapping("/follow-up-issue/opinion")
     public ResponseEntity<Void> createFollowUpIssueOpinion(
-        @Valid @RequestBody final FollowUpIssueOpinionCreateRequest request
+        @Valid @RequestBody final FollowUpIssueOpinionCreateRequest request,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        final Long opinionId = opinionService.createFollowUpIssueOpinion(1L,
-                                                                         request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        final Long opinionId = opinionService.createFollowUpIssueOpinion(memberInfo.memberId(),
+                                                                         request);
 
         return ResponseEntity.created(URI.create("/follow-up-issue/opinion/" + opinionId)).build();
     }
@@ -44,7 +46,7 @@ public class OpinionController {
     @PostMapping("/reprocessed-issue/opinion")
     public ResponseEntity<Void> createReprocessedIssueOpinion(
         @Valid @RequestBody final ReprocessedIssueOpinionCreateRequest request,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         final Long opinionId = opinionService.createReprocessedIssueOpinion(memberInfo.memberId(), request);
 
@@ -55,7 +57,7 @@ public class OpinionController {
     public ResponseEntity<Void> updateReprocessedIssueOpinion(
         @PathVariable final Long opinionId,
         @Valid @RequestBody final OpinionUpdateRequest request,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         opinionService.updateReprocessedIssueOpinion(memberInfo.memberId(), opinionId, request);
 
@@ -65,19 +67,21 @@ public class OpinionController {
     @PatchMapping("/follow-up-issue/opinion/{opinionId}")
     public ResponseEntity<Void> updateFollowUpIssueOpinion(
         @PathVariable final Long opinionId,
-        @Valid @RequestBody final OpinionUpdateRequest request
+        @Valid @RequestBody final OpinionUpdateRequest request,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        opinionService.updateFollowUpIssueOpinion(1L, opinionId, request); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        opinionService.updateFollowUpIssueOpinion(memberInfo.memberId(), opinionId, request);
 
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/follow-up-issue/{issueId}/me")
     public ResponseEntity<List<MyOpinionResponse>> getMyFollowUpIssueOpinions(
-        @PathVariable final Long issueId
+        @PathVariable final Long issueId,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        final List<MyOpinionResponse> responses = opinionService.getMyFollowUpOpinions(1L,
-                                                                                       issueId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        final List<MyOpinionResponse> responses = opinionService.getMyFollowUpOpinions(memberInfo.memberId(),
+                                                                                       issueId);
 
         return ResponseEntity.ok(responses);
     }
@@ -85,7 +89,7 @@ public class OpinionController {
     @GetMapping("/reprocessed-issue/{issueId}/me")
     public ResponseEntity<List<MyOpinionResponse>> getMyReprocessedIssueOpinions(
         @PathVariable final Long issueId,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         final List<MyOpinionResponse> responses = opinionService.getMyReprocessedOpinions(memberInfo.memberId(), issueId);
 
@@ -94,9 +98,10 @@ public class OpinionController {
 
     @DeleteMapping("/follow-up-issue/opinion/{opinionId}")
     public ResponseEntity<Void> deleteFollowUpIssueOpinion(
-        @PathVariable final Long opinionId
+        @PathVariable final Long opinionId,
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
-        opinionService.deleteFollowUpIssueOpinion(1L, opinionId); // TODO: 2/24/24 추후 액세스 토큰 인증 로직 추가하기
+        opinionService.deleteFollowUpIssueOpinion(memberInfo.memberId(), opinionId);
 
         return ResponseEntity.noContent().build();
     }
@@ -104,7 +109,7 @@ public class OpinionController {
     @DeleteMapping("/reprocessed-issue/opinion/{opinionId}")
     public ResponseEntity<Void> deleteReprocessedIssueOpinion(
         @PathVariable final Long opinionId,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         opinionService.deleteReprocessedIssueOpinion(memberInfo.memberId(), opinionId);
 
@@ -117,7 +122,7 @@ public class OpinionController {
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
         @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
         @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
@@ -129,7 +134,7 @@ public class OpinionController {
     @GetMapping("/reprocessed-issue/{issueId}/opinion/top")
     public ResponseEntity<List<ReprocessedIssueOpinionResponse>> getTopReprocessedIssueOpinions(
         @PathVariable final Long issueId,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         final List<ReprocessedIssueOpinionResponse> responses = opinionService.getTopReprocessedIssueOpinions(issueId,
                                                                                                               memberInfo.memberId());
@@ -143,7 +148,7 @@ public class OpinionController {
         @RequestParam(name = "viewMode", required = false, defaultValue = "ALL") final String viewMode,
         @RequestParam(name = "orderMode", required = false, defaultValue = "RECENT") final String orderMode,
         @RequestParam(required = false, defaultValue = "0") final Integer page,
-        @Authenticated final MemberInfo memberInfo
+        @Authenticated @Schema(hidden = true) final MemberInfo memberInfo
     ) {
         final OpinionViewMode filter = OpinionViewMode.from(viewMode);
         final OrderMode orderFilter = OrderMode.from(orderMode);
