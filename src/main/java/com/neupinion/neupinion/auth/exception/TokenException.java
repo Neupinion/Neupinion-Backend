@@ -27,6 +27,11 @@ public class TokenException extends CustomException {
     }
 
     public static class RefreshTokenNotFoundException extends TokenException {
+
+        public RefreshTokenNotFoundException() {
+            super(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
+
         public RefreshTokenNotFoundException(final Map<String, String> inputValues) {
             super(ErrorCode.NOT_FOUND_REFRESH_TOKEN, inputValues);
         }
