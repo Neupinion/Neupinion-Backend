@@ -15,6 +15,7 @@ import com.neupinion.neupinion.opinion.domain.FollowUpIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinion;
 import com.neupinion.neupinion.opinion.domain.ReprocessedIssueOpinionLike;
 import com.neupinion.neupinion.opinion.domain.repository.FollowUpIssueOpinionRepository;
+import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionLikeRepository;
 import com.neupinion.neupinion.opinion.domain.repository.ReprocessedIssueOpinionRepository;
 import com.neupinion.neupinion.opinion.domain.repository.dto.IssueOpinionMapping;
 import com.neupinion.neupinion.query_mode.order.AllOpinionOrderStrategy;
@@ -46,6 +47,7 @@ public class IntegratedOpinionService {
 
     private final Map<OpinionViewMode, List<Boolean>> opinionViewStrategies;
     private final Map<OrderMode, AllOpinionOrderStrategy> allOrderStrategies;
+    private final ReprocessedIssueOpinionLikeRepository reprocessedIssueOpinionLikeRepository;
 
     public List<IssueOpinionResponse> getTopOpinionsByLikes(final Long issueId, final Long memberId) {
         final List<FollowUpIssue> followUpIssues = followUpIssueRepository.findByReprocessedIssueId(issueId);
@@ -83,7 +85,7 @@ public class IntegratedOpinionService {
     }
 
     private IssueOpinionResponse toDto(final ReprocessedIssueOpinion opinion, final Long currentMemberId) {
-        final Member writer = memberRepository.getById(opinion.getMemberId());
+        final Member writer = memberRepository.getMemberById(opinion.getMemberId());
         final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
             opinion.getParagraphId());
         final List<ReprocessedIssueOpinionLike> likes = opinion.getLikes().stream()
@@ -96,7 +98,7 @@ public class IntegratedOpinionService {
     }
 
     private IssueOpinionResponse toDto(final FollowUpIssueOpinion opinion, final Long currentMemberId) {
-        final Member writer = memberRepository.getById(opinion.getMemberId());
+        final Member writer = memberRepository.getMemberById(opinion.getMemberId());
         final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(
             opinion.getParagraphId());
         final List<FollowUpIssueOpinionLike> likes = opinion.getLikes().stream()
@@ -123,13 +125,13 @@ public class IntegratedOpinionService {
     }
 
     private IssueOpinionResponse toDto(final IssueOpinionMapping mapping, final Long currentMemberId) {
-        final Member writer = memberRepository.getById(mapping.writerId());
+        final Member writer = memberRepository.getMemberById(mapping.writerId());
 
         if (IssueType.isReprocessed(mapping.issueType())) {
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
                 mapping.paragraphId());
-            final boolean isLiked = reprocessedIssueOpinionRepository.existsByMemberIdAndParagraphId(currentMemberId,
-                                                                                                     mapping.paragraphId());
+            final boolean isLiked = reprocessedIssueOpinionLikeRepository.existsByMemberIdAndReprocessedIssueOpinionIdAndIsDeletedFalse(
+                currentMemberId, mapping.paragraphId());
             return IssueOpinionResponse.of(mapping, writer, paragraph, isLiked);
         }
         final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(mapping.paragraphId());
