@@ -29,10 +29,10 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
 
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
-        + "LEFT JOIN r.likes l on r.id = l.reprocessedIssueOpinionId "
-        + "WHERE l.isDeleted = false AND r.reprocessedIssueId = :issueId AND r.isReliable in :reliabilities "
+        + "LEFT JOIN r.likes l on r.id = l.reprocessedIssueOpinionId AND l.isDeleted = false "
+        + "WHERE r.reprocessedIssueId = :issueId AND r.isReliable in :reliabilities "
         + "GROUP BY r.id "
-        + "ORDER BY COUNT(l) DESC, r.id DESC")
+        + "ORDER BY COUNT(l.id) DESC, r.id DESC")
     List<ReprocessedIssueOpinion> findOpinionsOrderByLike(final Long issueId,
                                                         final List<Boolean> reliabilities,
                                                         final Pageable pageable);
@@ -48,9 +48,10 @@ public interface ReprocessedIssueOpinionRepository extends JpaRepository<Reproce
     @Query("SELECT r "
         + "FROM ReprocessedIssueOpinion r "
         + "LEFT JOIN r.likes l on r.id = l.reprocessedIssueOpinionId "
-        + "WHERE r.paragraphId = :paragraphId AND r.isReliable in :reliability AND l.isDeleted = false "
+        + "AND l.isDeleted = false "
+        + "WHERE r.paragraphId = :paragraphId AND r.isReliable in :reliability "
         + "GROUP BY r.id "
-        + "ORDER BY COUNT(l) DESC, r.id DESC"
+        + "ORDER BY COUNT(l.id) DESC, r.id DESC"
     )
     List<ReprocessedIssueOpinion> findTop5ByParagraphIdOrderByLikes(final Long paragraphId,
                                                                     final List<Boolean> reliability,

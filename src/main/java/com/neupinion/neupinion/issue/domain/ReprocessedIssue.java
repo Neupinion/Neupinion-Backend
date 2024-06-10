@@ -62,13 +62,13 @@ import lombok.NoArgsConstructor;
 @NamedNativeQuery(
     name = "ReprocessedIssue.findAllOpinionsOrderByLikesAtDesc",
     query =
-        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt, COUNT(riol.id) AS likeCount "
+        "SELECT rio.id AS id, rio.paragraph_id AS paragraphId, rio.reprocessed_issue_id AS issueId, rio.member_id AS writerId, rio.content AS content, rio.is_reliable AS isReliable, 'REPROCESSED' AS issueType, rio.created_at AS createdAt, COALESCE(COUNT(riol.id), 0) AS likeCount "
             + "FROM reprocessed_issue_opinion rio "
             + "LEFT JOIN reprocessed_issue_opinion_like riol on rio.id = riol.reprocessed_issue_opinion_id "
             + "WHERE rio.reprocessed_issue_id = :issueId AND rio.is_reliable IN :reliabilities "
-            + "GROUP BY rio.id, rio.id, rio.paragraph_id, rio.reprocessed_issue_id, rio.member_id, rio.content, rio.is_reliable, 'REPROCESSED', rio.created_at "
+            + "GROUP BY rio.id, rio.paragraph_id, rio.reprocessed_issue_id, rio.member_id, rio.content, rio.is_reliable, 'REPROCESSED', rio.created_at "
             + "UNION ALL "
-            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt, COUNT(fiol.id) AS likeCount "
+            + "SELECT fuo.id AS id, fuo.paragraph_id AS paragraphId, fuo.follow_up_issue_id AS issueId, fuo.member_id AS writerId, fuo.content AS content, fuo.is_reliable AS isReliable, 'FOLLOW_UP' AS issueType, fuo.created_at AS createdAt, COALESCE(COUNT(fiol.id), 0) AS likeCount "
             + "FROM follow_up_issue_opinion fuo "
             + "LEFT JOIN follow_up_issue_opinion_like fiol on fuo.id = fiol.follow_up_issue_opinion_id "
             + "WHERE fuo.follow_up_issue_id IN :followUpIssueIds AND fuo.is_reliable IN :reliabilities "
