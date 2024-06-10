@@ -69,6 +69,13 @@ public class ReprocessedIssueService {
                 .toList()
         );
 
+        reprocessedIssueParagraphRepository.saveAll(
+            request.getParagraphs().stream()
+                .map(paragraph -> ReprocessedIssueParagraph.forSave(paragraph.getContent(), paragraph.getIsSelectable(),
+                                                                    issueId))
+                .toList()
+        );
+
         return issueId;
     }
 

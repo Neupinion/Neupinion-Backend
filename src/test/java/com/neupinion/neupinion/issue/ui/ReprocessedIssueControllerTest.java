@@ -8,6 +8,7 @@ import com.neupinion.neupinion.auth.application.TokenProvider;
 import com.neupinion.neupinion.issue.application.dto.FollowUpIssuesByReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.RecentReprocessedIssueByCategoryResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueCreateRequest;
+import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueParagraphRequest;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueResponse;
 import com.neupinion.neupinion.issue.application.dto.ReprocessedIssueVoteResultResponse;
 import com.neupinion.neupinion.issue.application.dto.ShortReprocessedIssueResponse;
@@ -111,6 +112,8 @@ class ReprocessedIssueControllerTest extends RestAssuredSpringBootTest {
     void saveReprocessedIssue() {
         // given
         final var request = ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originUrl", "ECONOMY",
+                                                                List.of(new ReprocessedIssueParagraphRequest("내용1", true),
+                                                                        new ReprocessedIssueParagraphRequest("내용2", true)),
                                                              List.of("찬성", "반대"));
 
         // when

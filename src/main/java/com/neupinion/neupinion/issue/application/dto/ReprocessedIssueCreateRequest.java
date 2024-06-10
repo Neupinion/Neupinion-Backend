@@ -31,13 +31,17 @@ public class ReprocessedIssueCreateRequest {
     @NotBlank
     private final String category;
 
+    @Schema(description = "재가공 이슈 문단들")
+    private final List<ReprocessedIssueParagraphRequest> paragraphs;
+
     @Schema(description = "재가공 이슈 입장들")
     @NotBlank
     private final List<String> stands;
 
     public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String caption,
                                                    final String originUrl, final String category,
+                                                   final List<ReprocessedIssueParagraphRequest> paragraphs,
                                                    final List<String> stands) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, stands);
+        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, paragraphs, stands);
     }
 }
