@@ -36,8 +36,8 @@ public class FollowUpIssueOpinionLike {
         this.isDeleted = false;
     }
 
-    public static FollowUpIssueOpinionLike forSave(final Long memberId, final Long followUpIssueId) {
-        return new FollowUpIssueOpinionLike(null, memberId, followUpIssueId);
+    public static FollowUpIssueOpinionLike forSave(final Long memberId, final Long followUpIssueOpinionId) {
+        return new FollowUpIssueOpinionLike(null, memberId, followUpIssueOpinionId);
     }
 
     public void updateDeletionStatus() {
