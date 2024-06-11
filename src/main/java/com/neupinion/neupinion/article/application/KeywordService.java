@@ -1,5 +1,6 @@
 package com.neupinion.neupinion.article.application;
 
+import com.neupinion.neupinion.article.application.dto.KeywordCreateRequest;
 import com.neupinion.neupinion.article.application.dto.KeywordResponse;
 import com.neupinion.neupinion.article.domain.IssueKeyword;
 import com.neupinion.neupinion.article.domain.repository.IssueKeywordRepository;
@@ -24,6 +25,20 @@ public class KeywordService {
     private final IssueStandRepository issueStandRepository;
 
     @Transactional
+    public void registerKeywords(final KeywordCreateRequest request, final Long issueId) {
+        final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(issueId);
+        issueKeywordRepository.saveAll(
+            request.getFirstKeywords().stream()
+                .map(keyword -> IssueKeyword.forSave(keyword, stands.get(0).getId(), issueId))
+                .collect(Collectors.toList())
+        );
+        issueKeywordRepository.saveAll(
+            request.getSecondKeywords().stream()
+                .map(keyword -> IssueKeyword.forSave(keyword, stands.get(1).getId(), issueId))
+                .collect(Collectors.toList())
+        );
+    }
+
     public KeywordResponse getKeywords(final Long issueId) {
         final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(issueId);
         return extractKeyword(issueId, stands);
