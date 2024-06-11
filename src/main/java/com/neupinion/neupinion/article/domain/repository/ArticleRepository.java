@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    List<Article> findAllByArticleKeywordId(final Long articleKeywordId);
+    List<Article> findAllByArticleKeywordIdAndSelectedStand(final Long articleKeywordId, final String selectedStand);
 }

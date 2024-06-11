@@ -117,33 +117,33 @@ public class ArticleService {
             request.getSearchKeyword());
 
         return optionalArticleKeyword.map(articleKeyword -> getExistedAnalyzedArticleResponse(request, articleKeyword))
-                                     .orElseGet(() -> getAnalyzedArticleResponse(request));
+            .orElseGet(() -> getAnalyzedArticleResponse(request));
     }
 
     private AnalyzedArticleResponse getExistedAnalyzedArticleResponse(final ArticleSearchRequest request,
                                                                       final ArticleKeyword articleKeyword) {
-        final List<Article> existingArticleResponses = articleRepository.findAllByArticleKeywordId(
-            articleKeyword.getId());
+        final List<Article> existingArticleResponses = articleRepository.findAllByArticleKeywordIdAndSelectedStand(
+            articleKeyword.getId(), request.getSelectedStand());
+
+        if (existingArticleResponses.isEmpty()) {
+            return getAnalyzedArticleResponse(request);
+        }
 
         final List<NaverNewsItemResponse> items = getArticlesFromNaver(articleKeyword.getKeyword());
         final List<NaverNewsItemResponse> filteredItems = items.stream()
-                                                               .filter(item -> existingArticleResponses.stream()
-                                                                                                       .noneMatch(
-                                                                                                           article -> article.isSameArticle(
-                                                                                                               Jsoup.parse(
-                                                                                                                        item.getTitle())
-                                                                                                                    .text(),
-                                                                                                               item.getOriginallink()))
-                                                               ).toList();
+            .filter(item -> existingArticleResponses.stream()
+                .noneMatch(article -> article.isSameArticle(
+                    Jsoup.parse(item.getTitle()).text(), item.getOriginallink())
+                ))
+            .toList();
 
         final List<Mono<Article>> articleMonos = filteredItems.parallelStream()
-                                                              .map(
-                                                                  item -> getArticleMono(request, item, articleKeyword))
-                                                              .toList();
+            .map(item -> getArticleMono(request, item, articleKeyword))
+            .toList();
 
         final List<ArticleResponse> articleResponses = new ArrayList<>(existingArticleResponses.stream()
-                                                                                               .map(this::toDto)
-                                                                                               .toList());
+                                                                           .map(this::toDto)
+                                                                           .toList());
         articleResponses.addAll(makeArticleResponses(articleMonos));
 
         return distributeArticlesByStand(articleResponses);
@@ -157,11 +157,11 @@ public class ArticleService {
 
     private List<ArticleResponse> makeArticleResponses(final List<Mono<Article>> articleMonos) {
         return Flux.merge(articleMonos)
-                   .collectList()
-                   .map(articles -> articles.stream()
-                                            .map(this::toDto)
-                                            .toList())
-                   .block();
+            .collectList()
+            .map(articles -> articles.stream()
+                .map(this::toDto)
+                .toList())
+            .block();
     }
 
     private AnalyzedArticleResponse distributeArticlesByStand(final List<ArticleResponse> responses) {
@@ -190,8 +190,8 @@ public class ArticleService {
             ArticleKeyword.forSave(request.getSearchKeyword()));
 
         final List<Mono<Article>> articleMonos = items.parallelStream()
-                                                      .map(item -> getArticleMono(request, item, articleKeyword))
-                                                      .toList();
+            .map(item -> getArticleMono(request, item, articleKeyword))
+            .toList();
 
         final List<ArticleResponse> responses = makeArticleResponses(articleMonos);
 
@@ -206,8 +206,8 @@ public class ArticleService {
         headers.set(CLIENT_SECRET_HEADER, clientSecret);
 
         final RequestEntity<Void> request = RequestEntity.get(uri)
-                                                         .headers(headers)
-                                                         .build();
+            .headers(headers)
+            .build();
 
         final ResponseEntity<NaverNewsResponse> response = restTemplate.exchange(request,
                                                                                  new ParameterizedTypeReference<>() {
@@ -247,14 +247,14 @@ public class ArticleService {
                     }
                     final String content = articleBody.text();
                     return chatGptService.getAnalyzedResult(request, content)
-                                         .map(analyzedResult -> Article.forSave(
-                                             articleTitle, item.getOriginallink(), item.getDescription(), publishedDate,
-                                             Stand.fromByValue(analyzedResult.getCategory()),
-                                             request.getSelectedStand(),
-                                             articleKeyword.getId(), analyzedResult.getReason()
-                                         ))
-                                         .flatMap(article -> Mono.fromCallable(() -> articleRepository.save(article))
-                                                                 .subscribeOn(Schedulers.boundedElastic()));
+                        .map(analyzedResult -> Article.forSave(
+                            articleTitle, item.getOriginallink(), item.getDescription(), publishedDate,
+                            Stand.fromByValue(analyzedResult.getCategory()),
+                            request.getSelectedStand(),
+                            articleKeyword.getId(), analyzedResult.getReason()
+                        ))
+                        .flatMap(article -> Mono.fromCallable(() -> articleRepository.save(article))
+                            .subscribeOn(Schedulers.boundedElastic()));
                 }
             }
         } catch (Exception e) {
