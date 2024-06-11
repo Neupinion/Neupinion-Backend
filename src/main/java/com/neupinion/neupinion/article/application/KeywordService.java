@@ -39,6 +39,7 @@ public class KeywordService {
         );
     }
 
+    @Transactional
     public KeywordResponse getKeywords(final Long issueId) {
         final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(issueId);
         return extractKeyword(issueId, stands);
