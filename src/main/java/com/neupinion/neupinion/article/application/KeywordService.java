@@ -46,20 +46,36 @@ public class KeywordService {
     }
 
     private KeywordResponse extractKeyword(final Long issueId, final List<IssueStand> stands) {
-        final String articleBody = reprocessedIssueParagraphRepository.findByReprocessedIssueIdOrderById(issueId)
-            .stream()
-            .map(ReprocessedIssueParagraph::getContent)
-            .collect(Collectors.joining("\n"));
+        final List<IssueKeyword> keywords = issueKeywordRepository.findByIssueId(issueId);
+        if (keywords.isEmpty()) {
+            final String articleBody = reprocessedIssueParagraphRepository.findByReprocessedIssueIdOrderById(issueId)
+                .stream()
+                .map(ReprocessedIssueParagraph::getContent)
+                .collect(Collectors.joining("\n"));
 
-        final KeywordResponse response = chatGptService.getKeywords(articleBody, stands)
-            .block();
-        response.getFirstKeywords().forEach(keyword -> issueKeywordRepository.save(
-            IssueKeyword.forSave(keyword, stands.get(0).getId(), issueId)
-        ));
-        response.getSecondKeywords().forEach(keyword -> issueKeywordRepository.save(
-            IssueKeyword.forSave(keyword, stands.get(1).getId(), issueId)
-        ));
+            final KeywordResponse response = chatGptService.getKeywords(articleBody, stands)
+                .block();
+            response.getFirstKeywords().forEach(keyword -> issueKeywordRepository.save(
+                IssueKeyword.forSave(keyword, stands.get(0).getId(), issueId)
+            ));
+            response.getSecondKeywords().forEach(keyword -> issueKeywordRepository.save(
+                IssueKeyword.forSave(keyword, stands.get(1).getId(), issueId)
+            ));
 
-        return response;
+            return response;
+        }
+
+        return new KeywordResponse(
+            stands.get(0).getStand(),
+            keywords.stream()
+                .filter(keyword -> keyword.getIssueStandId().equals(stands.get(0).getId()))
+                .map(IssueKeyword::getKeyword)
+                .collect(Collectors.toList()),
+            stands.get(1).getStand(),
+            keywords.stream()
+                .filter(keyword -> keyword.getIssueStandId().equals(stands.get(1).getId()))
+                .map(IssueKeyword::getKeyword)
+                .collect(Collectors.toList())
+        );
     }
 }

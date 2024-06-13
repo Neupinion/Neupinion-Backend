@@ -45,7 +45,7 @@ public class Article {
     @Column(name = "article_keyword_id", nullable = false)
     private Long articleKeywordId;
 
-    @Column(name = "reason")
+    @Column(name = "reason", length = 10000)
     private String reason;
 
     public Article(final Long id, final String title, final String originalLink, final String description,
