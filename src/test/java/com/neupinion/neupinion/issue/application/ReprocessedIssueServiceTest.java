@@ -17,6 +17,7 @@ import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandReferenceRepository;
 import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
@@ -55,12 +56,16 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     @Autowired
     private IssueStandRepository issueStandRepository;
 
+    @Autowired
+    private IssueStandReferenceRepository issueStandReferenceRepository;
+
     private ReprocessedIssueService reprocessedIssueService;
 
     @BeforeEach
     void setUp() {
         reprocessedIssueService = new ReprocessedIssueService(reprocessedIssueRepository,
                                                               reprocessedIssueParagraphRepository,
+                                                              issueStandReferenceRepository,
                                                               reprocessedIssueTagRepository,
                                                               reprocessedIssueBookmarkRepository,
                                                               reprocessedIssueTrustVoteRepository,
@@ -74,15 +79,15 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-04T10:00:00Z"), ZoneId.of("Asia/Seoul"));
         final Clock clock2 = Clock.fixed(Instant.parse("2024-02-05T10:00:00Z"), ZoneId.of("Asia/Seoul"));
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY, clock2));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY, clock2));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목2", "image", "이미지 캡션", "originUrl", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목2", "image", "이미지 캡션", Category.ECONOMY, clock));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목3", "image", "이미지 캡션", "originUrl", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목3", "image", "이미지 캡션", Category.ECONOMY, clock));
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목4", "image", "이미지 캡션", "originUrl", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목4", "image", "이미지 캡션", Category.ECONOMY, clock));
         final ReprocessedIssue issue5 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목5", "image", "이미지 캡션", "originUrl", Category.ECONOMY, clock));
+            ReprocessedIssue.forSave("제목5", "image", "이미지 캡션", Category.ECONOMY, clock));
 
         // when
         final List<ShortReprocessedIssueResponse> issues = reprocessedIssueService.findReprocessedIssues("20240204");
@@ -99,7 +104,7 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 재가공_이슈의_내용을_조회한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY));
         final List<IssueStand> stands = issueStandRepository.saveAll(List.of(
             IssueStand.forSave("찬성", issue.getId()),
             IssueStand.forSave("반대", issue.getId())
@@ -144,7 +149,6 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
                 .comparingOnlyFields("id")
                 .isEqualTo(List.of(paragraph1, paragraph2, paragraph3, paragraph4, paragraph5)),
             () -> assertThat(response.getCreatedAt()).isEqualTo(issue.getCreatedAt()),
-            () -> assertThat(response.getOriginUrl()).isEqualTo(issue.getOriginUrl()),
             () -> assertThat(response.getStands()).hasSize(2),
             () -> assertThat(response.getStands().get(0).getRelatable()).isTrue(),
             () -> assertThat(response.getStands().get(1).getRelatable()).isFalse(),
@@ -158,7 +162,7 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 재가공_이슈를_조회할_때_신뢰도_평가가_되어_있지_않으면_각_입장의_ID로_0을_반환한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY));
         issueStandRepository.saveAll(List.of(
             IssueStand.forSave("찬성", issue.getId()),
             IssueStand.forSave("반대", issue.getId())
@@ -176,7 +180,7 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 재가공_이슈에_처음_신뢰도_투표를_한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY));
         final long memberId = 1L;
         final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
             IssueStand.forSave("찬성", issue.getId()),
@@ -205,7 +209,7 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 재가공_이슈에_신뢰도_투표를_업데이트한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY));
         final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
             IssueStand.forSave("찬성", issue.getId()),
             IssueStand.forSave("반대", issue.getId())
@@ -237,19 +241,19 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 동일한_카테고리의_최신_재가공_이슈_3개를_조회한다() {
         // given
         final ReprocessedIssue issue1 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T00:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue2 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목2", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+            ReprocessedIssue.forSave("제목2", "image", "이미지 캡션", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T05:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue3 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목3", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+            ReprocessedIssue.forSave("제목3", "image", "이미지 캡션", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T08:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue4 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목4", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+            ReprocessedIssue.forSave("제목4", "image", "이미지 캡션", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T12:00:00Z"), ZoneId.systemDefault())));
         final ReprocessedIssue issue5 = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목5", "image", "이미지 캡션", "originUrl", Category.ECONOMY,
+            ReprocessedIssue.forSave("제목5", "image", "이미지 캡션", Category.ECONOMY,
                                      Clock.fixed(Instant.parse("2024-03-18T15:00:00Z"), ZoneId.systemDefault())));
 
         // when
@@ -268,7 +272,7 @@ class ReprocessedIssueServiceTest extends JpaRepositoryTest {
     void 재가공_이슈의_신뢰도_투표_결과를_조회한다() {
         // given
         final ReprocessedIssue issue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지 캡션", Category.ECONOMY));
         final List<IssueStand> issueStands = issueStandRepository.saveAll(List.of(
             IssueStand.forSave("찬성", issue.getId()),
             IssueStand.forSave("반대", issue.getId())

@@ -38,7 +38,7 @@ public class IssueOpinionRepositoryTest extends JpaRepositoryTest {
     void 동일한_재가공_이슈에_속한_의견들을_조회한다() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", Category.ECONOMY));
         final FollowUpIssue followUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("제목1", "image", Category.ECONOMY, FollowUpIssueTag.TRIAL_RESULTS,
                                   reprocessedIssue.getId()));
