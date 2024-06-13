@@ -11,12 +11,14 @@ import com.neupinion.neupinion.issue.application.dto.TrustVoteRequest;
 import com.neupinion.neupinion.issue.domain.Category;
 import com.neupinion.neupinion.issue.domain.FollowUpIssue;
 import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.IssueStandReference;
 import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTag;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueTrustVote;
 import com.neupinion.neupinion.issue.domain.repository.FollowUpIssueRepository;
+import com.neupinion.neupinion.issue.domain.repository.IssueStandReferenceRepository;
 import com.neupinion.neupinion.issue.domain.repository.IssueStandRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueParagraphRepository;
 import com.neupinion.neupinion.issue.domain.repository.ReprocessedIssueRepository;
@@ -48,6 +50,7 @@ public class ReprocessedIssueService {
 
     private final ReprocessedIssueRepository reprocessedIssueRepository;
     private final ReprocessedIssueParagraphRepository reprocessedIssueParagraphRepository;
+    private final IssueStandReferenceRepository issueStandReferenceRepository;
     private final ReprocessedIssueTagRepository reprocessedIssueTagRepository;
     private final ReprocessedIssueBookmarkRepository reprocessedIssueBookmarkRepository;
     private final ReprocessedIssueTrustVoteRepository reprocessedIssueTrustVoteRepository;
@@ -59,13 +62,24 @@ public class ReprocessedIssueService {
         final ReprocessedIssue reprocessedIssue = ReprocessedIssue.forSave(request.getTitle(),
                                                                            request.getImageUrl(),
                                                                            request.getCaption(),
-                                                                           request.getOriginUrl(),
                                                                            Category.from(request.getCategory()));
 
         final Long issueId = reprocessedIssueRepository.save(reprocessedIssue).getId();
-        issueStandRepository.saveAll(
+        final List<IssueStand> savedIssueStands = issueStandRepository.saveAll(
             request.getStands().stream()
                 .map(stand -> IssueStand.forSave(stand, issueId))
+                .toList()
+        );
+
+        issueStandReferenceRepository.saveAll(
+            request.getFirstIssueStandReferences().stream()
+                .map(stand -> IssueStandReference.forSave(savedIssueStands.get(0).getId(), stand))
+                .toList()
+        );
+
+        issueStandReferenceRepository.saveAll(
+            request.getSecondIssueStandReferences().stream()
+                .map(stand -> IssueStandReference.forSave(savedIssueStands.get(1).getId(), stand))
                 .toList()
         );
 
@@ -104,8 +118,12 @@ public class ReprocessedIssueService {
         final List<IssueStand> stands = issueStandRepository.findByIssueIdOrderById(id);
         final RelatableStand relatableStand = trustVote.map(ReprocessedIssueTrustVote::getRelatableStand)
             .orElse(RelatableStand.NOT_VOTED);
+        final List<IssueStandReference> references = issueStandReferenceRepository.findByIssueStandIdIn(
+            stands.stream()
+                .map(IssueStand::getId)
+                .toList());
 
-        return ReprocessedIssueResponse.of(reprocessedIssue, isBookmarked, stands,
+        return ReprocessedIssueResponse.of(reprocessedIssue, isBookmarked, stands, references,
                                            relatableStand != RelatableStand.NOT_VOTED, relatableStand, paragraphs,
                                            tags);
     }

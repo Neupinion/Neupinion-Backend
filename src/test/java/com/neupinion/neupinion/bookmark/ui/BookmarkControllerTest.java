@@ -39,7 +39,7 @@ class BookmarkControllerTest extends RestAssuredSpringBootTest {
     void register_first() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", Category.ECONOMY));
         final ReprocessedIssueBookmarkRequest request = new ReprocessedIssueBookmarkRequest(true);
         final long memberId = memberRepository.save(Member.forSave("이름", "image")).getId();
 
@@ -64,7 +64,7 @@ class BookmarkControllerTest extends RestAssuredSpringBootTest {
     void register_alreadyExisted() {
         // given
         final ReprocessedIssue reprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("재가공 이슈 제목1", "image", "이미지", Category.ECONOMY));
         final long memberId = memberRepository.save(Member.forSave("이름", "image")).getId();
         reprocessedIssueBookmarkRepository.save(ReprocessedIssueBookmark.forSave(reprocessedIssue.getId(), memberId));
         final ReprocessedIssueBookmarkRequest request = new ReprocessedIssueBookmarkRequest(false);

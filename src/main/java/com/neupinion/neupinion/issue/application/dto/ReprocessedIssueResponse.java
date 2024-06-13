@@ -1,6 +1,7 @@
 package com.neupinion.neupinion.issue.application.dto;
 
 import com.neupinion.neupinion.issue.domain.IssueStand;
+import com.neupinion.neupinion.issue.domain.IssueStandReference;
 import com.neupinion.neupinion.issue.domain.RelatableStand;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssue;
 import com.neupinion.neupinion.issue.domain.ReprocessedIssueParagraph;
@@ -43,7 +44,7 @@ public class ReprocessedIssueResponse {
     private final LocalDateTime createdAt;
 
     @Schema(description = "원문 링크", example = "https://neupinion.com/origin/1")
-    private final String originUrl;
+    private final List<IssueStandReferenceResponse> references;
 
     @Schema(description = "단락 리스트")
     private final List<ReprocessedIssueParagraphResponse> content;
@@ -54,6 +55,7 @@ public class ReprocessedIssueResponse {
     public static ReprocessedIssueResponse of(final ReprocessedIssue reprocessedIssue,
                                               final boolean isBookmarked,
                                               final List<IssueStand> stands,
+                                              final List<IssueStandReference> references,
                                               final boolean isVoted,
                                               final RelatableStand relatableStand,
                                               final List<ReprocessedIssueParagraph> paragraphs,
@@ -68,6 +70,11 @@ public class ReprocessedIssueResponse {
                                        relatableStand.isSecondRelatable())
         );
 
+        final List<IssueStandReferenceResponse> referencesResponse = List.of(
+            IssueStandReferenceResponse.of(stands.get(0), references),
+            IssueStandReferenceResponse.of(stands.get(1), references)
+        );
+
         return new ReprocessedIssueResponse(
             reprocessedIssue.getId(),
             reprocessedIssue.getTitle(),
@@ -78,7 +85,7 @@ public class ReprocessedIssueResponse {
             isVoted,
             relatableStandResponses,
             reprocessedIssue.getCreatedAt(),
-            reprocessedIssue.getOriginUrl(),
+            referencesResponse,
             content,
             tags
         );

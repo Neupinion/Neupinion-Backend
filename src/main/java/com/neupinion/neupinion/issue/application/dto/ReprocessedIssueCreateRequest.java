@@ -2,6 +2,7 @@ package com.neupinion.neupinion.issue.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,9 +24,13 @@ public class ReprocessedIssueCreateRequest {
     @Schema(description = "재가공 이슈 썸네일 이미지 캡션", example = "이미지 1")
     private final String caption;
 
-    @Schema(description = "재가공 이슈 원문 URL", example = "https://origin.com?origin=1234")
-    @NotBlank
-    private final String originUrl;
+    @Schema(description = "재가공 이슈 첫 번째 이슈 입장 레퍼런스")
+    @NotEmpty
+    private final List<String> firstIssueStandReferences;
+
+    @Schema(description = "재가공 이슈 두 번째 이슈 입장 레퍼런스")
+    @NotEmpty
+    private final List<String> secondIssueStandReferences;
 
     @Schema(description = "재가공 이슈 카테고리", example = "ECONOMY")
     @NotBlank
@@ -39,9 +44,10 @@ public class ReprocessedIssueCreateRequest {
     private final List<String> stands;
 
     public static ReprocessedIssueCreateRequest of(final String title, final String imageUrl, final String caption,
-                                                   final String originUrl, final String category,
+                                                   final List<String> firstIssueStandReferences,
+                                                   final List<String> secondIssueStandReferences, final String category,
                                                    final List<ReprocessedIssueParagraphRequest> paragraphs,
                                                    final List<String> stands) {
-        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, originUrl, category, paragraphs, stands);
+        return new ReprocessedIssueCreateRequest(title, imageUrl, caption, firstIssueStandReferences, secondIssueStandReferences, category, paragraphs, stands);
     }
 }

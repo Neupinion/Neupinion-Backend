@@ -64,7 +64,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
     void createFollowUpIssue() {
         // given
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), Category.WORLD.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
@@ -116,7 +117,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), Category.WORLD.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
@@ -164,12 +166,14 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T00:00:00Z"), ZoneId.systemDefault());
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), Category.WORLD.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), Category.WORLD.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
@@ -218,7 +222,8 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         // given
         final Category category = Category.WORLD;
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", Category.WORLD.name(),
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), Category.WORLD.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
@@ -256,12 +261,14 @@ class FollowUpIssueControllerTest extends RestAssuredSpringBootTest {
         final long memberId = memberRepository.save(Member.forSave("이름", "image")).getId();
 
         final Long reprocessedIssueId = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", "originurl", category.name(),
+            ReprocessedIssueCreateRequest.of("재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), category.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));
         final Long otherReprocessedIssue = reprocessedIssueService.createReprocessedIssue(
-            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", "originurl", category.name(),
+            ReprocessedIssueCreateRequest.of("다른 재가공 이슈 제목", "image", "이미지", List.of("url1", "url2"),
+                                             List.of("url1", "url2"), category.name(),
                                              List.of(new ReprocessedIssueParagraphRequest("문단 제목", false),
                                                      new ReprocessedIssueParagraphRequest("문단 내용", true)),
                                              List.of("찬성", "반대")));

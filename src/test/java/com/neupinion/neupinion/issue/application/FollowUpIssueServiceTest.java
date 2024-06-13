@@ -63,7 +63,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
     void 후속_이슈를_생성한다() {
         // given
         final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", Category.ECONOMY));
         final FollowUpIssueCreateRequest request = FollowUpIssueCreateRequest.of("후속 이슈 제목",
                                                                                  Category.ECONOMY.name(),
                                                                                  "https://neupinion.com/image.jpg",
@@ -108,7 +108,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
         final long memberId = 1L;
 
         final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", Category.ECONOMY));
 
         final Clock clock = Clock.fixed(Instant.parse("2024-02-06T10:00:00Z"), Clock.systemDefaultZone().getZone());
         final FollowUpIssue savedFollowUpIssue1 = followUpIssueRepository.save(
@@ -147,7 +147,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
         // given
         final Category category = Category.ECONOMY;
         final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", Category.ECONOMY));
         final FollowUpIssue followUpIssue = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,
                                   FollowUpIssueTag.INTERVIEW, savedReprocessedIssue.getId()));
@@ -167,7 +167,7 @@ class FollowUpIssueServiceTest extends JpaRepositoryTest {
         final Category category = Category.ECONOMY;
 
         final ReprocessedIssue savedReprocessedIssue = reprocessedIssueRepository.save(
-            ReprocessedIssue.forSave("제목1", "image", "이미지", "originUrl", Category.ECONOMY));
+            ReprocessedIssue.forSave("제목1", "image", "이미지", Category.ECONOMY));
 
         final FollowUpIssue savedFollowUpIssue1 = followUpIssueRepository.save(
             FollowUpIssue.forSave("후속 이슈 제목1", "https://neupinion.com/image.jpg", category,

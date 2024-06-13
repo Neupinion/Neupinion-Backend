@@ -4,7 +4,6 @@ create table if not exists reprocessed_issue
     title      varchar(100) not null,
     image_url  text         not null,
     caption    varchar(255),
-    origin_url text         not null,
     category   varchar(255) check (category in
                                    ('ENTERTAINMENTS', 'POLITICS', 'ECONOMY', 'SOCIETY', 'WORLD',
                                     'SPORTS')),
@@ -201,5 +200,13 @@ create table if not exists reprocessed_issue_opinion_report
     reporter_id                  bigint        not null,
     reason                       varchar(255)  not null,
     content                      varchar(1000) not null,
+    primary key (id)
+);
+
+create table if not exists issue_stand_reference
+(
+    id             bigint auto_increment,
+    issue_stand_id bigint         not null,
+    reference_url  varchar(10000) not null,
     primary key (id)
 );

@@ -131,7 +131,7 @@ public class IntegratedOpinionService {
             final ReprocessedIssueParagraph paragraph = reprocessedIssueParagraphRepository.getById(
                 mapping.paragraphId());
             final boolean isLiked = reprocessedIssueOpinionLikeRepository.existsByMemberIdAndReprocessedIssueOpinionIdAndIsDeletedFalse(
-                currentMemberId, mapping.paragraphId());
+                currentMemberId, mapping.id());
             return IssueOpinionResponse.of(mapping, writer, paragraph, isLiked);
         }
         final FollowUpIssueParagraph paragraph = followUpIssueParagraphRepository.getById(mapping.paragraphId());
